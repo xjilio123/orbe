@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+/*
+ * Sistema de diseño de Orbe: colores de sistema de iOS, un color por módulo.
+ * Tema: sin data-tema sigue al teléfono; data-tema="claro" u "oscuro" lo fija (cookie leída en el servidor).
+ * Cada color tiene dos versiones: "relleno" para fondos e íconos, y la normal para texto con buen contraste.
+ */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-tema="claro"]) *) {
+      @slot;
+    }
+  }
+  &:where([data-tema="oscuro"] *) {
+    @slot;
+  }
+}
+
+:root {
+  color-scheme: light dark;
+  --fondo: #f2f2f7;
+  --superficie: #ffffff;
+  --superficie-2: #f9f9fb;
+  --texto: #1d1d1f;
+  --texto-2: #6e6e73;
+  --separador: #d1d1d6;
+  --control: #e5e5ea;
+  --vidrio: rgb(255 255 255 / 0.72);
+
+  /* Marca y Hoy */
+  --indigo: #3634a3;
+  --indigo-relleno: #5856d6;
+  /* Tareas */
+  --azul: #0062cc;
+  --azul-relleno: #007aff;
+  /* Recordatorios */
+  --rojo: #d70015;
+  --rojo-relleno: #ff3b30;
+  /* Calendario */
+  --morado: #8944ab;
+  --morado-relleno: #af52de;
+  /* Apuntes */
+  --naranja: #c93400;
+  --naranja-relleno: #ff9500;
+  /* Hábitos y "hecho" */
+  --verde: #248a3d;
+  --verde-relleno: #34c759;
+  /* Inbox */
+  --celeste: #0071a4;
+  --celeste-relleno: #32ade6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --fondo: #0b0b0f;
+    --superficie: #1c1c1e;
+    --superficie-2: #2c2c2e;
+    --texto: #f5f5f7;
+    --texto-2: #98989d;
+    --separador: #38383a;
+    --control: #2c2c2e;
+    --vidrio: rgb(28 28 30 / 0.72);
+
+    --indigo: #7d7aff;
+    --indigo-relleno: #5e5ce6;
+    --azul: #409cff;
+    --azul-relleno: #0a84ff;
+    --rojo: #ff6961;
+    --rojo-relleno: #ff453a;
+    --morado: #da8fff;
+    --morado-relleno: #bf5af2;
+    --naranja: #ffb340;
+    --naranja-relleno: #ff9f0a;
+    --verde: #30db5b;
+    --verde-relleno: #30d158;
+    --celeste: #70d7ff;
+    --celeste-relleno: #64d2ff;
+  }
+}
+
+/* Mismo bloque que el de arriba: el tema oscuro elegido a mano, aunque el teléfono esté en claro. */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+  --fondo: #0b0b0f;
+  --superficie: #1c1c1e;
+  --superficie-2: #2c2c2e;
+  --texto: #f5f5f7;
+  --texto-2: #98989d;
+  --separador: #38383a;
+  --control: #2c2c2e;
+  --vidrio: rgb(28 28 30 / 0.72);
+
+  --indigo: #7d7aff;
+  --indigo-relleno: #5e5ce6;
+  --azul: #409cff;
+  --azul-relleno: #0a84ff;
+  --rojo: #ff6961;
+  --rojo-relleno: #ff453a;
+  --morado: #da8fff;
+  --morado-relleno: #bf5af2;
+  --naranja: #ffb340;
+  --naranja-relleno: #ff9f0a;
+  --verde: #30db5b;
+  --verde-relleno: #30d158;
+  --celeste: #70d7ff;
+  --celeste-relleno: #64d2ff;
+}
+
+:root[data-tema="claro"] {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-texto: var(--texto);
+  --color-texto-2: var(--texto-2);
+  --color-separador: var(--separador);
+  --color-control: var(--control);
+  --color-vidrio: var(--vidrio);
+  --color-indigo: var(--indigo);
+  --color-indigo-relleno: var(--indigo-relleno);
+  --color-azul: var(--azul);
+  --color-azul-relleno: var(--azul-relleno);
+  --color-rojo: var(--rojo);
+  --color-rojo-relleno: var(--rojo-relleno);
+  --color-morado: var(--morado);
+  --color-morado-relleno: var(--morado-relleno);
+  --color-naranja: var(--naranja);
+  --color-naranja-relleno: var(--naranja-relleno);
+  --color-verde: var(--verde);
+  --color-verde-relleno: var(--verde-relleno);
+  --color-celeste: var(--celeste);
+  --color-celeste-relleno: var(--celeste-relleno);
+  /* Fuente del sistema: SF Pro en iPhone, iPad y Mac; Roboto o Segoe en el resto. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* En la capa base para que las clases de Tailwind sí puedan sobrescribirlo. */
+@layer base {
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* mínimo para evitar el zoom automático de iOS al enfocar */
+  }
+}
