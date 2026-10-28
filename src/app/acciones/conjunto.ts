@@ -1,3 +1,4 @@
+import { alternarFavorita, crearPagina, eliminarAdjunto, eliminarPagina, guardarPagina, subirAdjunto } from "./apuntes";
 import {
   alternarTarea,
   capturarTarea,
@@ -9,7 +10,7 @@ import {
   guardarTarea,
   moverTarea,
 } from "./tareas";
-import type { AccionesTareas } from "./tipos";
+import type { AccionesApuntes, AccionesTareas } from "./tipos";
 
 /** Las acciones reales que reciben las pantallas (la vitrina usa unas que no hacen nada). */
 export const accionesTareas: AccionesTareas = {
@@ -22,4 +23,13 @@ export const accionesTareas: AccionesTareas = {
   crearLista,
   guardarLista,
   eliminarLista,
+};
+
+export const accionesApuntes: AccionesApuntes = {
+  crear: crearPagina,
+  guardar: guardarPagina,
+  favorita: alternarFavorita,
+  eliminar: eliminarPagina,
+  subir: subirAdjunto,
+  eliminarAdjunto,
 };

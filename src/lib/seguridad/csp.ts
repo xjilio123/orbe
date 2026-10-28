@@ -20,7 +20,8 @@ export function construirCsp({ nonce, desarrollo, supabaseUrl }: OpcionesCsp): s
     `style-src ${estilos}`,
     `style-src-elem ${estilos}`,
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' blob: data:",
+    // Fotos de los apuntes: enlaces firmados y temporales del Storage privado de Supabase.
+    `img-src 'self' blob: data: ${supabase}`,
     "font-src 'self'",
     `connect-src 'self' ${supabase}`,
     "worker-src 'self'",

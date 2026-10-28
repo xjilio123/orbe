@@ -10,7 +10,6 @@ import type { NombreIcono } from "@/components/Icono";
 import type { Lista, Tarea } from "@/lib/tareas";
 
 const proximamente: { nombre: string; texto: string; icono: NombreIcono; color: ColorModulo; fase: string }[] = [
-  { nombre: "Apuntes", texto: "Editor por bloques, como Notion.", icono: "apuntes", color: "naranja", fase: "Fase 1" },
   { nombre: "Agenda", texto: "Día, semana y mes en un vistazo.", icono: "agenda", color: "morado", fase: "Fase 2" },
   { nombre: "Recordatorios", texto: "Avisos a la hora exacta.", icono: "campana", color: "rojo", fase: "Fase 2" },
 ];

@@ -28,6 +28,11 @@ describe("construirCsp", () => {
     expect(csp).toContain("connect-src 'self' https://abc123.supabase.co;");
   });
 
+  it("las imágenes solo vienen del propio sitio o del Storage de Supabase", () => {
+    const csp = construirCsp({ nonce: "x", desarrollo: false, supabaseUrl });
+    expect(csp).toContain("img-src 'self' blob: data: https://abc123.supabase.co;");
+  });
+
   it("genera un nonce distinto en cada llamada", () => {
     expect(generarNonce()).not.toBe(generarNonce());
   });

@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // Volver a una pestaña ya vista es instantáneo durante 60 s; guardar algo invalida esta caché.
     staleTimes: { dynamic: 60, static: 60 },
+    // Subir fotos y PDF de hasta 4 MB (Vercel gratis acepta envíos de hasta 4.5 MB).
+    serverActions: { bodySizeLimit: "4.5mb" },
   },
   turbopack: {
     rules: {

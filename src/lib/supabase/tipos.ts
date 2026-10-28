@@ -15,6 +15,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      adjuntos: {
+        Row: {
+          creado: string
+          id: string
+          nombre: string
+          pagina_id: string
+          ruta: string
+          tamano: number
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          creado?: string
+          id?: string
+          nombre?: string
+          pagina_id: string
+          ruta: string
+          tamano: number
+          tipo: string
+          user_id?: string
+        }
+        Update: {
+          creado?: string
+          id?: string
+          nombre?: string
+          pagina_id?: string
+          ruta?: string
+          tamano?: number
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adjuntos_pagina_id_user_id_fkey"
+            columns: ["pagina_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "paginas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       listas: {
         Row: {
           color: string
@@ -41,6 +82,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      paginas: {
+        Row: {
+          actualizado: string
+          contenido: Json
+          creado: string
+          favorita: boolean
+          icono: string
+          id: string
+          padre_id: string | null
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          actualizado?: string
+          contenido?: Json
+          creado?: string
+          favorita?: boolean
+          icono?: string
+          id?: string
+          padre_id?: string | null
+          titulo?: string
+          user_id?: string
+        }
+        Update: {
+          actualizado?: string
+          contenido?: Json
+          creado?: string
+          favorita?: boolean
+          icono?: string
+          id?: string
+          padre_id?: string | null
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paginas_padre_id_user_id_fkey"
+            columns: ["padre_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "paginas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       perfiles: {
         Row: {
@@ -137,7 +222,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      mi_espacio: {
+        Args: never
+        Returns: {
+          archivos: number
+          archivos_max: number
+          texto: number
+          texto_max: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

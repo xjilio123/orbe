@@ -11,7 +11,7 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 · Cimientos | Repo y pipeline, Supabase + RLS, login con Google, sistema de diseño | Lista |
-| 1 · MVP | Inbox, tareas, apuntes por bloques, pantalla Hoy, control de espacio | En curso (tareas listas) |
+| 1 · MVP | Inbox, tareas, apuntes por bloques, pantalla Hoy, control de espacio | Lista |
 | 2 · Tiempo | Calendario, avisos push, repetición, Google Calendar | Pendiente |
 | 3 · Pulido | Modo sin conexión, búsqueda, plantillas, barra ⌘K, papelera, invitados | Pendiente |
 | 4 · IA | Captura inteligente, resúmenes, plan del día, preguntas a tus notas, topes de uso | Pendiente |
@@ -36,7 +36,9 @@ ficticios en una vitrina que nunca existe en Vercel, se abren como en un iPhone 
 | Primer contenido visible | ≤ 1.5 s | 0.14–0.26 s |
 | Bloqueo del hilo principal | ≤ 600 ms | 125–225 ms |
 | Cambio de pestaña | ≤ 0.8 s | 0.07–0.2 s |
-| JavaScript de la primera pantalla | ≤ 260 KB | 139 KB |
+| JavaScript de la primera pantalla | ≤ 260 KB | 178 KB (Fase 1) |
+| Tecla más lenta en el editor | ≤ 120 ms | 32 ms |
+| Marcar una tarea | ≤ 150 ms | 23 ms |
 
 Para medir en local: `npm run build && FLUIDEZ=1 npm run e2e`.
 
