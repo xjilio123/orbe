@@ -130,30 +130,69 @@ export type Database = {
       perfiles: {
         Row: {
           actualizado: string
+          calendario_ics: string | null
           creado: string
           id: string
           nombre: string
+          ultima_prueba_push: string | null
           zona_horaria: string
         }
         Insert: {
           actualizado?: string
+          calendario_ics?: string | null
           creado?: string
           id: string
           nombre?: string
+          ultima_prueba_push?: string | null
           zona_horaria?: string
         }
         Update: {
           actualizado?: string
+          calendario_ics?: string | null
           creado?: string
           id?: string
           nombre?: string
+          ultima_prueba_push?: string | null
           zona_horaria?: string
+        }
+        Relationships: []
+      }
+      suscripciones_push: {
+        Row: {
+          auth: string
+          creado: string
+          dispositivo: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          creado?: string
+          dispositivo?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id?: string
+        }
+        Update: {
+          auth?: string
+          creado?: string
+          dispositivo?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
       tareas: {
         Row: {
           actualizado: string
+          avisado_en: string | null
+          avisar_en: string | null
+          aviso: number | null
           creado: string
           estado: string
           fecha: string | null
@@ -165,11 +204,15 @@ export type Database = {
           orden: number
           padre_id: string | null
           prioridad: number
+          repetir: string | null
           titulo: string
           user_id: string
         }
         Insert: {
           actualizado?: string
+          avisado_en?: string | null
+          avisar_en?: string | null
+          aviso?: number | null
           creado?: string
           estado?: string
           fecha?: string | null
@@ -181,11 +224,15 @@ export type Database = {
           orden?: number
           padre_id?: string | null
           prioridad?: number
+          repetir?: string | null
           titulo: string
           user_id?: string
         }
         Update: {
           actualizado?: string
+          avisado_en?: string | null
+          avisar_en?: string | null
+          aviso?: number | null
           creado?: string
           estado?: string
           fecha?: string | null
@@ -197,6 +244,7 @@ export type Database = {
           orden?: number
           padre_id?: string | null
           prioridad?: number
+          repetir?: string | null
           titulo?: string
           user_id?: string
         }
@@ -222,6 +270,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      clave_publica_push: { Args: never; Returns: string }
+      guardar_suscripcion_push: {
+        Args: {
+          p_auth: string
+          p_dispositivo: string
+          p_endpoint: string
+          p_p256dh: string
+        }
+        Returns: undefined
+      }
       mi_espacio: {
         Args: never
         Returns: {
@@ -231,6 +289,7 @@ export type Database = {
           texto_max: number
         }[]
       }
+      probar_avisos: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

@@ -6,7 +6,7 @@ const c = (texto: string) => interpretarCaptura(texto, HOY);
 
 describe("captura rápida", () => {
   it("deja el texto tal cual si no hay fechas ni marcas", () => {
-    expect(c("comprar 3 panes")).toEqual({ titulo: "Comprar 3 panes", fecha: null, hora: null, prioridad: 0, lista: null });
+    expect(c("comprar 3 panes")).toEqual({ titulo: "Comprar 3 panes", fecha: null, hora: null, prioridad: 0, lista: null, repetir: null });
   });
 
   it("entiende la frase completa del ejemplo", () => {
@@ -16,6 +16,7 @@ describe("captura rápida", () => {
       hora: "09:00",
       prioridad: 2,
       lista: "casa",
+      repetir: null,
     });
   });
 
@@ -87,5 +88,26 @@ describe("captura rápida", () => {
     expect(c("#").titulo).toBe("#");
     expect(c("x".repeat(500)).titulo.length).toBe(300);
     expect(c("a las 99").hora).toBeNull();
+  });
+
+  it("entiende tareas que se repiten", () => {
+    expect(c("gimnasio todos los lunes 7am")).toMatchObject({ titulo: "Gimnasio", repetir: "semanal", fecha: "2026-11-02", hora: "07:00" });
+    expect(c("regar plantas cada martes")).toMatchObject({ titulo: "Regar plantas", repetir: "semanal", fecha: HOY }); // hoy martes cuenta
+    expect(c("tomar vitaminas todos los días")).toMatchObject({ titulo: "Tomar vitaminas", repetir: "diaria", fecha: HOY });
+    expect(c("revisar correo de lunes a viernes 9am")).toMatchObject({ titulo: "Revisar correo", repetir: "laborables", hora: "09:00" });
+    expect(c("pagar alquiler cada mes el 30")).toMatchObject({ titulo: "Pagar alquiler", repetir: "mensual", fecha: "2026-10-30" });
+    expect(c("renovar seguro cada año")).toMatchObject({ titulo: "Renovar seguro", repetir: "anual" });
+  });
+
+  it("de lunes a viernes en fin de semana empieza el lunes", () => {
+    expect(interpretarCaptura("reporte diario de lunes a viernes", "2026-10-31")).toMatchObject({ repetir: "laborables", fecha: "2026-11-02" });
+  });
+});
+
+describe("captura en la Agenda", () => {
+  it("lo que no tiene fecha va al día que estás mirando", () => {
+    expect(interpretarCaptura("reunión 3pm", HOY, "2026-11-06")).toMatchObject({ fecha: "2026-11-06", hora: "15:00" });
+    expect(interpretarCaptura("comprar pan", HOY, "2026-11-06").fecha).toBe("2026-11-06");
+    expect(interpretarCaptura("comprar pan mañana", HOY, "2026-11-06").fecha).toBe("2026-10-28");
   });
 });

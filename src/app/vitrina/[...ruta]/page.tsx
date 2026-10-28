@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Agenda from "@/app/(app)/agenda/page";
+import { VistaAgenda } from "@/components/vistas/VistaAgenda";
 import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { VistaPagina } from "@/components/vistas/VistaPagina";
@@ -7,15 +7,16 @@ import { VistaHoy } from "@/components/vistas/VistaHoy";
 import { VistaLista } from "@/components/vistas/VistaLista";
 import { VistaTarea } from "@/components/vistas/VistaTarea";
 import { VistaTareas } from "@/components/vistas/VistaTareas";
+import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
-import { DETALLE, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, accionesApuntesVitrina, accionesVitrina } from "../datos";
+import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, accionesAjustesVitrina, accionesApuntesVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
 export default async function Pantalla({ params, searchParams }: PageProps<"/vitrina/[...ruta]">) {
   if (!vitrinaActiva()) notFound();
-  const [{ ruta }, { vista }] = await Promise.all([params, searchParams]);
+  const [{ ruta }, { vista, dia }] = await Promise.all([params, searchParams]);
   const camino = ruta.join("/");
   const base = "/vitrina";
   const subtareas = { [DETALLE.id]: { hechas: 1, total: 3 } };
@@ -93,10 +94,35 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
       />
     );
   }
-  if (camino === "agenda") return <Agenda />;
+  if (camino === "agenda") {
+    const p = leerParametros(vista, dia, HOY);
+    const [desde, hasta] = rangoDeVista(p.vista, p.dia);
+    return (
+      <VistaAgenda
+        vista={p.vista}
+        dia={p.dia}
+        hoy={HOY}
+        ahora={15 * 60 + 20}
+        porDia={itemsPorDia(TAREAS, EVENTOS, desde, hasta)}
+        google={{ conectado: true, error: false }}
+        base={base}
+        acciones={accionesVitrina}
+      />
+    );
+  }
   if (camino === "ajustes") {
     const uso = { archivos: 12.4 * 1024 * 1024, archivosMax: 30 * 1024 * 1024, texto: 410 * 1024, textoMax: 8 * 1024 * 1024 };
-    return <VistaAjustes nombre="Ana Prueba" email="ana@ejemplo.com" tema="auto" uso={uso} />;
+    return (
+      <VistaAjustes
+        nombre="Ana Prueba"
+        email="ana@ejemplo.com"
+        tema="auto"
+        uso={uso}
+        avisos={{ clavePublica: "BPruebaDeClavePublicaVapidQueNoSeUsaParaNadaEnLaVitrina0000000000000000000000000000000", dispositivos: 1 }}
+        calendarioConectado={false}
+        acciones={accionesAjustesVitrina}
+      />
+    );
   }
   notFound();
 }

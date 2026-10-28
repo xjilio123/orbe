@@ -42,6 +42,8 @@ const PANTALLAS = [
   { ruta: "/vitrina/apuntes", titulo: "Apuntes" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1", titulo: "SQL para Data Analytics" },
   { ruta: "/vitrina/agenda", titulo: "Agenda" },
+  { ruta: "/vitrina/agenda?vista=semana", titulo: "Agenda" },
+  { ruta: "/vitrina/agenda?vista=dia", titulo: "Agenda" },
   { ruta: "/vitrina/ajustes", titulo: "Ajustes" },
   { ruta: "/login", titulo: "Orbe" },
 ];
@@ -128,7 +130,7 @@ test.describe("Fluidez al cambiar de pestaña (CPU 4× más lenta)", () => {
     await medir(page); // deja que se precarguen las demás pestañas, como en el uso real
     for (const destino of ["Tareas", "Apuntes", "Agenda", "Hoy"]) {
       const inicio = Date.now();
-      await page.getByRole("link", { name: destino, exact: true }).click();
+      await page.getByRole("navigation", { name: "Navegación principal" }).getByRole("link", { name: destino, exact: true }).click();
       await expect(page.getByRole("heading", { level: 1, name: destino })).toBeVisible();
       const ms = Date.now() - inicio;
       console.log(`pestaña ${destino.padEnd(8)} ${ms} ms`);
@@ -199,5 +201,45 @@ test.describe("Fluidez al escribir apuntes (CPU 4× más lenta)", () => {
     console.log(`tecla más lenta en el editor: ${Math.round(teclaMax)} ms`);
     expect(teclaMax, "respuesta de la tecla más lenta").toBeLessThanOrEqual(PRESUPUESTO.tecla);
     expect(await posicion(), "lo de arriba no se mueve al escribir").toBe(antes);
+  });
+});
+
+test.describe("Fluidez en la Agenda (CPU 4× más lenta)", () => {
+  test("tocar un día del mes muestra lo suyo al instante y la cuadrícula no se mueve", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/agenda");
+    await medir(page);
+    const cuadricula = page.getByRole("region", { name: "Días del mes" });
+    const antes = (await cuadricula.boundingBox())!;
+    const dia = page.getByRole("button", { name: /^miércoles 28 de octubre/ });
+    const ms = await dia.evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      // Espera al cuadro pintado con el día elegido y su lista.
+      while (!document.getElementById("titulo-dia-elegido")?.textContent?.includes("28 de octubre")) {
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return performance.now() - inicio;
+    });
+    console.log(`día elegido en ${Math.round(ms)} ms`);
+    await expect(page.getByText("Dentista")).toBeVisible();
+    expect(ms, "tiempo hasta ver el día elegido").toBeLessThanOrEqual(PRESUPUESTO.check);
+    const despues = (await cuadricula.boundingBox())!;
+    expect([despues.y, despues.height], "la cuadrícula no se mueve ni cambia de alto").toEqual([antes.y, antes.height]);
+  });
+
+  test("pasar al mes siguiente no cambia el alto de la cuadrícula", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/agenda?vista=mes&dia=2026-10-27");
+    await medir(page);
+    const alto = async () => (await page.getByRole("region", { name: "Días del mes" }).boundingBox())!.height;
+    const antes = await alto();
+    const inicio = Date.now();
+    await page.getByRole("link", { name: "Siguiente" }).click();
+    await expect(page.getByText("noviembre 2026")).toBeVisible();
+    const ms = Date.now() - inicio;
+    console.log(`mes siguiente en ${ms} ms`);
+    expect(ms, "cambio de mes").toBeLessThanOrEqual(PRESUPUESTO.cambioPestana);
+    expect(await alto(), "6 semanas siempre").toBe(antes);
   });
 });

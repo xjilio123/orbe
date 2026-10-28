@@ -35,7 +35,10 @@ export function FilaTarea({ tarea, hoy, base, alternar, lista, subtareas }: Prop
 
   const vencida = !hecha && tarea.fecha !== null && tarea.fecha < hoy;
   const meta = [
-    tarea.fecha && { texto: etiquetaFecha(tarea.fecha, hoy) + (tarea.hora ? ` · ${etiquetaHora(tarea.hora)}` : ""), clase: vencida ? "text-rojo" : "" },
+    tarea.fecha && {
+      texto: etiquetaFecha(tarea.fecha, hoy) + (tarea.hora ? ` · ${etiquetaHora(tarea.hora)}` : "") + (tarea.repetir ? " ↻" : ""),
+      clase: vencida ? "text-rojo" : "",
+    },
     lista && { texto: lista.nombre, clase: lista.texto },
     subtareas && subtareas.total > 0 && { texto: `${subtareas.hechas}/${subtareas.total}`, clase: "" },
   ].filter(Boolean) as { texto: string; clase: string }[];

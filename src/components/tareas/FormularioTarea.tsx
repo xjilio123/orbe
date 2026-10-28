@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import type { EstadoFormulario } from "@/app/acciones/tipos";
+import { AVISOS, NOMBRE_REPETIR, REPETICIONES } from "@/lib/repeticion";
 import { ESTADOS, NOMBRE_ESTADO, type Lista, type Tarea } from "@/lib/tareas";
 
 type Props = {
@@ -50,6 +51,35 @@ export function FormularioTarea({ tarea, listas, accion }: Props) {
           </label>
         </div>
         {(e.fecha || e.hora) && <span className="text-[13px] text-rojo">{e.fecha ?? e.hora}</span>}
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-semibold text-texto-2">Repetir</span>
+            <select name="repetir" defaultValue={tarea.repetir ?? ""} disabled={tarea.padre_id !== null} className={campo}>
+              <option value="">Nunca</option>
+              {REPETICIONES.map((r) => (
+                <option key={r} value={r}>
+                  {NOMBRE_REPETIR[r]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-semibold text-texto-2">Aviso</span>
+            <select name="aviso" defaultValue={tarea.aviso ?? ""} className={campo}>
+              {AVISOS.map((a) => (
+                <option key={a.nombre} value={a.valor ?? ""}>
+                  {a.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {e.repetir ? (
+          <span className="text-[13px] text-rojo">{e.repetir}</span>
+        ) : (
+          <span className="text-[13px] text-texto-2">El aviso llega a la hora de la tarea si activaste los avisos en Ajustes.</span>
+        )}
 
         <fieldset className="flex flex-col gap-1.5">
           <legend className="mb-1.5 text-[13px] font-semibold text-texto-2">Prioridad</legend>
