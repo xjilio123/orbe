@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BotonBuscar } from "@/components/buscar/AbrirBarra";
 import { Icono, type NombreIcono } from "@/components/Icono";
 
 /** Contenedor de cada pantalla: ancho de teléfono, márgenes seguros y espacio para la barra de pestañas. */
@@ -19,13 +20,16 @@ export function Encabezado({ titulo, sobre }: { titulo: string; sobre?: string }
         {sobre && <p className="text-[13px] font-semibold uppercase tracking-wide text-texto-2">{sobre}</p>}
         <h1 className="text-[34px] font-bold leading-tight tracking-tight">{titulo}</h1>
       </div>
-      <Link
-        href="/ajustes"
-        aria-label="Ajustes"
-        className="grid size-11 shrink-0 place-items-center rounded-full bg-superficie text-texto-2 shadow-sm active:scale-95"
-      >
-        <Icono nombre="ajustes" className="size-[22px]" />
-      </Link>
+      <div className="flex shrink-0 gap-2">
+        <BotonBuscar />
+        <Link
+          href="/ajustes"
+          aria-label="Ajustes"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-superficie text-texto-2 shadow-sm active:scale-95"
+        >
+          <Icono nombre="ajustes" className="size-[22px]" />
+        </Link>
+      </div>
     </header>
   );
 }
