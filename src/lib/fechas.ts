@@ -27,6 +27,15 @@ export function hoyLima(ahora: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: ZONA, year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
 }
 
+/** Minutos desde las 00:00 en Lima (para la línea de "ahora" en la Agenda). */
+export function minutosLima(ahora: Date = new Date()): number {
+  const [h, m] = new Intl.DateTimeFormat("en-GB", { timeZone: ZONA, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+    .format(ahora)
+    .split(":")
+    .map(Number);
+  return h * 60 + m;
+}
+
 /** Suma (o resta) días a una fecha "AAAA-MM-DD" sin pasar por zonas horarias. */
 export function sumarDias(fecha: string, dias: number): string {
   const [a, m, d] = fecha.split("-").map(Number);

@@ -34,3 +34,11 @@ export type AccionesTareas = {
   guardarLista: (id: string, anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
   eliminarLista: (id: string) => Promise<void>;
 };
+
+export type AccionesAjustes = {
+  guardarSuscripcion: (datos: unknown) => Promise<ResultadoGuardado>;
+  quitarSuscripcion: (endpoint: string) => Promise<void>;
+  probarAvisos: () => Promise<ResultadoGuardado>;
+  guardarCalendario: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  quitarCalendario: () => Promise<void>;
+};

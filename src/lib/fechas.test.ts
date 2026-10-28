@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diaSemana, diasEntre, etiquetaFecha, etiquetaHora, fechaEncabezado, hoyLima, saludo, sumarDias } from "./fechas";
+import { diaSemana, diasEntre, etiquetaFecha, etiquetaHora, fechaEncabezado, hoyLima, minutosLima, saludo, sumarDias } from "./fechas";
 
 describe("fechaEncabezado", () => {
   it("usa la fecha de Lima aunque en UTC ya sea el día siguiente", () => {
@@ -49,5 +49,12 @@ describe("etiquetas", () => {
     expect(etiquetaHora("17:30")).toBe("5:30 p. m.");
     expect(etiquetaHora("00:00")).toBe("12:00 a. m.");
     expect(etiquetaHora("12:15")).toBe("12:15 p. m.");
+  });
+});
+
+describe("minutosLima", () => {
+  it("usa la hora de Lima aunque el servidor esté en UTC", () => {
+    expect(minutosLima(new Date("2026-10-27T14:30:00Z"))).toBe(9 * 60 + 30);
+    expect(minutosLima(new Date("2026-10-28T04:59:00Z"))).toBe(23 * 60 + 59);
   });
 });

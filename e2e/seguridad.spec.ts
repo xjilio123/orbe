@@ -11,10 +11,12 @@ const RUTAS_PRIVADAS = [
   "/apuntes",
   `/apuntes/${UUID}`,
   "/agenda",
+  "/agenda?vista=dia&dia=2026-10-27",
   "/ajustes",
   "/ruta-que-no-existe",
   "/vitrina/hoy",
   "/vitrina/tareas",
+  "/vitrina/agenda",
 ];
 
 test.describe("Sin sesión no se ve nada privado", () => {

@@ -1,4 +1,5 @@
 import { diasEntre } from "./fechas";
+import type { Repetir } from "./repeticion";
 
 export const ESTADOS = ["pendiente", "en_curso", "hecha"] as const;
 export type Estado = (typeof ESTADOS)[number];
@@ -19,6 +20,9 @@ export type Tarea = {
   padre_id: string | null;
   hecha_en: string | null;
   creado: string;
+  repetir: Repetir | null;
+  /** Minutos antes de la hora para avisar; null = sin aviso. */
+  aviso: number | null;
 };
 
 export type Lista = { id: string; nombre: string; color: ColorLista; orden: number };

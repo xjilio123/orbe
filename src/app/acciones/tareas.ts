@@ -10,6 +10,7 @@ import {
   erroresDe,
   esquemaCaptura,
   esquemaEstado,
+  esquemaFecha,
   esquemaId,
   esquemaLista,
   esquemaSubtarea,
@@ -22,6 +23,7 @@ function mensajeBase(error: { code?: string; message: string }): string {
   if (error.message.includes("Llegaste al máximo")) return error.message.replace(" en tareas", " tareas").replace(" en listas", " listas");
   if (error.code === "23505") return "Ya tienes una lista con ese nombre.";
   if (error.message.includes("subtareas")) return error.message;
+  if (error.message.includes("repetir_con_fecha")) return "Para repetirla, elige la fecha de la primera vez.";
   return "No se pudo guardar. Intenta de nuevo.";
 }
 
@@ -35,7 +37,9 @@ export async function capturarTarea(anterior: EstadoCaptura, formData: FormData)
   const validado = esquemaCaptura.safeParse(datos);
   if (!validado.success) return { ...anterior, ok: false, error: erroresDe(validado.error).texto };
 
-  const c = interpretarCaptura(validado.data.texto, hoyLima());
+  // En la Agenda, lo que se escribe sin fecha va al día que estás mirando.
+  const porDefecto = esquemaFecha.safeParse(datos.fecha_defecto).success ? datos.fecha_defecto : undefined;
+  const c = interpretarCaptura(validado.data.texto, hoyLima(), porDefecto);
   if (!c.titulo) return { ...anterior, ok: false, error: "Falta el título de la tarea." };
 
   // Lista: la de la pantalla donde se capturó, o la de #nombre (se crea si no existe).
@@ -57,6 +61,7 @@ export async function capturarTarea(anterior: EstadoCaptura, formData: FormData)
     hora: c.hora,
     prioridad: c.prioridad,
     lista_id: listaId,
+    repetir: c.repetir,
   });
   if (error) return { ...anterior, ok: false, error: mensajeBase(error) };
 

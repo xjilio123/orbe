@@ -1,19 +1,25 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/tipos";
+import type { Repetir } from "@/lib/repeticion";
 import type { ColorLista, Estado, Lista, Tarea } from "@/lib/tareas";
 
 type Cliente = SupabaseClient<Database>;
 
-const COLUMNAS = "id,titulo,notas,estado,prioridad,fecha,hora,lista_id,padre_id,hecha_en,creado";
+const COLUMNAS = "id,titulo,notas,estado,prioridad,fecha,hora,lista_id,padre_id,hecha_en,creado,repetir,aviso";
 
 type FilaTarea = Pick<
   Database["public"]["Tables"]["tareas"]["Row"],
-  "id" | "titulo" | "notas" | "estado" | "prioridad" | "fecha" | "hora" | "lista_id" | "padre_id" | "hecha_en" | "creado"
+  "id" | "titulo" | "notas" | "estado" | "prioridad" | "fecha" | "hora" | "lista_id" | "padre_id" | "hecha_en" | "creado" | "repetir" | "aviso"
 >;
 
 // La base guarda la hora como "09:00:00"; la app trabaja con "09:00".
-const aTarea = (f: FilaTarea): Tarea => ({ ...f, estado: f.estado as Estado, hora: f.hora?.slice(0, 5) ?? null });
+const aTarea = (f: FilaTarea): Tarea => ({
+  ...f,
+  estado: f.estado as Estado,
+  hora: f.hora?.slice(0, 5) ?? null,
+  repetir: f.repetir as Repetir | null,
+});
 
 /** Inicio del día de hoy en Lima, en UTC (Lima es UTC-5 todo el año). */
 export const inicioDeHoyUtc = (hoy: string) => `${hoy}T05:00:00Z`;
@@ -69,4 +75,16 @@ export async function conteoSubtareas(supabase: Cliente, ids: string[]) {
     conteo.set(s.padre_id, c);
   }
   return conteo;
+}
+
+/**
+ * Lo que muestra la Agenda entre dos fechas: las tareas con fecha en ese rango (también las hechas)
+ * y las que se repiten aunque su fecha actual sea anterior, para dibujar sus próximas veces.
+ */
+export async function tareasDeAgenda(supabase: Cliente, desde: string, hasta: string): Promise<Tarea[]> {
+  const [{ data: enRango }, { data: repetidas }] = await Promise.all([
+    supabase.from("tareas").select(COLUMNAS).is("padre_id", null).gte("fecha", desde).lte("fecha", hasta).order("fecha").limit(1500),
+    supabase.from("tareas").select(COLUMNAS).is("padre_id", null).not("repetir", "is", null).lt("fecha", desde).neq("estado", "hecha").limit(300),
+  ]);
+  return [...(enRango ?? []), ...(repetidas ?? [])].map(aTarea);
 }

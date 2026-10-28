@@ -1,4 +1,5 @@
 import { diaSemana, sumarDias } from "./fechas";
+import type { Repetir } from "./repeticion";
 
 /**
  * Captura rápida SIN IA: entiende frases comunes en español y deja el resto como título.
@@ -12,6 +13,7 @@ export type Captura = {
   hora: string | null; // HH:MM
   prioridad: 0 | 1 | 2 | 3;
   lista: string | null;
+  repetir: Repetir | null;
 };
 
 const DIAS: Record<string, number> = {
@@ -81,6 +83,35 @@ const REGLAS: Regla[] = [
   {
     patron: /(?:^|\s)#([\p{L}\p{N}_-]{1,40})/u,
     aplicar: (m, r) => ((r.lista = m[1]), true),
+  },
+  // Repetición: "todos los lunes", "de lunes a viernes", "cada día", "cada mes", "todos los años"
+  {
+    patron: new RegExp(`${B}(?:todos los|todas las|cada) (domingo|lunes|martes|miercoles|jueves|viernes|sabado)s?${E}`, "u"),
+    aplicar: (m, r, hoy) => {
+      r.repetir = "semanal";
+      r.fecha = sumarDias(hoy, (DIAS[m[1]] - diaSemana(hoy) + 7) % 7); // hoy cuenta
+      return true;
+    },
+  },
+  {
+    patron: new RegExp(`${B}(?:de lunes a viernes|(?:todos los |cada )?dias? laborables?|entre semana)${E}`, "u"),
+    aplicar: (_m, r) => ((r.repetir = "laborables"), true),
+  },
+  {
+    patron: new RegExp(`${B}(?:todos los dias|cada dia|a diario|diariamente)${E}`, "u"),
+    aplicar: (_m, r) => ((r.repetir = "diaria"), true),
+  },
+  {
+    patron: new RegExp(`${B}(?:todas las semanas|cada semana|semanalmente)${E}`, "u"),
+    aplicar: (_m, r) => ((r.repetir = "semanal"), true),
+  },
+  {
+    patron: new RegExp(`${B}(?:todos los meses|cada mes|mensualmente)${E}`, "u"),
+    aplicar: (_m, r) => ((r.repetir = "mensual"), true),
+  },
+  {
+    patron: new RegExp(`${B}(?:todos los anos|cada ano|anualmente)${E}`, "u"),
+    aplicar: (_m, r) => ((r.repetir = "anual"), true),
   },
   // Hora: "a las 5 de la tarde", "a las 17:30", "9am", "9:15 pm", "17h"
   {
@@ -163,8 +194,9 @@ const REGLAS: Regla[] = [
 /** Palabras que quedan sueltas al final tras quitar una fecha ("pagar luz el" → "pagar luz"). */
 const CONECTORES_FINALES = /(?:\s+(?:el|la|a|para|de|del|en|por|las|este|al))+$/iu;
 
-export function interpretarCaptura(texto: string, hoy: string): Captura {
-  const r: Captura = { titulo: "", fecha: null, hora: null, prioridad: 0, lista: null };
+/** `porDefecto`: fecha para lo que se escribe sin fecha (en la Agenda, el día que estás mirando). */
+export function interpretarCaptura(texto: string, hoy: string, porDefecto?: string): Captura {
+  const r: Captura = { titulo: "", fecha: null, hora: null, prioridad: 0, lista: null, repetir: null };
   let original = texto.replace(/\s+/g, " ").trim().slice(0, 300);
 
   for (const regla of REGLAS) {
@@ -177,6 +209,11 @@ export function interpretarCaptura(texto: string, hoy: string): Captura {
 
   const titulo = original.replace(CONECTORES_FINALES, "").replace(/^[\s,;:-]+|[\s,;:-]+$/g, "").trim();
   r.titulo = titulo.charAt(0).toUpperCase() + titulo.slice(1);
-  if (r.hora && !r.fecha) r.fecha = hoy; // "llamar a las 5" → hoy a las 5
+  if (!r.fecha && porDefecto) r.fecha = porDefecto;
+  if ((r.hora || r.repetir) && !r.fecha) {
+    // "llamar a las 5" → hoy a las 5. "cada día" → empieza hoy (o el lunes, si es de lunes a viernes y hoy es fin de semana).
+    const dia = diaSemana(hoy);
+    r.fecha = r.repetir === "laborables" && (dia === 0 || dia === 6) ? sumarDias(hoy, dia === 6 ? 2 : 1) : hoy;
+  }
   return r;
 }

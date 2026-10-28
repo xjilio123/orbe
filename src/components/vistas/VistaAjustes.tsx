@@ -1,5 +1,8 @@
 import { cerrarSesion } from "@/app/acciones/generales";
 import { SelectorTema } from "@/app/(app)/ajustes/SelectorTema";
+import type { AccionesAjustes } from "@/app/acciones/tipos";
+import { ActivarAvisos } from "@/components/ajustes/ActivarAvisos";
+import { ConectarCalendario } from "@/components/ajustes/ConectarCalendario";
 import { Icono } from "@/components/Icono";
 import { Logo } from "@/components/Logo";
 import { Medidor } from "@/components/Medidor";
@@ -8,7 +11,17 @@ import type { Tema } from "@/lib/tema";
 
 type Uso = { archivos: number; archivosMax: number; texto: number; textoMax: number };
 
-export function VistaAjustes({ nombre, email, tema, uso }: { nombre: string; email: string; tema: Tema; uso: Uso }) {
+type Props = {
+  nombre: string;
+  email: string;
+  tema: Tema;
+  uso: Uso;
+  avisos: { clavePublica: string | null; dispositivos: number };
+  calendarioConectado: boolean;
+  acciones: AccionesAjustes;
+};
+
+export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones }: Props) {
   return (
     <Pantalla>
       <header className="pt-2">
@@ -22,6 +35,10 @@ export function VistaAjustes({ nombre, email, tema, uso }: { nombre: string; ema
           <p className="truncate text-[15px] text-texto-2">{email}</p>
         </div>
       </section>
+
+      <ActivarAvisos clavePublica={avisos.clavePublica} dispositivos={avisos.dispositivos} acciones={acciones} />
+
+      <ConectarCalendario conectado={calendarioConectado} acciones={acciones} />
 
       <SelectorTema actual={tema} />
 

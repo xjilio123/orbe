@@ -1,4 +1,5 @@
-import type { AccionesApuntes, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesTareas } from "@/app/acciones/tipos";
+import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
 import type { Lista, Tarea } from "@/lib/tareas";
 import { capturarVitrina, formularioVitrina, guardarVitrina, nadaVitrina, subirVitrina, subtareaVitrina } from "./acciones";
@@ -25,6 +26,8 @@ const t = (datos: Partial<Tarea>): Tarea => ({
   padre_id: null,
   hecha_en: null,
   creado: "2026-10-20T15:00:00Z",
+  repetir: null,
+  aviso: 0,
   ...datos,
 });
 
@@ -45,6 +48,21 @@ export const TAREAS: Tarea[] = [
   t({ titulo: "Revisar suscripciones que ya no uso" }),
   t({ titulo: "Buscar curso de Power BI avanzado" }),
   t({ titulo: "Practicar listening 20 minutos", lista_id: INGLES }),
+  t({ titulo: "Gimnasio", fecha: "2026-10-26", hora: "07:00", repetir: "semanal" }),
+  t({ titulo: "Tomar vitaminas", fecha: HOY, hora: "08:00", repetir: "diaria", lista_id: CASA }),
+  t({ titulo: "Revisar el correo de Prediqt", fecha: HOY, hora: "09:00", repetir: "laborables", lista_id: TRABAJO }),
+];
+
+// Eventos ficticios "de Google Calendar" para la Agenda.
+export const EVENTOS: Evento[] = [
+  { id: "g1", titulo: "Daily del equipo", fecha: HOY, inicio: "09:30", fin: "10:00", lugar: "Google Meet" },
+  { id: "g2", titulo: "Almuerzo con Diana", fecha: HOY, inicio: "13:00", fin: "14:00", lugar: "Barranco" },
+  { id: "g3", titulo: "Dentista", fecha: "2026-10-28", inicio: "16:30", fin: "17:15", lugar: "Av. Larco 123, Miraflores" },
+  { id: "g4", titulo: "Llamada con Prediqt", fecha: "2026-10-29", inicio: "09:00", fin: "10:00", lugar: null },
+  { id: "g5", titulo: "Puente de Todos los Santos", fecha: "2026-11-01", inicio: null, fin: null, lugar: null },
+  { id: "g5", titulo: "Puente de Todos los Santos", fecha: "2026-11-02", inicio: null, fin: null, lugar: null },
+  { id: "g6", titulo: "Webinar de Power BI", fecha: "2026-11-05", inicio: "19:00", fin: "20:30", lugar: null },
+  { id: "g7", titulo: "Cierre de mes", fecha: "2026-10-30", inicio: "15:00", fin: "16:00", lugar: "Oficina" },
 ];
 
 export const DETALLE = TAREAS[0];
@@ -105,4 +123,12 @@ export const accionesApuntesVitrina: AccionesApuntes = {
   eliminar: nadaVitrina,
   subir: subirVitrina,
   eliminarAdjunto: nadaVitrina,
+};
+
+export const accionesAjustesVitrina: AccionesAjustes = {
+  guardarSuscripcion: guardarVitrina,
+  quitarSuscripcion: nadaVitrina,
+  probarAvisos: guardarVitrina,
+  guardarCalendario: formularioVitrina,
+  quitarCalendario: nadaVitrina,
 };

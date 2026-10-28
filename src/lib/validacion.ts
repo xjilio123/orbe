@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { REPETICIONES, VALORES_AVISO } from "./repeticion";
 import { COLORES_LISTA, ESTADOS } from "./tareas";
 
 // Todo lo que llega del navegador se valida aquí antes de tocar la base.
@@ -28,7 +29,21 @@ const idOpcional = z
   .transform((s) => (s === "" ? null : s))
   .pipe(z.uuid().nullable());
 
+// Campos que pueden no venir (vacío o ausente = ninguno).
+const repetirOpcional = z
+  .string()
+  .optional()
+  .transform((s) => (s?.trim() ? s.trim() : null))
+  .pipe(z.enum(REPETICIONES).nullable());
+
+const avisoOpcional = z
+  .string()
+  .optional()
+  .transform((s) => (s?.trim() ? Number(s) : null))
+  .pipe(z.union([z.literal(VALORES_AVISO), z.null()]));
+
 export const esquemaId = z.uuid();
+export const esquemaFecha = z.iso.date();
 export const esquemaEstado = z.enum(ESTADOS);
 
 export const esquemaCaptura = z.object({ texto: textoLimpio(300).pipe(z.string().min(1, "Escribe algo para guardar")) });
@@ -42,8 +57,11 @@ export const esquemaTarea = z
     fecha: fechaOpcional,
     hora: horaOpcional,
     lista_id: idOpcional,
+    repetir: repetirOpcional,
+    aviso: avisoOpcional,
   })
-  .refine((t) => t.hora === null || t.fecha !== null, { message: "Para poner hora, elige también una fecha", path: ["hora"] });
+  .refine((t) => t.hora === null || t.fecha !== null, { message: "Para poner hora, elige también una fecha", path: ["hora"] })
+  .refine((t) => t.repetir === null || t.fecha !== null, { message: "Para repetirla, elige la fecha de la primera vez", path: ["repetir"] });
 
 export const esquemaSubtarea = z.object({ titulo: textoLimpio(200).pipe(z.string().min(1, "Escribe la subtarea")) });
 

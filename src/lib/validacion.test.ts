@@ -43,3 +43,24 @@ describe("esquemaCaptura y esquemaLista", () => {
     expect(esquemaLista.safeParse({ nombre: "", color: "verde" }).success).toBe(false);
   });
 });
+
+describe("esquemaTarea: repetición y aviso", () => {
+  const base = { titulo: "Gimnasio", notas: "", estado: "pendiente", prioridad: "0", fecha: "2026-11-02", hora: "07:00", lista_id: "" };
+
+  it("acepta repetición y aviso válidos y los vacíos como ninguno", () => {
+    expect(esquemaTarea.parse({ ...base, repetir: "semanal", aviso: "15" })).toMatchObject({ repetir: "semanal", aviso: 15 });
+    expect(esquemaTarea.parse({ ...base, repetir: "", aviso: "" })).toMatchObject({ repetir: null, aviso: null });
+    expect(esquemaTarea.parse(base)).toMatchObject({ repetir: null, aviso: null });
+  });
+
+  it("rechaza valores inventados", () => {
+    expect(esquemaTarea.safeParse({ ...base, repetir: "cada-hora" }).success).toBe(false);
+    expect(esquemaTarea.safeParse({ ...base, aviso: "7" }).success).toBe(false);
+  });
+
+  it("para repetir hace falta una fecha", () => {
+    const r = esquemaTarea.safeParse({ ...base, fecha: "", hora: "", repetir: "diaria" });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(erroresDe(r.error).repetir).toContain("primera vez");
+  });
+});

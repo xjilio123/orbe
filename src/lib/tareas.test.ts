@@ -15,6 +15,8 @@ const t = (datos: Partial<Tarea>): Tarea => ({
   padre_id: null,
   hecha_en: null,
   creado: `2026-10-0${(n % 9) + 1}T00:00:00Z`,
+  repetir: null,
+  aviso: 0,
   ...datos,
 });
 
