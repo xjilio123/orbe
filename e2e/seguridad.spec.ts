@@ -14,6 +14,7 @@ const RUTAS_PRIVADAS = [
   "/agenda?vista=dia&dia=2026-10-27",
   "/ajustes",
   "/papelera",
+  "/preguntar",
   "/apuntes/nueva",
   `/apuntes/${UUID}/historial`,
   "/ruta-que-no-existe",

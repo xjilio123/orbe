@@ -8,6 +8,7 @@ export const COMANDOS: Comando[] = [
   { id: "hoy", nombre: "Hoy", ruta: "/", icono: "hoy", palabras: "inicio dia resumen nueva tarea capturar" },
   { id: "tareas", nombre: "Tareas", ruta: "/tareas", icono: "tareas", palabras: "pendientes inbox listas" },
   { id: "nueva-pagina", nombre: "Nueva página", ruta: "/apuntes/nueva", icono: "mas", palabras: "apunte nota crear plantilla" },
+  { id: "preguntar", nombre: "Pregunta a tus notas", ruta: "/preguntar", icono: "chispa", palabras: "ia preguntar respuesta buscar significado" },
   { id: "apuntes", nombre: "Apuntes", ruta: "/apuntes", icono: "apuntes", palabras: "notas paginas" },
   { id: "agenda", nombre: "Agenda", ruta: "/agenda", icono: "agenda", palabras: "calendario mes semana google" },
   { id: "ajustes", nombre: "Ajustes", ruta: "/ajustes", icono: "ajustes", palabras: "avisos tema oscuro claro espacio calendario" },

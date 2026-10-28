@@ -11,6 +11,7 @@ import {
 } from "./apuntes";
 import { capturaIa, dividirIa, ordenarInboxIa, resumirIa, textoIa } from "./ia";
 import { audioIa, fotoIa, planIa, semanaIa, tarjetasIa } from "./iaContenido";
+import { preguntarIa } from "./iaNotas";
 import { eliminarDefinitivo, restaurar, vaciarPapelera } from "./papelera";
 import {
   alternarTarea,
@@ -72,4 +73,5 @@ export const accionesIa: AccionesIa = {
   tarjetas: tarjetasIa,
   foto: fotoIa,
   audio: audioIa,
+  preguntar: preguntarIa,
 };

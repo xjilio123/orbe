@@ -3,6 +3,7 @@
 import type { ResultadoIa } from "@/app/acciones/tipos";
 import { nuevoBloque, type Bloque } from "@/lib/bloques";
 import type { Plan, ResumenSemana } from "@/lib/ia/contenido";
+import type { Respuesta } from "@/lib/ia/preguntar";
 import { vitrinaActiva } from "@/lib/vitrina";
 import { PLAN_VITRINA, SEMANA_VITRINA } from "./ejemplosIa";
 
@@ -50,4 +51,14 @@ export async function fotoVitrina(): Promise<ResultadoIa<{ titulo: string; bloqu
 export async function audioVitrina(): Promise<ResultadoIa<{ titulo: string; bloques: Bloque[] }>> {
   exigirVitrina();
   return { ok: true, datos: { titulo: "Nota de voz", bloques: [nuevoBloque("p", "Idea dictada: probar Orbe en el iPad.")] } };
+}
+export async function preguntarVitrina(): Promise<ResultadoIa<Respuesta>> {
+  exigirVitrina();
+  return {
+    ok: true,
+    datos: {
+      respuesta: "Anotaste que las funciones de ventana calculan sobre grupos de filas sin colapsarlas, como ROW_NUMBER, LAG y LEAD.",
+      fuentes: [{ id: "00000000-0000-4000-8000-0000000000b1", titulo: "SQL para Data Analytics", icono: "📊" }],
+    },
+  };
 }
