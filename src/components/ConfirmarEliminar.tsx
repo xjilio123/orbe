@@ -4,7 +4,19 @@ import { useState, useTransition } from "react";
 import { Icono } from "@/components/Icono";
 
 /** Botón rojo que pide confirmación antes de borrar (alerta al estilo iOS, sin ventanas del navegador). */
-export function ConfirmarEliminar({ texto, pregunta, detalle, accion }: { texto: string; pregunta: string; detalle: string; accion: () => Promise<void> }) {
+export function ConfirmarEliminar({
+  texto,
+  pregunta,
+  detalle,
+  accion,
+  confirmar = "Eliminar",
+}: {
+  texto: string;
+  pregunta: string;
+  detalle: string;
+  accion: () => Promise<void>;
+  confirmar?: string;
+}) {
   const [abierto, setAbierto] = useState(false);
   const [borrando, iniciar] = useTransition();
 
@@ -37,7 +49,7 @@ export function ConfirmarEliminar({ texto, pregunta, detalle, accion }: { texto:
                 onClick={() => iniciar(accion)}
                 className="py-3 text-[17px] font-semibold text-rojo disabled:opacity-50"
               >
-                {borrando ? "Borrando…" : "Eliminar"}
+                {borrando ? "Un momento…" : confirmar}
               </button>
             </div>
           </div>

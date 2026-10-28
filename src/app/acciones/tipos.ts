@@ -14,12 +14,14 @@ export type ResultadoSubida =
   | { ok: false; error: string };
 
 export type AccionesApuntes = {
-  crear: (padreId: string | null) => Promise<void>;
+  crear: (padreId: string | null, plantilla?: string) => Promise<void>;
   guardar: (id: string, datos: import("@/lib/bloques").DatosPagina) => Promise<ResultadoGuardado>;
   favorita: (id: string, favorita: boolean) => Promise<void>;
   eliminar: (id: string) => Promise<void>;
   subir: (paginaId: string, formData: FormData) => Promise<ResultadoSubida>;
   eliminarAdjunto: (id: string) => Promise<void>;
+  plantilla: (id: string, plantilla: boolean) => Promise<void>;
+  restaurarVersion: (paginaId: string, hueco: number) => Promise<void>;
 };
 
 /** Acciones que reciben las pantallas: la app usa las reales y la vitrina unas que no hacen nada. */
@@ -41,4 +43,10 @@ export type AccionesAjustes = {
   probarAvisos: () => Promise<ResultadoGuardado>;
   guardarCalendario: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
   quitarCalendario: () => Promise<void>;
+};
+
+export type AccionesPapelera = {
+  restaurar: (tipo: string, id: string) => Promise<void>;
+  eliminar: (tipo: string, id: string) => Promise<void>;
+  vaciar: () => Promise<void>;
 };

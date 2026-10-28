@@ -1,5 +1,15 @@
 import { guardarCalendario, guardarSuscripcion, probarAvisos, quitarCalendario, quitarSuscripcion } from "./ajustes";
-import { alternarFavorita, crearPagina, eliminarAdjunto, eliminarPagina, guardarPagina, subirAdjunto } from "./apuntes";
+import {
+  alternarFavorita,
+  alternarPlantilla,
+  crearPagina,
+  eliminarAdjunto,
+  eliminarPagina,
+  guardarPagina,
+  restaurarVersion,
+  subirAdjunto,
+} from "./apuntes";
+import { eliminarDefinitivo, restaurar, vaciarPapelera } from "./papelera";
 import {
   alternarTarea,
   capturarTarea,
@@ -11,7 +21,7 @@ import {
   guardarTarea,
   moverTarea,
 } from "./tareas";
-import type { AccionesAjustes, AccionesApuntes, AccionesTareas } from "./tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesPapelera, AccionesTareas } from "./tipos";
 
 /** Las acciones reales que reciben las pantallas (la vitrina usa unas que no hacen nada). */
 export const accionesTareas: AccionesTareas = {
@@ -33,6 +43,10 @@ export const accionesApuntes: AccionesApuntes = {
   eliminar: eliminarPagina,
   subir: subirAdjunto,
   eliminarAdjunto,
+  plantilla: alternarPlantilla,
+  restaurarVersion,
 };
+
+export const accionesPapelera: AccionesPapelera = { restaurar, eliminar: eliminarDefinitivo, vaciar: vaciarPapelera };
 
 export const accionesAjustes: AccionesAjustes = { guardarSuscripcion, quitarSuscripcion, probarAvisos, guardarCalendario, quitarCalendario };

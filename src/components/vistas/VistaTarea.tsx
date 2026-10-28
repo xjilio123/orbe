@@ -49,9 +49,10 @@ export function VistaTarea({ tarea, subtareas, listas, hoy, base, acciones }: Pr
       )}
 
       <ConfirmarEliminar
-        texto="Eliminar tarea"
-        pregunta={`¿Eliminar “${tarea.titulo}”?`}
-        detalle={subtareas.length > 0 ? "También se borran sus subtareas." : "No se puede deshacer."}
+        texto="Mover a la papelera"
+        pregunta={`¿Mover “${tarea.titulo}” a la papelera?`}
+        detalle={`${subtareas.length > 0 ? "Con sus subtareas. " : ""}Puedes recuperarla durante 30 días desde Ajustes → Papelera.`}
+        confirmar="Mover"
         accion={acciones.eliminar.bind(null, tarea.id, volver.href)}
       />
     </Pantalla>

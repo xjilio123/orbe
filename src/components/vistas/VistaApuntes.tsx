@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { AccionesApuntes } from "@/app/acciones/tipos";
 import { Icono } from "@/components/Icono";
 import { Encabezado, Pantalla, TituloSeccion, enlace } from "@/components/ui";
 import type { PaginaResumen } from "@/lib/datos/paginas";
@@ -10,7 +9,6 @@ type Props = {
   hoy: string;
   base: string;
   error?: boolean;
-  acciones: Pick<AccionesApuntes, "crear">;
 };
 
 function FilaPagina({ p, hoy, base }: { p: PaginaResumen & { hijas: number }; hoy: string; base: string }) {
@@ -33,7 +31,7 @@ function FilaPagina({ p, hoy, base }: { p: PaginaResumen & { hijas: number }; ho
   );
 }
 
-export function VistaApuntes({ paginas, hoy, base, error, acciones }: Props) {
+export function VistaApuntes({ paginas, hoy, base, error }: Props) {
   const favoritas = paginas.filter((p) => p.favorita);
   const raiz = paginas.filter((p) => !p.padre_id);
 
@@ -41,15 +39,13 @@ export function VistaApuntes({ paginas, hoy, base, error, acciones }: Props) {
     <Pantalla>
       <Encabezado titulo="Apuntes" />
 
-      <form action={acciones.crear.bind(null, null)}>
-        <button
-          type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-[20px] bg-naranja-relleno py-4 text-[17px] font-bold text-[#1d1d1f] transition active:scale-[0.98]"
-        >
-          <Icono nombre="mas" className="size-5" />
-          Nueva página
-        </button>
-      </form>
+      <Link
+        href={enlace(base, "/apuntes/nueva")}
+        className="flex w-full items-center justify-center gap-2 rounded-[20px] bg-naranja-relleno py-4 text-[17px] font-bold text-[#1d1d1f] transition active:scale-[0.98]"
+      >
+        <Icono nombre="mas" className="size-5" />
+        Nueva página
+      </Link>
       {error && <p className="text-center text-[15px] text-rojo">No se pudo crear la página. Puede que llegaras al máximo.</p>}
 
       {favoritas.length > 0 && (

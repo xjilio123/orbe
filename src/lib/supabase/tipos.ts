@@ -86,34 +86,40 @@ export type Database = {
       paginas: {
         Row: {
           actualizado: string
+          borrado_en: string | null
           contenido: Json
           creado: string
           favorita: boolean
           icono: string
           id: string
           padre_id: string | null
+          plantilla: boolean
           titulo: string
           user_id: string
         }
         Insert: {
           actualizado?: string
+          borrado_en?: string | null
           contenido?: Json
           creado?: string
           favorita?: boolean
           icono?: string
           id?: string
           padre_id?: string | null
+          plantilla?: boolean
           titulo?: string
           user_id?: string
         }
         Update: {
           actualizado?: string
+          borrado_en?: string | null
           contenido?: Json
           creado?: string
           favorita?: boolean
           icono?: string
           id?: string
           padre_id?: string | null
+          plantilla?: boolean
           titulo?: string
           user_id?: string
         }
@@ -192,6 +198,7 @@ export type Database = {
           actualizado: string
           avisado_en: string | null
           avisar_en: string | null
+          borrado_en: string | null
           aviso: number | null
           creado: string
           estado: string
@@ -212,6 +219,7 @@ export type Database = {
           actualizado?: string
           avisado_en?: string | null
           avisar_en?: string | null
+          borrado_en?: string | null
           aviso?: number | null
           creado?: string
           estado?: string
@@ -232,6 +240,7 @@ export type Database = {
           actualizado?: string
           avisado_en?: string | null
           avisar_en?: string | null
+          borrado_en?: string | null
           aviso?: number | null
           creado?: string
           estado?: string
@@ -264,6 +273,36 @@ export type Database = {
             referencedColumns: ["id", "user_id"]
           },
         ]
+      }
+      versiones_pagina: {
+        Row: {
+          contenido: Json
+          creado: string
+          hueco: number
+          icono: string
+          pagina_id: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          contenido: Json
+          creado?: string
+          hueco: number
+          icono: string
+          pagina_id: string
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          contenido?: Json
+          creado?: string
+          hueco?: number
+          icono?: string
+          pagina_id?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
