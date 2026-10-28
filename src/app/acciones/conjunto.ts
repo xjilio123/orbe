@@ -14,6 +14,17 @@ import { audioIa, fotoIa, planIa, semanaIa, tarjetasIa } from "./iaContenido";
 import { preguntarIa } from "./iaNotas";
 import { eliminarDefinitivo, restaurar, vaciarPapelera } from "./papelera";
 import {
+  avanzarMeta,
+  crearFechaImportante,
+  crearHabito,
+  crearMeta,
+  eliminarFechaImportante,
+  eliminarHabito,
+  eliminarMeta,
+  guardarFoco,
+  marcarHabito,
+} from "./progreso";
+import {
   alternarTarea,
   capturarTarea,
   crearLista,
@@ -24,7 +35,7 @@ import {
   guardarTarea,
   moverTarea,
 } from "./tareas";
-import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesTareas } from "./tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesProgreso, AccionesTareas } from "./tipos";
 
 /** Las acciones reales que reciben las pantallas (la vitrina usa unas que no hacen nada). */
 export const accionesTareas: AccionesTareas = {
@@ -74,4 +85,16 @@ export const accionesIa: AccionesIa = {
   foto: fotoIa,
   audio: audioIa,
   preguntar: preguntarIa,
+};
+
+export const accionesProgreso: AccionesProgreso = {
+  crearHabito,
+  eliminarHabito,
+  marcarHabito,
+  crearMeta,
+  avanzarMeta,
+  eliminarMeta,
+  crearFecha: crearFechaImportante,
+  eliminarFecha: eliminarFechaImportante,
+  guardarFoco,
 };

@@ -56,6 +56,101 @@ export type Database = {
           },
         ]
       }
+      fechas_importantes: {
+        Row: {
+          color: string
+          creado: string
+          fecha: string
+          icono: string
+          id: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          creado?: string
+          fecha: string
+          icono?: string
+          id?: string
+          titulo: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          creado?: string
+          fecha?: string
+          icono?: string
+          id?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      habitos: {
+        Row: {
+          archivado: boolean
+          color: string
+          creado: string
+          dias_semana: number
+          icono: string
+          id: string
+          nombre: string
+          orden: number
+          user_id: string
+        }
+        Insert: {
+          archivado?: boolean
+          color?: string
+          creado?: string
+          dias_semana?: number
+          icono?: string
+          id?: string
+          nombre: string
+          orden?: number
+          user_id?: string
+        }
+        Update: {
+          archivado?: boolean
+          color?: string
+          creado?: string
+          dias_semana?: number
+          icono?: string
+          id?: string
+          nombre?: string
+          orden?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      habitos_marcas: {
+        Row: {
+          creado: string
+          fecha: string
+          habito_id: string
+          user_id: string
+        }
+        Insert: {
+          creado?: string
+          fecha: string
+          habito_id: string
+          user_id?: string
+        }
+        Update: {
+          creado?: string
+          fecha?: string
+          habito_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habitos_marcas_habito_id_user_id_fkey"
+            columns: ["habito_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "habitos"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       ia_guardado: {
         Row: {
           clave: string
@@ -106,6 +201,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      metas: {
+        Row: {
+          actual: number
+          anio: number
+          color: string
+          creado: string
+          id: string
+          lista_id: string | null
+          objetivo: number | null
+          orden: number
+          tipo: string
+          titulo: string
+          unidad: string
+          user_id: string
+        }
+        Insert: {
+          actual?: number
+          anio: number
+          color?: string
+          creado?: string
+          id?: string
+          lista_id?: string | null
+          objetivo?: number | null
+          orden?: number
+          tipo?: string
+          titulo: string
+          unidad?: string
+          user_id?: string
+        }
+        Update: {
+          actual?: number
+          anio?: number
+          color?: string
+          creado?: string
+          id?: string
+          lista_id?: string | null
+          objetivo?: number | null
+          orden?: number
+          tipo?: string
+          titulo?: string
+          unidad?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metas_lista_id_user_id_fkey"
+            columns: ["lista_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "listas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       paginas: {
         Row: {
@@ -189,6 +337,41 @@ export type Database = {
           zona_horaria?: string
         }
         Relationships: []
+      }
+      sesiones_foco: {
+        Row: {
+          creado: string
+          id: string
+          inicio: string
+          minutos: number
+          tarea_id: string | null
+          user_id: string
+        }
+        Insert: {
+          creado?: string
+          id?: string
+          inicio: string
+          minutos: number
+          tarea_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          creado?: string
+          id?: string
+          inicio?: string
+          minutos?: number
+          tarea_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sesiones_foco_tarea_id_user_id_fkey"
+            columns: ["tarea_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "tareas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       suscripciones_push: {
         Row: {
@@ -379,6 +562,27 @@ export type Database = {
       mi_uso_ia: { Args: never; Returns: Json }
       reservar_ia: { Args: { p_funcion: string }; Returns: number }
       terminar_ia: { Args: { p_id: number; p_ok: boolean }; Returns: undefined }
+      mis_estadisticas: {
+        Args: { p_semanas?: number }
+        Returns: {
+          minutos: number
+          semana: string
+          tareas: number
+        }[]
+      }
+      mis_habitos: {
+        Args: { hoy: string }
+        Returns: {
+          color: string
+          dias_semana: number
+          hecho_hoy: boolean
+          icono: string
+          id: string
+          marcas_semana: string[]
+          nombre: string
+          racha: number
+        }[]
+      }
       mis_invitados: {
         Args: never
         Returns: {
@@ -406,6 +610,20 @@ export type Database = {
           archivos_max: number
           texto: number
           texto_max: number
+        }[]
+      }
+      mis_metas: {
+        Args: { p_anio: number }
+        Returns: {
+          actual: number
+          color: string
+          id: string
+          lista: string
+          lista_id: string
+          objetivo: number
+          tipo: string
+          titulo: string
+          unidad: string
         }[]
       }
       probar_avisos: { Args: never; Returns: string }

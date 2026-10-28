@@ -64,9 +64,16 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
     if (estado.n > 0) campo.current?.focus();
   }, [estado.n]);
 
+  /** Con el campo vacío los botones no se apagan: avisan qué falta y ponen el cursor en el campo. */
+  function pedirTexto(mensaje = "Escribe primero lo que quieres hacer.") {
+    setMensajeIa({ texto: mensaje, error: false });
+    campo.current?.focus();
+  }
+
   function usarIa() {
     const enviado = texto.trim();
-    if (!ia || !enviado) return;
+    if (!ia) return;
+    if (enviado.length < 3) return pedirTexto(enviado ? "Escribe un poco más para que la IA entienda." : undefined);
     setMensajeIa(null);
     iniciarIa(async () => {
       try {
@@ -121,7 +128,7 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
           <button
             type="button"
             onClick={usarIa}
-            disabled={pensando || texto.trim().length < 3}
+            disabled={pensando}
             aria-label="Crear con IA"
             title="Crear con IA: entiende frases largas y crea varias tareas"
             className="grid size-9 shrink-0 place-items-center rounded-full bg-morado-relleno/12 text-morado transition active:scale-95 disabled:opacity-40"
@@ -131,7 +138,13 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
         )}
         <button
           type="submit"
-          disabled={enviando || pensando || !texto.trim()}
+          disabled={enviando || pensando}
+          onClick={(e) => {
+            if (!texto.trim()) {
+              e.preventDefault();
+              pedirTexto(interpretar ? undefined : "Escribe primero la subtarea.");
+            }
+          }}
           aria-label="Guardar"
           className="grid size-9 shrink-0 place-items-center rounded-full bg-indigo-relleno text-white transition active:scale-95 disabled:opacity-40"
         >

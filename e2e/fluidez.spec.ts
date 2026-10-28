@@ -47,6 +47,8 @@ const PANTALLAS = [
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/historial", titulo: "Historial" },
   { ruta: "/vitrina/papelera", titulo: "Papelera" },
   { ruta: "/vitrina/preguntar", titulo: "Pregunta a tus notas" },
+  { ruta: "/vitrina/progreso", titulo: "Progreso" },
+  { ruta: "/vitrina/foco", titulo: "Modo foco" },
   { ruta: "/vitrina/agenda", titulo: "Agenda" },
   { ruta: "/vitrina/agenda?vista=semana", titulo: "Agenda" },
   { ruta: "/vitrina/agenda?vista=dia", titulo: "Agenda" },
@@ -367,5 +369,53 @@ test.describe("Pregunta a tus notas (vitrina, sin Gemini)", () => {
     await page.getByRole("button", { name: "Preguntar" }).click();
     await expect(page.getByRole("region", { name: "Respuesta" })).toContainText("funciones de ventana");
     await expect(page.getByRole("link", { name: /SQL para Data Analytics/ })).toBeVisible();
+  });
+});
+
+test.describe("Fluidez del progreso (CPU 4× más lenta)", () => {
+  test("tocar el anillo de un hábito lo marca al instante y no mueve la pantalla", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/hoy");
+    await medir(page);
+    const seccion = page.getByRole("heading", { name: "Tu día con IA" });
+    const posicion = () => seccion.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const antes = await posicion();
+    const anillo = page.getByRole("button", { name: /^Gimnasio: marcar como hecho hoy/ });
+    const ms = await anillo.evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      while (boton.getAttribute("aria-pressed") !== "true") await new Promise((r) => requestAnimationFrame(r));
+      return performance.now() - inicio;
+    });
+    console.log(`hábito marcado en ${Math.round(ms)} ms`);
+    expect(ms, "tiempo hasta ver el hábito marcado").toBeLessThanOrEqual(PRESUPUESTO.check);
+    expect(await posicion(), "lo de abajo no se movió").toBe(antes);
+  });
+
+  test("el modo foco cuenta hacia atrás, se pausa y se puede terminar", async ({ page }) => {
+    await page.goto("/vitrina/foco");
+    const reloj = page.getByRole("timer");
+    await expect(reloj).toHaveText("25:00");
+    await page.getByRole("button", { name: "50 min" }).click();
+    await expect(reloj).toHaveText("50:00");
+    await page.getByRole("button", { name: "Empezar" }).click();
+    await expect(reloj).toHaveText(/^49:5\d$/);
+    await page.getByRole("button", { name: "Pausar" }).click();
+    const pausado = await reloj.textContent();
+    await page.waitForTimeout(1200);
+    await expect(reloj, "en pausa el reloj no avanza").toHaveText(pausado!);
+    await page.getByRole("button", { name: "Terminar" }).click();
+    await expect(reloj).toHaveText("50:00");
+  });
+
+  test("con la captura vacía, el ✨ y el + avisan qué falta en vez de verse apagados", async ({ page }) => {
+    await page.goto("/vitrina/hoy");
+    const ia = page.getByRole("button", { name: "Crear con IA" });
+    await expect(ia).toBeEnabled();
+    await ia.click();
+    await expect(page.getByText("Escribe primero lo que quieres hacer.")).toBeVisible();
+    await expect(page.getByLabel("Captura rápida")).toBeFocused();
+    await page.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText("Escribe primero lo que quieres hacer.")).toBeVisible();
   });
 });
