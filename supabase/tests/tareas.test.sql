@@ -22,9 +22,9 @@ select ok((select relrowsecurity from pg_class where oid = 'public.tareas'::regc
 
 -- 3. hecha_en se completa solo y se borra al reabrir
 update public.tareas set estado = 'hecha' where id = '00000000-0000-0000-0000-0000000002a1';
-select isnt((select hecha_en from public.tareas where id = '00000000-0000-0000-0000-0000000002a1'), null, 'Marcar como hecha guarda la fecha');
+select ok((select hecha_en is not null from public.tareas where id = '00000000-0000-0000-0000-0000000002a1'), 'Marcar como hecha guarda la fecha');
 update public.tareas set estado = 'pendiente' where id = '00000000-0000-0000-0000-0000000002a1';
-select is((select hecha_en from public.tareas where id = '00000000-0000-0000-0000-0000000002a1'), null, 'Reabrir borra la fecha de hecha');
+select ok((select hecha_en is null from public.tareas where id = '00000000-0000-0000-0000-0000000002a1'), 'Reabrir borra la fecha de hecha');
 
 -- 5. Subtareas de un solo nivel
 insert into public.tareas (id, user_id, padre_id, titulo) values
