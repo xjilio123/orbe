@@ -22,7 +22,7 @@ export function BarraPestanas({ prefijo = "" }: { prefijo?: string }) {
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md px-5 pb-[max(env(safe-area-inset-bottom),16px)]"
+      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md px-5 pb-[max(env(safe-area-inset-bottom),16px)] print:hidden"
     >
       <div className="flex flex-1 items-center justify-between rounded-full border border-black/5 bg-vidrio p-2 shadow-[0_8px_24px_rgb(0_0_0/0.12)] backdrop-blur-xl dark:border-white/10">
         {pestanas.map((p) => {

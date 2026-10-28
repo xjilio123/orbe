@@ -1,4 +1,4 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesNotas, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
 import type { FechaImportante, Habito, Meta, SemanaEstadistica } from "@/lib/progreso";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
@@ -16,7 +16,7 @@ import {
   tarjetasVitrina,
   textoVitrina,
 } from "./ia";
-import { capturarVitrina, formularioVitrina, guardarVitrina, nadaVitrina, subirVitrina, subtareaVitrina } from "./acciones";
+import { capturarVitrina, formularioVitrina, guardarVitrina, importarVitrina, nadaVitrina, subirVitrina, subtareaVitrina } from "./acciones";
 
 // Datos FICTICIOS para la vitrina: realistas en cantidad y largo de textos, para medir la fluidez.
 export const HOY = "2026-10-27";
@@ -125,6 +125,7 @@ export const PAGINA: Pagina = {
     { id: "bloque-0013", tipo: "num", texto: "Resolver 5 ejercicios en LeetCode" },
     { id: "bloque-0014", tipo: "imagen", texto: "Diagrama de la ventana", adjunto: FOTO, ancho: 512, alto: 512 },
     { id: "bloque-0015", tipo: "cita", texto: "Los datos cuentan historias si sabes preguntarles." },
+    { id: "bloque-0017", tipo: "p", texto: "Ver también [[Window functions]] y [[Funciones de agregación]]." },
     { id: "bloque-0016", tipo: "p", texto: "" },
   ],
 };
@@ -226,3 +227,5 @@ export const accionesProgresoVitrina: AccionesProgreso = {
   eliminarFecha: nadaVitrina,
   guardarFoco: guardarVitrina,
 };
+
+export const accionesNotasVitrina: AccionesNotas = { crearEnlazada: nadaVitrina, importar: importarVitrina };

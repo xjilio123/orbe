@@ -15,7 +15,7 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 | 2 · Tiempo | Agenda (día, semana, mes), avisos push, tareas que se repiten, Google Calendar | Lista |
 | 3 · Pulido | Modo sin conexión, búsqueda, plantillas, barra ⌘K, papelera e historial, invitados | Lista |
 | 4 · IA | Captura inteligente, resúmenes, plan del día, preguntas a tus notas, topes de uso | Lista |
-| 5 · Extras | Parte 1 lista: hábitos con rachas, metas del año, cuenta regresiva, modo foco (Pomodoro) y estadísticas. Faltan backlinks, modo estudio y el resto de ideas | En curso |
+| 5 · Extras | Listo: hábitos con rachas, metas, cuenta regresiva, modo foco, estadísticas, enlaces [[ ]] con backlinks, mapa de notas, exportar a PDF y Markdown, importar de Obsidian. Faltan modo estudio, diario y el resto de ideas | En curso |
 
 ## Stack
 

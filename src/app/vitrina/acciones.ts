@@ -36,3 +36,8 @@ export async function formularioVitrina(): Promise<EstadoFormulario> {
   exigirVitrina();
   return { ok: true };
 }
+
+export async function importarVitrina(archivos: unknown[]): Promise<{ ok: true; creadas: number; carpetaId: string }> {
+  exigirVitrina();
+  return { ok: true, creadas: archivos.length, carpetaId: "00000000-0000-4000-8000-0000000000b9" };
+}

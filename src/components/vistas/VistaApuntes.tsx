@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Icono } from "@/components/Icono";
+import type { AccionesNotas } from "@/app/acciones/tipos";
+import { ImportarMarkdown } from "@/components/apuntes/ImportarMarkdown";
+import { Icono, type NombreIcono } from "@/components/Icono";
 import { Encabezado, Pantalla, TituloSeccion, enlace } from "@/components/ui";
 import type { PaginaResumen } from "@/lib/datos/paginas";
 import { etiquetaFecha, hoyLima } from "@/lib/fechas";
@@ -9,7 +11,13 @@ type Props = {
   hoy: string;
   base: string;
   error?: boolean;
+  notas?: AccionesNotas;
 };
+
+const HERRAMIENTAS: { ruta: string; nombre: string; icono: NombreIcono; clase: string }[] = [
+  { ruta: "/preguntar", nombre: "Pregunta a tus notas", icono: "chispa", clase: "bg-morado-relleno/12 text-morado" },
+  { ruta: "/apuntes/mapa", nombre: "Mapa de notas", icono: "mapa", clase: "bg-naranja-relleno/15 text-naranja" },
+];
 
 function FilaPagina({ p, hoy, base }: { p: PaginaResumen & { hijas: number }; hoy: string; base: string }) {
   return (
@@ -31,7 +39,7 @@ function FilaPagina({ p, hoy, base }: { p: PaginaResumen & { hijas: number }; ho
   );
 }
 
-export function VistaApuntes({ paginas, hoy, base, error }: Props) {
+export function VistaApuntes({ paginas, hoy, base, error, notas }: Props) {
   const favoritas = paginas.filter((p) => p.favorita);
   const raiz = paginas.filter((p) => !p.padre_id);
 
@@ -46,13 +54,18 @@ export function VistaApuntes({ paginas, hoy, base, error }: Props) {
         <Icono nombre="mas" className="size-5" />
         Nueva página
       </Link>
-      <Link
-        href={enlace(base, "/preguntar")}
-        className="-mt-3 flex items-center justify-center gap-2 rounded-[16px] bg-morado-relleno/12 py-3 text-[15px] font-semibold text-morado active:scale-[0.98]"
-      >
-        <Icono nombre="chispa" className="size-4" />
-        Pregunta a tus notas
-      </Link>
+      <nav aria-label="Herramientas de apuntes" className="-mt-3 grid grid-cols-2 gap-2">
+        {HERRAMIENTAS.map((h) => (
+          <Link
+            key={h.ruta}
+            href={enlace(base, h.ruta)}
+            className={`flex items-center justify-center gap-2 rounded-[16px] py-3 text-[15px] font-semibold active:scale-[0.98] ${h.clase}`}
+          >
+            <Icono nombre={h.icono} className="size-4 shrink-0" />
+            <span className="truncate">{h.nombre}</span>
+          </Link>
+        ))}
+      </nav>
       {error && <p className="text-center text-[15px] text-rojo">No se pudo crear la página. Puede que llegaras al máximo.</p>}
 
       {favoritas.length > 0 && (
@@ -79,6 +92,18 @@ export function VistaApuntes({ paginas, hoy, base, error }: Props) {
             Aún no tienes apuntes. Crea una página para tus clases, ideas o proyectos; dentro puedes crear más páginas.
           </p>
         )}
+      </section>
+
+      <section className="flex flex-col gap-2" aria-labelledby="titulo-traer">
+        <TituloSeccion id="titulo-traer" titulo="Importar y exportar" />
+        {notas && <ImportarMarkdown importar={notas.importar} base={base} />}
+        <a href="/apuntes/exportar" download className="flex items-center gap-3 rounded-[18px] bg-superficie px-4 py-3 active:scale-[0.99]">
+          <Icono nombre="compartir" className="size-5 text-naranja" />
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-[17px] font-semibold">Exportar todo (.zip)</span>
+            <span className="text-[13px] text-texto-2">Tus páginas como archivos .md, listas para Obsidian.</span>
+          </span>
+        </a>
       </section>
     </Pantalla>
   );

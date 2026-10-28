@@ -262,6 +262,7 @@ export type Database = {
           busqueda: unknown
           contenido: Json
           creado: string
+          enlaces: string[]
           favorita: boolean
           icono: string
           id: string
@@ -276,6 +277,7 @@ export type Database = {
           busqueda?: unknown
           contenido?: Json
           creado?: string
+          enlaces?: string[]
           favorita?: boolean
           icono?: string
           id?: string
@@ -290,6 +292,7 @@ export type Database = {
           busqueda?: unknown
           contenido?: Json
           creado?: string
+          enlaces?: string[]
           favorita?: boolean
           icono?: string
           id?: string
@@ -562,6 +565,13 @@ export type Database = {
       mi_uso_ia: { Args: never; Returns: Json }
       reservar_ia: { Args: { p_funcion: string }; Returns: number }
       terminar_ia: { Args: { p_id: number; p_ok: boolean }; Returns: undefined }
+      mis_enlaces: {
+        Args: never
+        Returns: {
+          destino: string
+          origen: string
+        }[]
+      }
       mis_estadisticas: {
         Args: { p_semanas?: number }
         Returns: {
@@ -624,6 +634,14 @@ export type Database = {
           tipo: string
           titulo: string
           unidad: string
+        }[]
+      }
+      paginas_que_enlazan: {
+        Args: { p_id: string }
+        Returns: {
+          icono: string
+          id: string
+          titulo: string
         }[]
       }
       probar_avisos: { Args: never; Returns: string }

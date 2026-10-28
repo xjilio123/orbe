@@ -82,3 +82,15 @@ export async function miEspacio(supabase: Cliente) {
     textoMax: Number(fila?.texto_max ?? 8 * 1024 * 1024),
   };
 }
+
+/** Backlinks: tus páginas que enlazan a esta con [[su título]]. */
+export async function paginasQueEnlazan(supabase: Cliente, id: string): Promise<{ id: string; titulo: string; icono: string }[]> {
+  const { data } = await supabase.rpc("paginas_que_enlazan", { p_id: id });
+  return data ?? [];
+}
+
+/** Todas tus conexiones por [[enlace]] (origen → destino), para el mapa de notas. */
+export async function misEnlaces(supabase: Cliente): Promise<{ origen: string; destino: string }[]> {
+  const { data } = await supabase.rpc("mis_enlaces");
+  return data ?? [];
+}
