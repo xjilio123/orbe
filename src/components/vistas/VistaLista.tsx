@@ -1,27 +1,38 @@
 import Link from "next/link";
-import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesOrganizacion, AccionesTareas } from "@/app/acciones/tipos";
 import { ConfirmarEliminar } from "@/components/ConfirmarEliminar";
 import { Icono } from "@/components/Icono";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
 import { FilaTarea } from "@/components/tareas/FilaTarea";
 import { FormularioLista } from "@/components/tareas/FormularioLista";
 import { MoverTarea } from "@/components/tareas/MoverTarea";
+import { TablaTareas } from "@/components/tareas/TablaTareas";
 import { Pantalla, TEXTO_COLOR, TituloSeccion, enlace } from "@/components/ui";
 import { etiquetaFecha } from "@/lib/fechas";
+import { CONFIG_INICIAL, aParametros, type ConfigTabla } from "@/lib/organizacion";
 import { ESTADOS, NOMBRE_ESTADO, compararTareas, type Lista, type Tarea } from "@/lib/tareas";
 
 type Props = {
   lista: Lista;
   tareas: Tarea[];
-  vista: "lista" | "tablero";
+  vista: "lista" | "tablero" | "tabla";
   hoy: string;
   base: string;
   subtareas: Record<string, { hechas: number; total: number }>;
   acciones: Pick<AccionesTareas, "capturar" | "alternar" | "mover" | "guardarLista" | "eliminarLista">;
   ia?: AccionesIa;
+  /** Vista de tabla: orden y filtros iniciales, y las vistas guardadas de esta lista. */
+  tabla?: { config: ConfigTabla; vistas: { id: string; nombre: string; config: Record<string, unknown> }[] };
+  organizacion?: Pick<AccionesOrganizacion, "guardarVista" | "eliminarVista">;
 };
 
-export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, acciones, ia }: Props) {
+const VISTAS = [
+  { v: "lista", nombre: "Ver como lista" },
+  { v: "tablero", nombre: "Ver como tablero" },
+  { v: "tabla", nombre: "Ver como tabla" },
+] as const;
+
+export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, acciones, ia, tabla, organizacion }: Props) {
   const ordenadas = [...tareas].sort(compararTareas);
   const abiertas = ordenadas.filter((t) => t.estado !== "hecha");
   const hechas = ordenadas.filter((t) => t.estado === "hecha");
@@ -36,12 +47,12 @@ export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, accione
         <div className="flex items-end justify-between gap-3">
           <h1 className={`truncate text-[34px] font-bold leading-tight tracking-tight ${TEXTO_COLOR[lista.color]}`}>{lista.nombre}</h1>
           <nav aria-label="Vista" className="flex shrink-0 rounded-[12px] bg-control p-1">
-            {(["lista", "tablero"] as const).map((v) => (
+            {VISTAS.map(({ v, nombre }) => (
               <Link
                 key={v}
-                href={v === "lista" ? ruta : `${ruta}?vista=tablero`}
+                href={v === "lista" ? ruta : `${ruta}?vista=${v}`}
                 aria-current={vista === v ? "page" : undefined}
-                aria-label={v === "lista" ? "Ver como lista" : "Ver como tablero"}
+                aria-label={nombre}
                 className={`grid size-9 place-items-center rounded-[9px] ${vista === v ? "bg-superficie shadow-sm" : "text-texto-2"}`}
               >
                 <Icono nombre={v} className="size-5" />
@@ -53,7 +64,18 @@ export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, accione
 
       <CapturaRapida accion={acciones.capturar} listaId={lista.id} placeholder={`Agregar a ${lista.nombre}…`} ia={ia?.captura} />
 
-      {vista === "lista" ? (
+      {vista === "tabla" && organizacion ? (
+        <TablaTareas
+          key={aParametros(tabla?.config ?? CONFIG_INICIAL)}
+          listaId={lista.id}
+          tareas={tareas}
+          inicial={tabla?.config ?? CONFIG_INICIAL}
+          vistas={tabla?.vistas ?? []}
+          hoy={hoy}
+          base={base}
+          acciones={organizacion}
+        />
+      ) : vista === "lista" ? (
         <>
           <section className="flex flex-col gap-2" aria-labelledby="titulo-abiertas">
             <TituloSeccion id="titulo-abiertas" titulo="Pendientes" extra={abiertas.length || undefined} />

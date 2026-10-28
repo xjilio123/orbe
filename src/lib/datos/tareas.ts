@@ -6,11 +6,11 @@ import type { ColorLista, Estado, Lista, Tarea } from "@/lib/tareas";
 
 type Cliente = SupabaseClient<Database>;
 
-const COLUMNAS = "id,titulo,notas,estado,prioridad,fecha,hora,lista_id,padre_id,hecha_en,creado,repetir,aviso";
+const COLUMNAS = "id,titulo,notas,estado,prioridad,fecha,hora,lista_id,padre_id,hecha_en,creado,repetir,aviso,cuadrante";
 
 type FilaTarea = Pick<
   Database["public"]["Tables"]["tareas"]["Row"],
-  "id" | "titulo" | "notas" | "estado" | "prioridad" | "fecha" | "hora" | "lista_id" | "padre_id" | "hecha_en" | "creado" | "repetir" | "aviso"
+  "id" | "titulo" | "notas" | "estado" | "prioridad" | "fecha" | "hora" | "lista_id" | "padre_id" | "hecha_en" | "creado" | "repetir" | "aviso" | "cuadrante"
 >;
 
 // Lo que está en la papelera (borrado_en) nunca aparece en la app, salvo en la pantalla Papelera.
@@ -88,4 +88,23 @@ export async function tareasDeAgenda(supabase: Cliente, desde: string, hasta: st
     supabase.from("tareas").select(COLUMNAS).is("borrado_en", null).is("padre_id", null).not("repetir", "is", null).lt("fecha", desde).neq("estado", "hecha").limit(300),
   ]);
   return [...(enRango ?? []), ...(repetidas ?? [])].map(aTarea);
+}
+
+/** Tareas terminadas desde un momento (para la revisión semanal). */
+export async function tareasHechasDesde(supabase: Cliente, desdeUtc: string): Promise<Tarea[]> {
+  const { data } = await supabase
+    .from("tareas")
+    .select(COLUMNAS)
+    .is("borrado_en", null)
+    .eq("estado", "hecha")
+    .gte("hecha_en", desdeUtc)
+    .order("hecha_en", { ascending: false })
+    .limit(500);
+  return (data ?? []).map(aTarea);
+}
+
+/** Vistas guardadas de una lista (tabla con orden y filtros). */
+export async function vistasGuardadas(supabase: Cliente, listaId: string) {
+  const { data } = await supabase.from("vistas_guardadas").select("id,nombre,config").eq("lista_id", listaId).order("creado").limit(50);
+  return (data ?? []).map((v) => ({ id: v.id, nombre: v.nombre, config: (v.config ?? {}) as Record<string, unknown> }));
 }

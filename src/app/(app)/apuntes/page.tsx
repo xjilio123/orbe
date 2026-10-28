@@ -8,7 +8,7 @@ export const metadata = { title: "Apuntes · Orbe" };
 
 export default async function Apuntes({ searchParams }: PageProps<"/apuntes">) {
   const { supabase } = await requerirSesion();
-  const [paginas, { error }] = await Promise.all([todasLasPaginas(supabase), searchParams]);
+  const [paginas, { error, vista }] = await Promise.all([todasLasPaginas(supabase), searchParams]);
   const hijas = new Map<string, number>();
   for (const p of paginas) if (p.padre_id) hijas.set(p.padre_id, (hijas.get(p.padre_id) ?? 0) + 1);
 
@@ -19,6 +19,7 @@ export default async function Apuntes({ searchParams }: PageProps<"/apuntes">) {
       base=""
       error={error === "1"}
       notas={accionesNotas}
+      vista={vista === "galeria" ? "galeria" : "lista"}
     />
   );
 }
