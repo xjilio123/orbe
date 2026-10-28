@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { accionesApuntes, accionesIa, accionesNotas } from "@/app/acciones/conjunto";
+import { accionesApuntes, accionesEstudio, accionesIa, accionesNotas } from "@/app/acciones/conjunto";
 import { VistaPagina } from "@/components/vistas/VistaPagina";
 import { adjuntosDePagina, ancestros, enlacesFirmados, pagina as leerPagina, paginasQueEnlazan, todasLasPaginas } from "@/lib/datos/paginas";
 import { requerirSesion } from "@/lib/supabase/servidor";
@@ -35,6 +35,7 @@ export default async function PaginaApunte({ params }: PageProps<"/apuntes/[id]"
       paginas={todas.map((p) => ({ id: p.id, titulo: p.titulo, icono: p.icono }))}
       mencionan={mencionan}
       notas={accionesNotas}
+      estudio={accionesEstudio}
     />
   );
 }

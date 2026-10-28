@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AccionesApuntes, AccionesIa, AccionesNotas } from "@/app/acciones/tipos";
+import type { AccionesApuntes, AccionesEstudio, AccionesIa, AccionesNotas } from "@/app/acciones/tipos";
 import { BotonFavorita } from "@/components/apuntes/BotonFavorita";
 import { Editor } from "@/components/apuntes/Editor";
 import { ConfirmarEliminar } from "@/components/ConfirmarEliminar";
@@ -7,6 +7,7 @@ import { Icono } from "@/components/Icono";
 import { Pantalla, TituloSeccion, enlace } from "@/components/ui";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
 import { enlacesDe, resolverEnlaces, type PaginaEnlazable } from "@/lib/enlaces";
+import { tarjetasDe } from "@/lib/estudio";
 
 type Props = {
   pagina: Pagina;
@@ -21,6 +22,7 @@ type Props = {
   paginas?: PaginaEnlazable[];
   mencionan?: PaginaEnlazable[];
   notas?: AccionesNotas;
+  estudio?: Pick<AccionesEstudio, "alternarCurso">;
 };
 
 function FilaEnlace({ p, base }: { p: PaginaEnlazable; base: string }) {
@@ -37,11 +39,12 @@ function FilaEnlace({ p, base }: { p: PaginaEnlazable; base: string }) {
   );
 }
 
-export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, acciones, ia, paginas = [], mencionan = [], notas }: Props) {
+export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, acciones, ia, paginas = [], mencionan = [], notas, estudio }: Props) {
   const padre = camino.at(-1);
   const salientes = resolverEnlaces(enlacesDe(pagina.contenido), paginas, pagina.id);
   const existentes = salientes.flatMap((e) => (e.pagina ? [e.pagina] : []));
   const porCrear = salientes.filter((e) => !e.pagina).map((e) => e.titulo);
+  const tarjetas = tarjetasDe(pagina.contenido).length;
 
   return (
     <Pantalla>
@@ -99,6 +102,15 @@ export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, accion
           Nueva página dentro
         </Link>
       </section>
+
+      {tarjetas > 0 && (
+        <Link
+          href={enlace(base, `/estudio/repaso?pagina=${pagina.id}`)}
+          className="flex items-center justify-center gap-2 rounded-[20px] bg-azul-relleno py-3.5 text-[17px] font-bold text-white active:scale-[0.98]"
+        >
+          🧠 Repasar {tarjetas} {tarjetas === 1 ? "tarjeta" : "tarjetas"}
+        </Link>
+      )}
 
       <section className="flex flex-col gap-2" aria-labelledby="titulo-conexiones">
         <TituloSeccion
@@ -188,6 +200,18 @@ export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, accion
             {pagina.plantilla ? "Es plantilla ✓" : "Usar como plantilla"}
           </button>
         </form>
+        {estudio && (
+          <form action={estudio.alternarCurso.bind(null, pagina.id, !pagina.curso)} className="col-span-2">
+            <button
+              type="submit"
+              aria-pressed={Boolean(pagina.curso)}
+              className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-superficie py-3 text-[15px] font-semibold active:scale-[0.98]"
+            >
+              <span aria-hidden="true">🎓</span>
+              {pagina.curso ? "Es un curso ✓ (ver en Modo estudio)" : "Es un curso"}
+            </button>
+          </form>
+        )}
       </div>
 
       <ConfirmarEliminar

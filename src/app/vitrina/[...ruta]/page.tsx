@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import { VistaAgenda } from "@/components/vistas/VistaAgenda";
 import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
+import { VistaDiario } from "@/components/vistas/VistaDiario";
+import { VistaEstudio } from "@/components/vistas/VistaEstudio";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
+import { VistaRepaso } from "@/components/vistas/VistaRepaso";
 import { VistaImprimir } from "@/components/vistas/VistaImprimir";
 import { VistaMapa } from "@/components/vistas/VistaMapa";
 import { VistaNuevaPagina } from "@/components/vistas/VistaNuevaPagina";
@@ -20,7 +23,7 @@ import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/t
 import { vitrinaActiva } from "@/lib/vitrina";
 import { armarGrafo, distribuir, type Arista } from "@/lib/grafo";
 import { PLAN_VITRINA } from "../ejemplosIa";
-import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
+import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, CURSOS, DIARIO, TARJETAS, accionesEstudioVitrina, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -98,6 +101,15 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
   if (camino === "apuntes/nueva") {
     return <VistaNuevaPagina padreId={null} propias={[{ id: PAGINAS[2].id, titulo: "Ideas para Orbe", icono: "💡" }]} base={base} acciones={accionesApuntesVitrina} />;
   }
+  if (camino === "estudio") {
+    return <VistaEstudio cursos={CURSOS} hoy={HOY} base={base} acciones={accionesEstudioVitrina} />;
+  }
+  if (camino === "estudio/repaso") {
+    return <VistaRepaso titulo="SQL para Data Analytics" tarjetas={TARJETAS} volver={{ href: "/estudio", texto: "Modo estudio" }} base={base} />;
+  }
+  if (camino === "diario") {
+    return <VistaDiario hoy={HOY} mes={HOY.slice(0, 7)} dias={DIARIO} base={base} acciones={accionesEstudioVitrina} />;
+  }
   if (camino === "apuntes/mapa") {
     const aristas: Arista[] = [
       { origen: PAGINA.id, destino: PAGINAS[2].id, tipo: "enlace" },
@@ -152,6 +164,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         paginas={PAGINAS}
         mencionan={[PAGINAS[2]]}
         notas={accionesNotasVitrina}
+        estudio={accionesEstudioVitrina}
       />
     );
   }
