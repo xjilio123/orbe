@@ -46,6 +46,13 @@ export function VistaApuntes({ paginas, hoy, base, error }: Props) {
         <Icono nombre="mas" className="size-5" />
         Nueva página
       </Link>
+      <Link
+        href={enlace(base, "/preguntar")}
+        className="-mt-3 flex items-center justify-center gap-2 rounded-[16px] bg-morado-relleno/12 py-3 text-[15px] font-semibold text-morado active:scale-[0.98]"
+      >
+        <Icono nombre="chispa" className="size-4" />
+        Pregunta a tus notas
+      </Link>
       {error && <p className="text-center text-[15px] text-rojo">No se pudo crear la página. Puede que llegaras al máximo.</p>}
 
       {favoritas.length > 0 && (

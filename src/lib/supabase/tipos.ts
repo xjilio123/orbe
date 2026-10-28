@@ -304,6 +304,30 @@ export type Database = {
           },
         ]
       }
+      vectores: {
+        Row: {
+          pagina_id: string
+          texto: string
+          trozo: number
+          user_id: string
+          vector: string
+        }
+        Insert: {
+          pagina_id: string
+          texto: string
+          trozo: number
+          user_id: string
+          vector: string
+        }
+        Update: {
+          pagina_id?: string
+          texto?: string
+          trozo?: number
+          user_id?: string
+          vector?: string
+        }
+        Relationships: []
+      }
       versiones_pagina: {
         Row: {
           contenido: Json

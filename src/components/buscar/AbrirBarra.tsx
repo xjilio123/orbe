@@ -7,7 +7,7 @@ import BarraComandos from "./BarraComandos";
 export const EVENTO_BUSCAR = "orbe:buscar";
 
 /** Abre la barra ⌘K con el teclado (⌘K o Ctrl+K) o con la lupa de cada pantalla. */
-export function AbrirBarra({ buscar, base }: { buscar: Buscar; base: string }) {
+export function AbrirBarra({ buscar, significado, base }: { buscar: Buscar; significado?: Buscar; base: string }) {
   const [abierta, setAbierta] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function AbrirBarra({ buscar, base }: { buscar: Buscar; base: string }) {
     };
   }, []);
 
-  return abierta ? <BarraComandos buscar={buscar} base={base} onCerrar={() => setAbierta(false)} /> : null;
+  return abierta ? <BarraComandos buscar={buscar} significado={significado} base={base} onCerrar={() => setAbierta(false)} /> : null;
 }
 
 /** Lupa que abre la barra (en el encabezado de cada pantalla). */

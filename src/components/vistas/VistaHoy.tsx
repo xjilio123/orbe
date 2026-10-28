@@ -12,7 +12,7 @@ import type { Plan, ResumenSemana } from "@/lib/ia/contenido";
 import type { Lista, Tarea } from "@/lib/tareas";
 
 const proximamente: { nombre: string; texto: string; icono: NombreIcono; color: ColorModulo; fase: string }[] = [
-  { nombre: "Pregunta a tus notas", texto: "Respuestas con lo que ya escribiste.", icono: "chispa", color: "morado", fase: "Fase 4" },
+  { nombre: "Enlaces entre notas", texto: "Backlinks y modo estudio.", icono: "apuntes", color: "naranja", fase: "Fase 5" },
   { nombre: "Hábitos y metas", texto: "Rachas, metas y modo estudio.", icono: "check", color: "verde", fase: "Fase 5" },
 ];
 

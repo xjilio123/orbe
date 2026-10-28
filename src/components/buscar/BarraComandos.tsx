@@ -7,19 +7,20 @@ import { Icono } from "@/components/Icono";
 import { enlace } from "@/components/ui";
 import { filtrarComandos } from "@/lib/comandos";
 
-type Props = { buscar: Buscar; base: string; onCerrar: () => void };
+type Props = { buscar: Buscar; significado?: Buscar; base: string; onCerrar: () => void };
 
-type Opcion = { clave: string; href: string; titulo: string; detalle: string; icono: React.ReactNode; grupo: "ir" | "resultado" };
+type Opcion = { clave: string; href: string; titulo: string; detalle: string; icono: React.ReactNode; grupo: "ir" | "resultado" | "significado" };
 
 /**
  * Barra ⌘K: busca en tus tareas y páginas y lleva a cualquier pantalla.
  * Flota sobre la app (no mueve nada) y se maneja con el teclado: ↑ ↓ para elegir, Enter para abrir, Esc para cerrar.
  */
-export default function BarraComandos({ buscar, base, onCerrar }: Props) {
+export default function BarraComandos({ buscar, significado, base, onCerrar }: Props) {
   const router = useRouter();
   const [texto, setTexto] = useState("");
   const [resultados, setResultados] = useState<{ consulta: string; items: ResultadoBusqueda[] }>({ consulta: "", items: [] });
   const [activo, setActivo] = useState(0);
+  const [parecidos, setParecidos] = useState<{ consulta: string; items: ResultadoBusqueda[] }>({ consulta: "", items: [] });
   const idLista = useId();
   const ultima = useRef(0);
 
@@ -38,6 +39,24 @@ export default function BarraComandos({ buscar, base, onCerrar }: Props) {
     }, 150);
     return () => clearTimeout(espera);
   }, [consulta, buscar]);
+
+  // Búsqueda por significado (gratis, sin Gemini): espera a que dejes de escribir un poco más.
+  useEffect(() => {
+    if (!significado || consulta.length < 4) return;
+    let vigente = true;
+    const espera = setTimeout(async () => {
+      try {
+        const items = await significado(consulta);
+        if (vigente) setParecidos({ consulta, items });
+      } catch {
+        if (vigente) setParecidos({ consulta, items: [] });
+      }
+    }, 500);
+    return () => {
+      vigente = false;
+      clearTimeout(espera);
+    };
+  }, [consulta, significado]);
 
   // Mientras está abierta, la página de atrás no se desplaza.
   useEffect(() => {
@@ -70,6 +89,30 @@ export default function BarraComandos({ buscar, base, onCerrar }: Props) {
       grupo: "resultado" as const,
     })),
   ];
+  const yaEstan = new Set(items.map((r) => r.id));
+  if (parecidos.consulta === consulta) {
+    for (const r of parecidos.items) {
+      if (yaEstan.has(r.id)) continue;
+      opciones.push({
+        clave: `significado-${r.id}`,
+        href: enlace(base, `/apuntes/${r.id}`),
+        titulo: r.titulo || "Sin título",
+        detalle: r.detalle,
+        icono: <span className="text-[18px]">{r.icono || "📄"}</span>,
+        grupo: "significado",
+      });
+    }
+  }
+  if (consulta.length >= 5) {
+    opciones.push({
+      clave: "preguntar",
+      href: enlace(base, `/preguntar?q=${encodeURIComponent(consulta)}`),
+      titulo: `Preguntar a tus notas: “${consulta}”`,
+      detalle: "La IA responde con lo que escribiste",
+      icono: <Icono nombre="chispa" className="size-5 text-morado" />,
+      grupo: "significado",
+    });
+  }
   const elegido = Math.min(activo, Math.max(0, opciones.length - 1));
 
   function ir(href: string) {
@@ -94,6 +137,7 @@ export default function BarraComandos({ buscar, base, onCerrar }: Props) {
   const grupos = [
     { id: "ir", titulo: "Ir a", items: opciones.filter((o) => o.grupo === "ir") },
     { id: "resultado", titulo: "En tus notas y tareas", items: opciones.filter((o) => o.grupo === "resultado") },
+    { id: "significado", titulo: "Por significado", items: opciones.filter((o) => o.grupo === "significado") },
   ];
 
   return (

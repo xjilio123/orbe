@@ -46,6 +46,7 @@ const PANTALLAS = [
   { ruta: "/vitrina/apuntes/nueva", titulo: "Nueva página" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/historial", titulo: "Historial" },
   { ruta: "/vitrina/papelera", titulo: "Papelera" },
+  { ruta: "/vitrina/preguntar", titulo: "Pregunta a tus notas" },
   { ruta: "/vitrina/agenda", titulo: "Agenda" },
   { ruta: "/vitrina/agenda?vista=semana", titulo: "Agenda" },
   { ruta: "/vitrina/agenda?vista=dia", titulo: "Agenda" },
@@ -356,5 +357,15 @@ test.describe("Fluidez del plan del día con IA (vitrina)", () => {
     await page.getByRole("button", { name: "Replanificar" }).click();
     await expect(page.getByText("Listo, tu plan está arriba.")).toBeVisible();
     expect(await posicion(), "la captura no se movió").toBe(antes);
+  });
+});
+
+test.describe("Pregunta a tus notas (vitrina, sin Gemini)", () => {
+  test("responde con las páginas de donde sacó la respuesta", async ({ page }) => {
+    await page.goto("/vitrina/preguntar");
+    await page.getByRole("button", { name: "¿Qué anoté sobre window functions?" }).click();
+    await page.getByRole("button", { name: "Preguntar" }).click();
+    await expect(page.getByRole("region", { name: "Respuesta" })).toContainText("funciones de ventana");
+    await expect(page.getByRole("link", { name: /SQL para Data Analytics/ })).toBeVisible();
   });
 });

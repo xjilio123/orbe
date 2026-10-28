@@ -14,7 +14,7 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 | 1 · MVP | Inbox, tareas, apuntes por bloques, pantalla Hoy, control de espacio | Lista |
 | 2 · Tiempo | Agenda (día, semana, mes), avisos push, tareas que se repiten, Google Calendar | Lista |
 | 3 · Pulido | Modo sin conexión, búsqueda, plantillas, barra ⌘K, papelera e historial, invitados | Lista |
-| 4 · IA | Captura inteligente, resúmenes, plan del día, preguntas a tus notas, topes de uso | En curso |
+| 4 · IA | Captura inteligente, resúmenes, plan del día, preguntas a tus notas, topes de uso | Lista |
 | 5 · Extras | Hábitos y metas, backlinks, modo estudio y más | Pendiente |
 
 ## Stack
@@ -26,6 +26,9 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 - **PWA** instalable desde el navegador, sin tiendas de apps.
 - **Avisos push**: `pg_cron` revisa cada minuto y, solo si hay algo que avisar, llama con `pg_net` a la Edge Function
   `avisos` (Web Push con VAPID). El secreto entre ambos y las claves VAPID se generan dentro de Supabase y viven en Vault.
+- **IA**: Gemini (nivel gratuito) solo en el servidor, con topes de uso decididos en la base (`reservar_ia`).
+  La búsqueda por significado usa `gte-small` dentro de una Edge Function de Supabase y vectores `halfvec`
+  (máximo 1.000 por persona); solo los fragmentos más parecidos van a Gemini al preguntar a tus notas.
 - **Google Calendar** de solo lectura con la dirección secreta iCal (`ical.js` en el servidor; solo se aceptan
   direcciones de `calendar.google.com`).
 

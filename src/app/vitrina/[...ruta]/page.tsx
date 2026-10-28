@@ -5,6 +5,7 @@ import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
 import { VistaNuevaPagina } from "@/components/vistas/VistaNuevaPagina";
 import { VistaPapelera } from "@/components/vistas/VistaPapelera";
+import { VistaPreguntar } from "@/components/vistas/VistaPreguntar";
 import { VistaPagina } from "@/components/vistas/VistaPagina";
 import { VistaHoy } from "@/components/vistas/VistaHoy";
 import { VistaLista } from "@/components/vistas/VistaLista";
@@ -91,6 +92,9 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
   }
   if (ruta[0] === "apuntes" && ruta[2] === "historial") {
     return <VistaHistorial pagina={PAGINA} versiones={VERSIONES} base={base} acciones={accionesApuntesVitrina} />;
+  }
+  if (camino === "preguntar") {
+    return <VistaPreguntar base={base} preguntar={accionesIaVitrina.preguntar} />;
   }
   if (camino === "papelera") {
     return <VistaPapelera tareas={PAPELERA.tareas} paginas={PAPELERA.paginas} base={base} ahora={`${HOY}T20:00:00Z`} acciones={accionesPapeleraVitrina} />;

@@ -70,4 +70,5 @@ export type AccionesIa = {
   tarjetas: (paginaId: string, titulo: string, bloques: import("@/lib/bloques").Bloque[]) => Promise<ResultadoIa<{ id: string }>>;
   foto: (formData: FormData) => Promise<ResultadoIa<{ titulo: string; bloques: import("@/lib/bloques").Bloque[] }>>;
   audio: (formData: FormData) => Promise<ResultadoIa<{ titulo: string; bloques: import("@/lib/bloques").Bloque[] }>>;
+  preguntar: (pregunta: string) => Promise<ResultadoIa<import("@/lib/ia/preguntar").Respuesta>>;
 };
