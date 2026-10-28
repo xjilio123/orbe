@@ -15,6 +15,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      listas: {
+        Row: {
+          color: string
+          creado: string
+          id: string
+          nombre: string
+          orden: number
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          creado?: string
+          id?: string
+          nombre: string
+          orden?: number
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          creado?: string
+          id?: string
+          nombre?: string
+          orden?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       perfiles: {
         Row: {
           actualizado: string
@@ -38,6 +65,72 @@ export type Database = {
           zona_horaria?: string
         }
         Relationships: []
+      }
+      tareas: {
+        Row: {
+          actualizado: string
+          creado: string
+          estado: string
+          fecha: string | null
+          hecha_en: string | null
+          hora: string | null
+          id: string
+          lista_id: string | null
+          notas: string
+          orden: number
+          padre_id: string | null
+          prioridad: number
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          actualizado?: string
+          creado?: string
+          estado?: string
+          fecha?: string | null
+          hecha_en?: string | null
+          hora?: string | null
+          id?: string
+          lista_id?: string | null
+          notas?: string
+          orden?: number
+          padre_id?: string | null
+          prioridad?: number
+          titulo: string
+          user_id?: string
+        }
+        Update: {
+          actualizado?: string
+          creado?: string
+          estado?: string
+          fecha?: string | null
+          hecha_en?: string | null
+          hora?: string | null
+          id?: string
+          lista_id?: string | null
+          notas?: string
+          orden?: number
+          padre_id?: string | null
+          prioridad?: number
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tareas_lista_id_user_id_fkey"
+            columns: ["lista_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "listas"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "tareas_padre_id_user_id_fkey"
+            columns: ["padre_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "tareas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
     }
     Views: {

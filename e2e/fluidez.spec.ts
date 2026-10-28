@@ -23,14 +23,20 @@ const PRESUPUESTO = {
   cambioPestana: 800,
   /** JavaScript que descarga la primera pantalla (KB comprimidos). */
   javascriptKb: 260,
+  /** Tocar el check de una tarea hasta verlo marcado (ms), CPU 4× más lenta. */
+  check: 150,
 };
 
 const IPHONE_SAFARI =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
 
+const LISTA = "/vitrina/tareas/lista/00000000-0000-4000-8000-0000000000a2";
 const PANTALLAS = [
   { ruta: "/vitrina/hoy", titulo: "Hoy" },
   { ruta: "/vitrina/tareas", titulo: "Tareas" },
+  { ruta: "/vitrina/tareas/00000000-0000-4000-8000-000000000001", titulo: "Detalle" },
+  { ruta: LISTA, titulo: "Trabajo" },
+  { ruta: `${LISTA}?vista=tablero`, titulo: "Trabajo" },
   { ruta: "/vitrina/apuntes", titulo: "Apuntes" },
   { ruta: "/vitrina/agenda", titulo: "Agenda" },
   { ruta: "/vitrina/ajustes", titulo: "Ajustes" },
@@ -127,5 +133,36 @@ test.describe("Fluidez al cambiar de pestaña (CPU 4× más lenta)", () => {
     }
     const saltos = await page.evaluate(() => (window as unknown as { __saltos: number }).__saltos);
     expect(saltos, "saltos al navegar").toBeLessThanOrEqual(PRESUPUESTO.saltos);
+  });
+});
+
+test.describe("Fluidez al usar las tareas (CPU 4× más lenta)", () => {
+  test("el check responde al instante, sin esperar al servidor", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/tareas");
+    await medir(page);
+    const check = page.getByRole("checkbox", { name: /Marcar “Ideas para el diseño de Orbe” como hecha/ });
+    const ms = await check.evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      // Espera al siguiente cuadro pintado con el check marcado.
+      while (boton.getAttribute("aria-checked") !== "true") await new Promise((r) => requestAnimationFrame(r));
+      return performance.now() - inicio;
+    });
+    console.log(`check marcado en ${Math.round(ms)} ms`);
+    expect(ms, "tiempo hasta ver el check marcado").toBeLessThanOrEqual(PRESUPUESTO.check);
+  });
+
+  test("escribir en la captura muestra lo que entendió sin mover la pantalla", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/hoy");
+    await medir(page);
+    const seccion = page.getByRole("heading", { name: "Para hoy" });
+    const antes = (await seccion.boundingBox())!.y;
+    await page.getByLabel("Captura rápida").pressSequentially("pagar luz el viernes 9am #casa !!");
+    await expect(page.getByText("vie 30 oct")).toBeVisible();
+    await expect(page.getByText("#casa")).toBeVisible();
+    await expect(page.getByText("Prioridad !!")).toBeVisible();
+    expect((await seccion.boundingBox())!.y, "la lista no se corre al escribir").toBe(antes);
   });
 });

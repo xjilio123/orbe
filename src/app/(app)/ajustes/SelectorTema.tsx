@@ -1,4 +1,4 @@
-import { guardarTema } from "@/app/acciones";
+import { guardarTema } from "@/app/acciones/generales";
 import type { Tema } from "@/lib/tema";
 
 const opciones: { valor: Tema; nombre: string }[] = [

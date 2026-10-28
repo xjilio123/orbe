@@ -1,4 +1,4 @@
-import { cerrarSesion } from "@/app/acciones";
+import { cerrarSesion } from "@/app/acciones/generales";
 import { SelectorTema } from "@/app/(app)/ajustes/SelectorTema";
 import { Icono } from "@/components/Icono";
 import { Logo } from "@/components/Logo";

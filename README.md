@@ -10,8 +10,8 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| 0 · Cimientos | Repo y pipeline, Supabase + RLS, login con Google, sistema de diseño | En curso |
-| 1 · MVP | Inbox, tareas, apuntes por bloques, pantalla Hoy, control de espacio | Pendiente |
+| 0 · Cimientos | Repo y pipeline, Supabase + RLS, login con Google, sistema de diseño | Lista |
+| 1 · MVP | Inbox, tareas, apuntes por bloques, pantalla Hoy, control de espacio | En curso (tareas listas) |
 | 2 · Tiempo | Calendario, avisos push, repetición, Google Calendar | Pendiente |
 | 3 · Pulido | Modo sin conexión, búsqueda, plantillas, barra ⌘K, papelera, invitados | Pendiente |
 | 4 · IA | Captura inteligente, resúmenes, plan del día, preguntas a tus notas, topes de uso | Pendiente |

@@ -11,7 +11,7 @@ No abras un issue público. Usa **Security → Report a vulnerability** en este 
 
 | Capa | Control |
 |---|---|
-| Base de datos | RLS en todas las tablas: cada fila solo la ve su dueño. Registro cerrado por lista de correos permitidos, con un máximo de 30 personas. Sin sesión no se puede leer nada. |
+| Base de datos | RLS en todas las tablas: cada fila solo la ve su dueño. Llaves compuestas `(id, user_id)`: una tarea no puede apuntar a la lista o tarea de otra persona. Topes por persona (50 listas, 5 000 tareas). Registro cerrado por lista de correos permitidos, con un máximo de 30 personas. Sin sesión no se puede leer nada. |
 | Servidor | Las páginas verifican la sesión con `getClaims()` y las escrituras con `getUser()`. El `user_id` sale de la sesión, nunca del formulario. |
 | Navegador | CSP estricta con nonce por request (`strict-dynamic`, sin `unsafe-eval` en producción), `frame-ancestors 'none'`, HSTS, `nosniff`, `Referrer-Policy` y `Permissions-Policy`. |
 | Secretos | Solo la clave *publishable* (pública por diseño, limitada por RLS) llega al navegador. Ningún secreto se versiona. |

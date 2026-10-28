@@ -40,6 +40,34 @@ const colores = {
   celeste: "bg-celeste-relleno",
 } as const;
 export type ColorModulo = keyof typeof colores;
+export const FONDO_COLOR: Record<ColorModulo, string> = colores;
+export const TEXTO_COLOR: Record<ColorModulo, string> = {
+  indigo: "text-indigo",
+  azul: "text-azul",
+  rojo: "text-rojo",
+  morado: "text-morado",
+  naranja: "text-naranja",
+  verde: "text-verde",
+  celeste: "text-celeste",
+};
+
+/** Enlaces que funcionan igual en la app y en la vitrina (/vitrina/...). */
+export function enlace(base: string, ruta: string): string {
+  if (!base) return ruta;
+  return ruta === "/" ? `${base}/hoy` : `${base}${ruta}`;
+}
+
+/** Título de sección al estilo iOS, con un contador o acción a la derecha. */
+export function TituloSeccion({ id, titulo, extra, alerta }: { id: string; titulo: string; extra?: ReactNode; alerta?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between px-1">
+      <h2 id={id} className={`text-[20px] font-bold tracking-tight ${alerta ? "text-rojo" : ""}`}>
+        {titulo}
+      </h2>
+      {extra && <div className="text-[15px] text-texto-2">{extra}</div>}
+    </div>
+  );
+}
 
 /** Ícono blanco sobre un cuadrado redondeado del color del módulo (como en Ajustes de iOS). */
 export function IconoModulo({ nombre, color, grande = false }: { nombre: NombreIcono; color: ColorModulo; grande?: boolean }) {
