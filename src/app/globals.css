@@ -146,6 +146,14 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Entrada de avisos flotantes: solo transform y opacidad, que no mueven el resto de la pantalla. */
+@keyframes entrar-desde-abajo {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

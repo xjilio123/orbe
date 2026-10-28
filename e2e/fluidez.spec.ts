@@ -1,0 +1,131 @@
+import { expect, test, type Page } from "@playwright/test";
+
+/**
+ * Prueba de fluidez: cada pantalla real (en la vitrina, con datos ficticios) se mide como en un iPhone
+ * con la CPU 4 veces más lenta. Falla si algo salta al abrir (CLS), si tarda en mostrarse,
+ * si bloquea la pantalla mucho tiempo o si el JavaScript crece de más.
+ * Corre con ORBE_VITRINA=1 FLUIDEZ=1 (job "Fluidez" en GitHub Actions).
+ */
+
+const PRESUPUESTO = {
+  /** Suma de saltos de diseño al abrir. 0 = nada se mueve; Google considera "bueno" hasta 0.1. */
+  saltos: 0.01,
+  /**
+   * Máximo que se mueve cualquier bloque visible desde que aparece (px). Detecta el "tirón" aunque
+   * Chrome no lo cuente como salto (por ejemplo, un aviso que aparece arriba después de cargar).
+   */
+  movimiento: 1,
+  /** Primer contenido visible (ms), CPU 4× más lenta. */
+  primerContenido: 1500,
+  /** Tiempo total de bloqueo del hilo principal al abrir (ms), CPU 4× más lenta. */
+  bloqueo: 600,
+  /** Cambio de pestaña hasta ver el título nuevo (ms), CPU 4× más lenta. */
+  cambioPestana: 800,
+  /** JavaScript que descarga la primera pantalla (KB comprimidos). */
+  javascriptKb: 260,
+};
+
+const IPHONE_SAFARI =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+
+const PANTALLAS = [
+  { ruta: "/vitrina/hoy", titulo: "Hoy" },
+  { ruta: "/vitrina/tareas", titulo: "Tareas" },
+  { ruta: "/vitrina/apuntes", titulo: "Apuntes" },
+  { ruta: "/vitrina/agenda", titulo: "Agenda" },
+  { ruta: "/vitrina/ajustes", titulo: "Ajustes" },
+  { ruta: "/login", titulo: "Orbe" },
+];
+
+test.use({ userAgent: IPHONE_SAFARI, viewport: { width: 430, height: 932 }, hasTouch: true, isMobile: true });
+
+type Medicion = { saltos: number; movimiento: number; primerContenido: number; bloqueo: number; javascriptKb: number };
+
+async function prepararMedicion(page: Page) {
+  // Observadores de rendimiento del navegador, instalados antes de que cargue la página.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __saltos: number; __bloqueo: number; __movimiento: number };
+    w.__saltos = 0;
+    w.__bloqueo = 0;
+    w.__movimiento = 0;
+    // Posición de cada bloque de la pantalla en cada cuadro: si uno se corre después de aparecer, es un tirón.
+    const primeraPosicion = new WeakMap<Element, number>();
+    let cuadros = 0;
+    const seguir = () => {
+      for (const bloque of document.querySelectorAll("main > *, main h1")) {
+        const caja = bloque.getBoundingClientRect();
+        // Los elementos flotantes (avisos) entran con su propia animación y no empujan a nadie.
+        if (caja.height === 0 || getComputedStyle(bloque).position === "fixed") continue;
+        const antes = primeraPosicion.get(bloque);
+        if (antes === undefined) primeraPosicion.set(bloque, caja.top);
+        else w.__movimiento = Math.max(w.__movimiento, Math.abs(caja.top - antes));
+      }
+      if (++cuadros < 600) requestAnimationFrame(seguir);
+    };
+    requestAnimationFrame(seguir);
+    new PerformanceObserver((lista) => {
+      for (const e of lista.getEntries() as (PerformanceEntry & { value: number; hadRecentInput: boolean })[]) {
+        if (!e.hadRecentInput) w.__saltos += e.value;
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+    new PerformanceObserver((lista) => {
+      for (const e of lista.getEntries()) w.__bloqueo += Math.max(0, e.duration - 50);
+    }).observe({ type: "longtask", buffered: true });
+  });
+  // Calienta el navegador con un archivo del mismo sitio: así no se mide el arranque del proceso
+  // de Chromium (en Windows tarda ~1.7 s), sino solo lo que hace Orbe.
+  await page.goto("/iconos/icono-192.png");
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+}
+
+async function medir(page: Page): Promise<Medicion> {
+  // Espera a que terminen la hidratación y los avisos que aparecen después de cargar.
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1500);
+  return page.evaluate(() => {
+    const w = window as unknown as { __saltos: number; __bloqueo: number; __movimiento: number };
+    const fcp = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? Infinity;
+    const js = (performance.getEntriesByType("resource") as PerformanceResourceTiming[])
+      .filter((r) => r.initiatorType === "script" || r.name.endsWith(".js"))
+      .reduce((total, r) => total + (r.encodedBodySize || r.transferSize), 0);
+    return { saltos: w.__saltos, movimiento: w.__movimiento, primerContenido: fcp, bloqueo: w.__bloqueo, javascriptKb: js / 1024 };
+  });
+}
+
+test.describe("Fluidez al abrir cada pantalla (iPhone, CPU 4× más lenta)", () => {
+  for (const p of PANTALLAS) {
+    test(`${p.ruta} abre sin saltos y rápido`, async ({ page }) => {
+      await prepararMedicion(page);
+      await page.goto(p.ruta);
+      await expect(page.getByRole("heading", { level: 1, name: p.titulo })).toBeVisible();
+      const m = await medir(page);
+      console.log(
+        `${p.ruta.padEnd(18)} saltos ${m.saltos.toFixed(3)} · movimiento ${Math.round(m.movimiento)} px · contenido ${Math.round(m.primerContenido)} ms · bloqueo ${Math.round(m.bloqueo)} ms · JS ${Math.round(m.javascriptKb)} KB`,
+      );
+      expect(m.saltos, "saltos de diseño").toBeLessThanOrEqual(PRESUPUESTO.saltos);
+      expect(m.movimiento, "bloques que se corren al abrir (el 'tirón')").toBeLessThanOrEqual(PRESUPUESTO.movimiento);
+      expect(m.primerContenido, "primer contenido visible").toBeLessThanOrEqual(PRESUPUESTO.primerContenido);
+      expect(m.bloqueo, "bloqueo del hilo principal").toBeLessThanOrEqual(PRESUPUESTO.bloqueo);
+      expect(m.javascriptKb, "JavaScript de la pantalla").toBeLessThanOrEqual(PRESUPUESTO.javascriptKb);
+    });
+  }
+});
+
+test.describe("Fluidez al cambiar de pestaña (CPU 4× más lenta)", () => {
+  test("cada pestaña aparece rápido y sin saltos", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/hoy");
+    await medir(page); // deja que se precarguen las demás pestañas, como en el uso real
+    for (const destino of ["Tareas", "Apuntes", "Agenda", "Hoy"]) {
+      const inicio = Date.now();
+      await page.getByRole("link", { name: destino, exact: true }).click();
+      await expect(page.getByRole("heading", { level: 1, name: destino })).toBeVisible();
+      const ms = Date.now() - inicio;
+      console.log(`pestaña ${destino.padEnd(8)} ${ms} ms`);
+      expect(ms, `cambio a ${destino}`).toBeLessThanOrEqual(PRESUPUESTO.cambioPestana);
+    }
+    const saltos = await page.evaluate(() => (window as unknown as { __saltos: number }).__saltos);
+    expect(saltos, "saltos al navegar").toBeLessThanOrEqual(PRESUPUESTO.saltos);
+  });
+});

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { LogoGoogle } from "@/components/Icono";
-import { crearClienteNavegador } from "@/lib/supabase/navegador";
 
 export function BotonGoogle() {
   const [cargando, setCargando] = useState(false);
@@ -11,6 +10,8 @@ export function BotonGoogle() {
   async function entrar() {
     setCargando(true);
     setFallo(false);
+    // Fluidez: el cliente de Supabase (~90 KB) se descarga recién al tocar el botón, no al abrir el login.
+    const { crearClienteNavegador } = await import("@/lib/supabase/navegador");
     const { error } = await crearClienteNavegador().auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
