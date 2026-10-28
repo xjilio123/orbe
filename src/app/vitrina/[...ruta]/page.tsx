@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { VistaAgenda } from "@/components/vistas/VistaAgenda";
 import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
+import { VistaHistorial } from "@/components/vistas/VistaHistorial";
+import { VistaNuevaPagina } from "@/components/vistas/VistaNuevaPagina";
+import { VistaPapelera } from "@/components/vistas/VistaPapelera";
 import { VistaPagina } from "@/components/vistas/VistaPagina";
 import { VistaHoy } from "@/components/vistas/VistaHoy";
 import { VistaLista } from "@/components/vistas/VistaLista";
@@ -10,7 +13,7 @@ import { VistaTareas } from "@/components/vistas/VistaTareas";
 import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
-import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, accionesAjustesVitrina, accionesApuntesVitrina, accionesVitrina } from "../datos";
+import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -79,7 +82,16 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
   if (camino === "apuntes") {
     const hijas = new Map<string, number>();
     for (const p of PAGINAS) if (p.padre_id) hijas.set(p.padre_id, (hijas.get(p.padre_id) ?? 0) + 1);
-    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} acciones={accionesApuntesVitrina} />;
+    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} />;
+  }
+  if (camino === "apuntes/nueva") {
+    return <VistaNuevaPagina padreId={null} propias={[{ id: PAGINAS[2].id, titulo: "Ideas para Orbe", icono: "💡" }]} base={base} acciones={accionesApuntesVitrina} />;
+  }
+  if (ruta[0] === "apuntes" && ruta[2] === "historial") {
+    return <VistaHistorial pagina={PAGINA} versiones={VERSIONES} base={base} acciones={accionesApuntesVitrina} />;
+  }
+  if (camino === "papelera") {
+    return <VistaPapelera tareas={PAPELERA.tareas} paginas={PAPELERA.paginas} base={base} ahora={`${HOY}T20:00:00Z`} acciones={accionesPapeleraVitrina} />;
   }
   if (ruta[0] === "apuntes" && ruta.length === 2) {
     return (
@@ -121,6 +133,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         avisos={{ clavePublica: "BPruebaDeClavePublicaVapidQueNoSeUsaParaNadaEnLaVitrina0000000000000000000000000000000", dispositivos: 1 }}
         calendarioConectado={false}
         acciones={accionesAjustesVitrina}
+        base={base}
       />
     );
   }

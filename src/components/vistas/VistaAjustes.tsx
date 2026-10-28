@@ -6,7 +6,8 @@ import { ConectarCalendario } from "@/components/ajustes/ConectarCalendario";
 import { Icono } from "@/components/Icono";
 import { Logo } from "@/components/Logo";
 import { Medidor } from "@/components/Medidor";
-import { Pantalla } from "@/components/ui";
+import Link from "next/link";
+import { IconoModulo, Pantalla, enlace } from "@/components/ui";
 import type { Tema } from "@/lib/tema";
 
 type Uso = { archivos: number; archivosMax: number; texto: number; textoMax: number };
@@ -19,9 +20,10 @@ type Props = {
   avisos: { clavePublica: string | null; dispositivos: number };
   calendarioConectado: boolean;
   acciones: AccionesAjustes;
+  base?: string;
 };
 
-export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones }: Props) {
+export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "" }: Props) {
   return (
     <Pantalla>
       <header className="pt-2">
@@ -43,6 +45,15 @@ export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConec
       <SelectorTema actual={tema} />
 
       <Medidor uso={uso} />
+
+      <Link href={enlace(base, "/papelera")} className="flex items-center gap-3 rounded-[22px] bg-superficie px-4 py-3 active:scale-[0.99]">
+        <IconoModulo nombre="papelera" color="rojo" />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-[17px] font-semibold">Papelera</span>
+          <span className="text-[13px] text-texto-2">Lo borrado se guarda 30 días.</span>
+        </span>
+        <Icono nombre="adelante" className="size-4 text-texto-2" />
+      </Link>
 
       <form action={cerrarSesion}>
         <button

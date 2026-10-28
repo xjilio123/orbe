@@ -1,4 +1,3 @@
-import { accionesApuntes } from "@/app/acciones/conjunto";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { todasLasPaginas } from "@/lib/datos/paginas";
 import { hoyLima } from "@/lib/fechas";
@@ -18,7 +17,6 @@ export default async function Apuntes({ searchParams }: PageProps<"/apuntes">) {
       hoy={hoyLima()}
       base=""
       error={error === "1"}
-      acciones={accionesApuntes}
     />
   );
 }

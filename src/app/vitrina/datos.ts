@@ -1,4 +1,4 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesPapelera, AccionesTareas } from "@/app/acciones/tipos";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
 import type { Lista, Tarea } from "@/lib/tareas";
@@ -116,6 +116,22 @@ export const PAGINA: Pagina = {
 };
 export const URLS_PAGINA = { [FOTO]: "/iconos/icono-512.png" };
 
+export const VERSIONES = [0, 1, 2].map((i) => ({
+  hueco: i,
+  titulo: PAGINA.titulo,
+  icono: PAGINA.icono,
+  contenido: PAGINA.contenido.slice(0, 12 - i * 3),
+  creado: `2026-10-2${6 - i}T1${4 + i}:30:00Z`,
+}));
+
+export const PAPELERA = {
+  tareas: [
+    { id: "00000000-0000-4000-8000-0000000000d1", titulo: "Llamar al banco por la tarjeta", borrado_en: `${HOY}T15:00:00Z` },
+    { id: "00000000-0000-4000-8000-0000000000d2", titulo: "Comprar regalo de Diana", borrado_en: "2026-10-01T15:00:00Z" },
+  ],
+  paginas: [{ id: "00000000-0000-4000-8000-0000000000d3", titulo: "Borrador de ideas viejas", icono: "🗒️", borrado_en: "2026-10-20T15:00:00Z" }],
+};
+
 export const accionesApuntesVitrina: AccionesApuntes = {
   crear: nadaVitrina,
   guardar: guardarVitrina,
@@ -123,7 +139,11 @@ export const accionesApuntesVitrina: AccionesApuntes = {
   eliminar: nadaVitrina,
   subir: subirVitrina,
   eliminarAdjunto: nadaVitrina,
+  plantilla: nadaVitrina,
+  restaurarVersion: nadaVitrina,
 };
+
+export const accionesPapeleraVitrina: AccionesPapelera = { restaurar: nadaVitrina, eliminar: nadaVitrina, vaciar: nadaVitrina };
 
 export const accionesAjustesVitrina: AccionesAjustes = {
   guardarSuscripcion: guardarVitrina,

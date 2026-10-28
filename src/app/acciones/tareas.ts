@@ -96,10 +96,15 @@ export async function guardarTarea(id: string, _anterior: EstadoFormulario, form
   return { ok: true };
 }
 
+/** Manda la tarea (y sus subtareas) a la papelera: se puede recuperar durante 30 días. */
 export async function eliminarTarea(id: string, volverA: string): Promise<void> {
   if (!esquemaId.safeParse(id).success) return;
   const { supabase } = await requerirUsuario();
-  await supabase.from("tareas").delete().eq("id", id);
+  await supabase
+    .from("tareas")
+    .update({ borrado_en: new Date().toISOString() })
+    .or(`id.eq.${id},padre_id.eq.${id}`)
+    .is("borrado_en", null);
   refrescar();
   // Solo rutas internas conocidas: nunca un destino que venga del navegador.
   redirect(volverA.startsWith("/tareas/lista/") && esquemaId.safeParse(volverA.slice(14)).success ? volverA : "/tareas");

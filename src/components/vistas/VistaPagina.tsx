@@ -68,18 +68,37 @@ export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, accion
             ))}
           </ul>
         )}
-        <form action={acciones.crear.bind(null, pagina.id)}>
-          <button type="submit" className="flex items-center gap-2 px-1 py-2 text-[17px] font-semibold text-naranja">
-            <Icono nombre="mas" className="size-5" />
-            Nueva página dentro
-          </button>
-        </form>
+        <Link href={enlace(base, `/apuntes/nueva?padre=${pagina.id}`)} className="flex w-fit items-center gap-2 px-1 py-2 text-[17px] font-semibold text-naranja">
+          <Icono nombre="mas" className="size-5" />
+          Nueva página dentro
+        </Link>
       </section>
 
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href={enlace(base, `/apuntes/${pagina.id}/historial`)}
+          className="flex items-center justify-center gap-2 rounded-[18px] bg-superficie py-3 text-[15px] font-semibold active:scale-[0.98]"
+        >
+          <Icono nombre="reloj" className="size-5 text-naranja" />
+          Historial
+        </Link>
+        <form action={acciones.plantilla.bind(null, pagina.id, !pagina.plantilla)}>
+          <button
+            type="submit"
+            aria-pressed={Boolean(pagina.plantilla)}
+            className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-superficie py-3 text-[15px] font-semibold active:scale-[0.98]"
+          >
+            <Icono nombre="plantilla" className="size-5 text-naranja" />
+            {pagina.plantilla ? "Es plantilla ✓" : "Usar como plantilla"}
+          </button>
+        </form>
+      </div>
+
       <ConfirmarEliminar
-        texto="Eliminar página"
-        pregunta={`¿Eliminar “${pagina.titulo || "Sin título"}”?`}
-        detalle="También se borran sus páginas internas, sus fotos y sus PDF."
+        texto="Mover a la papelera"
+        pregunta={`¿Mover “${pagina.titulo || "Sin título"}” a la papelera?`}
+        detalle="Con sus páginas internas. Puedes recuperarla durante 30 días desde Ajustes → Papelera."
+        confirmar="Mover"
         accion={acciones.eliminar.bind(null, pagina.id)}
       />
     </Pantalla>
