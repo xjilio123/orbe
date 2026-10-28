@@ -1,7 +1,8 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesPapelera, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesTareas } from "@/app/acciones/tipos";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
 import type { Lista, Tarea } from "@/lib/tareas";
+import { capturaVitrina, dividirVitrina, ordenarVitrina, resumirVitrina, textoVitrina } from "./ia";
 import { capturarVitrina, formularioVitrina, guardarVitrina, nadaVitrina, subirVitrina, subtareaVitrina } from "./acciones";
 
 // Datos FICTICIOS para la vitrina: realistas en cantidad y largo de textos, para medir la fluidez.
@@ -153,4 +154,12 @@ export const accionesAjustesVitrina: AccionesAjustes = {
   quitarCalendario: nadaVitrina,
   invitar: formularioVitrina,
   quitarInvitado: nadaVitrina,
+};
+
+export const accionesIaVitrina: AccionesIa = {
+  captura: capturaVitrina,
+  dividir: dividirVitrina,
+  ordenarInbox: ordenarVitrina,
+  texto: textoVitrina,
+  resumir: resumirVitrina,
 };

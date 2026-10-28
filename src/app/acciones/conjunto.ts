@@ -9,6 +9,7 @@ import {
   restaurarVersion,
   subirAdjunto,
 } from "./apuntes";
+import { capturaIa, dividirIa, ordenarInboxIa, resumirIa, textoIa } from "./ia";
 import { eliminarDefinitivo, restaurar, vaciarPapelera } from "./papelera";
 import {
   alternarTarea,
@@ -21,7 +22,7 @@ import {
   guardarTarea,
   moverTarea,
 } from "./tareas";
-import type { AccionesAjustes, AccionesApuntes, AccionesPapelera, AccionesTareas } from "./tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesTareas } from "./tipos";
 
 /** Las acciones reales que reciben las pantallas (la vitrina usa unas que no hacen nada). */
 export const accionesTareas: AccionesTareas = {
@@ -58,3 +59,5 @@ export const accionesAjustes: AccionesAjustes = {
   invitar,
   quitarInvitado,
 };
+
+export const accionesIa: AccionesIa = { captura: capturaIa, dividir: dividirIa, ordenarInbox: ordenarInboxIa, texto: textoIa, resumir: resumirIa };

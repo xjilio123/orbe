@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
+import { BotonDividir } from "@/components/ia/BotonIa";
 import { ConfirmarEliminar } from "@/components/ConfirmarEliminar";
 import { Icono } from "@/components/Icono";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
@@ -15,9 +16,10 @@ type Props = {
   hoy: string;
   base: string;
   acciones: Pick<AccionesTareas, "guardar" | "eliminar" | "crearSubtarea" | "alternar">;
+  ia?: AccionesIa;
 };
 
-export function VistaTarea({ tarea, subtareas, listas, hoy, base, acciones }: Props) {
+export function VistaTarea({ tarea, subtareas, listas, hoy, base, acciones, ia }: Props) {
   const lista = listas.find((l) => l.id === tarea.lista_id);
   const volver = lista ? { href: `/tareas/lista/${lista.id}`, texto: lista.nombre } : { href: "/tareas", texto: "Tareas" };
   const avance = progresoSubtareas(subtareas);
@@ -45,6 +47,9 @@ export function VistaTarea({ tarea, subtareas, listas, hoy, base, acciones }: Pr
             </ul>
           )}
           <CapturaRapida accion={acciones.crearSubtarea.bind(null, tarea.id)} placeholder="Agregar subtarea…" interpretar={false} />
+          {ia && subtareas.length < 20 && (
+            <BotonDividir tareaId={tarea.id} accion={ia.dividir} />
+          )}
         </section>
       )}
 

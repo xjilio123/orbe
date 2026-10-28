@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
 import { AgendaMes } from "@/components/agenda/AgendaMes";
 import { ListaDelDia, horarioEvento } from "@/components/agenda/ListaDelDia";
 import { Icono } from "@/components/Icono";
@@ -30,6 +30,7 @@ type Props = {
   google: { conectado: boolean; error: boolean };
   base: string;
   acciones: Pick<AccionesTareas, "capturar" | "alternar">;
+  ia?: AccionesIa;
 };
 
 const NOMBRES: Record<Vista, string> = { dia: "Día", semana: "Semana", mes: "Mes" };
@@ -83,7 +84,7 @@ function Navegacion({ vista, dia, hoy, base }: { vista: Vista; dia: string; hoy:
   );
 }
 
-function Semana({ dia, hoy, porDia, base, acciones }: Pick<Props, "dia" | "hoy" | "porDia" | "base" | "acciones">) {
+function Semana({ dia, hoy, porDia, base, acciones, ia }: Pick<Props, "dia" | "hoy" | "porDia" | "base" | "acciones" | "ia">) {
   const dias = diasDeSemana(dia);
   return (
     <>
@@ -102,7 +103,7 @@ function Semana({ dia, hoy, porDia, base, acciones }: Pick<Props, "dia" | "hoy" 
           </li>
         ))}
       </ol>
-      <CapturaRapida accion={acciones.capturar} fechaDefecto={dias.includes(hoy) ? hoy : dias[0]} placeholder="Agregar a esta semana…" />
+      <CapturaRapida accion={acciones.capturar} fechaDefecto={dias.includes(hoy) ? hoy : dias[0]} placeholder="Agregar a esta semana…" ia={ia?.captura} />
       {dias.map((d) => (
         <section key={d} className="flex flex-col gap-2" aria-labelledby={`dia-${d}`}>
           <h2 id={`dia-${d}`} className={`px-1 text-[17px] font-bold tracking-tight first-letter:uppercase ${d === hoy ? "text-morado" : ""}`}>
@@ -115,7 +116,7 @@ function Semana({ dia, hoy, porDia, base, acciones }: Pick<Props, "dia" | "hoy" 
   );
 }
 
-function Dia({ dia, hoy, ahora, porDia, base, acciones }: Pick<Props, "dia" | "hoy" | "ahora" | "porDia" | "base" | "acciones">) {
+function Dia({ dia, hoy, ahora, porDia, base, acciones, ia }: Pick<Props, "dia" | "hoy" | "ahora" | "porDia" | "base" | "acciones" | "ia">) {
   const items = porDia[dia] ?? [];
   const sinHora = items.filter((i) => (i.tipo === "evento" ? !i.evento.inicio : !i.tarea.hora));
   const bloques = bloquesDelDia(items);
@@ -125,7 +126,7 @@ function Dia({ dia, hoy, ahora, porDia, base, acciones }: Pick<Props, "dia" | "h
 
   return (
     <>
-      <CapturaRapida accion={acciones.capturar} fechaDefecto={dia} placeholder="Agregar a este día…" />
+      <CapturaRapida accion={acciones.capturar} fechaDefecto={dia} placeholder="Agregar a este día…" ia={ia?.captura} />
       <section className="flex flex-col gap-2" aria-labelledby="titulo-todo-el-dia">
         <h2 id="titulo-todo-el-dia" className="px-1 text-[17px] font-bold tracking-tight">
           Todo el día y sin hora
@@ -193,7 +194,7 @@ function Dia({ dia, hoy, ahora, porDia, base, acciones }: Pick<Props, "dia" | "h
 
 /** Agenda: mes (con el día elegido debajo), semana o día con sus horas. Tareas + Google Calendar. */
 export function VistaAgenda(props: Props) {
-  const { vista, dia, hoy, porDia, google, base, acciones } = props;
+  const { vista, dia, hoy, porDia, google, base, acciones, ia } = props;
   const dias = cuadriculaMes(dia);
 
   return (
@@ -216,6 +217,7 @@ export function VistaAgenda(props: Props) {
           porDia={porDia}
           capturar={acciones.capturar}
           alternar={acciones.alternar}
+          ia={ia?.captura}
         />
       )}
       {vista === "semana" && <Semana {...props} />}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
-import { CAPTURA_INICIAL, type EstadoCaptura } from "@/app/acciones/tipos";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { CAPTURA_INICIAL, type AccionesIa, type EstadoCaptura } from "@/app/acciones/tipos";
+import { Destello } from "@/components/ia/BotonIa";
 import { Icono } from "@/components/Icono";
 import { interpretarCaptura } from "@/lib/captura";
 import { etiquetaFecha, etiquetaHora, hoyLima } from "@/lib/fechas";
@@ -16,6 +17,8 @@ type Props = {
   interpretar?: boolean;
   /** Fecha para lo que se escribe sin fecha (la Agenda usa el día seleccionado). */
   fechaDefecto?: string;
+  /** Captura inteligente con IA (botón ✨): entiende frases largas y crea varias tareas. */
+  ia?: AccionesIa["captura"];
 };
 
 const PRIORIDAD = ["", "!", "!!", "!!!"];
@@ -24,7 +27,9 @@ const PRIORIDAD = ["", "!", "!!", "!!!"];
  * Barra de captura rápida. Mientras escribes muestra lo que entendió (fecha, hora, lista, prioridad),
  * calculado en el propio teléfono, sin IA. La fila de pistas tiene altura fija: nada salta al escribir.
  */
-export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…", interpretar = true, fechaDefecto }: Props) {
+export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…", interpretar = true, fechaDefecto, ia }: Props) {
+  const [pensando, iniciarIa] = useTransition();
+  const [mensajeIa, setMensajeIa] = useState<{ texto: string; error: boolean } | null>(null);
   // Sin conexión (o si la red falla al enviar), la tarea se guarda en el teléfono y se envía sola después.
   const [estado, enviar, enviando] = useActionState(async (anterior: EstadoCaptura, datos: FormData): Promise<EstadoCaptura> => {
     if (navigator.onLine) {
@@ -59,6 +64,24 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
     if (estado.n > 0) campo.current?.focus();
   }, [estado.n]);
 
+  function usarIa() {
+    const enviado = texto.trim();
+    if (!ia || !enviado) return;
+    setMensajeIa(null);
+    iniciarIa(async () => {
+      try {
+        const r = await ia(enviado, { lista_id: listaId, fecha_defecto: fechaDefecto });
+        if (r.ok) {
+          setTexto("");
+          const n = r.datos.titulos.length;
+          setMensajeIa({ texto: n === 1 ? `Creé “${r.datos.titulos[0]}”` : `Creé ${n} tareas: ${r.datos.titulos.join(", ")}`, error: false });
+        } else setMensajeIa({ texto: r.error, error: true });
+      } catch {
+        setMensajeIa({ texto: "Sin conexión: la IA necesita internet.", error: true });
+      }
+    });
+  }
+
   const hoy = hoyLima();
   const c = interpretar && texto.trim() ? interpretarCaptura(texto, hoy, fechaDefecto) : null;
   const pistas = c
@@ -84,16 +107,31 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
           id="captura"
           name={interpretar ? "texto" : "titulo"}
           value={texto}
-          onChange={(e) => setTexto(e.target.value)}
+          onChange={(e) => {
+            setTexto(e.target.value);
+            setMensajeIa(null);
+          }}
           placeholder={placeholder}
           maxLength={300}
           autoComplete="off"
           enterKeyHint="done"
           className="min-w-0 flex-1 bg-transparent py-2 text-[17px] outline-none placeholder:text-texto-2"
         />
+        {ia && (
+          <button
+            type="button"
+            onClick={usarIa}
+            disabled={pensando || texto.trim().length < 3}
+            aria-label="Crear con IA"
+            title="Crear con IA: entiende frases largas y crea varias tareas"
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-morado-relleno/12 text-morado transition active:scale-95 disabled:opacity-40"
+          >
+            <Destello className={`size-[18px] ${pensando ? "motion-safe:animate-pulse" : ""}`} />
+          </button>
+        )}
         <button
           type="submit"
-          disabled={enviando || !texto.trim()}
+          disabled={enviando || pensando || !texto.trim()}
           aria-label="Guardar"
           className="grid size-9 shrink-0 place-items-center rounded-full bg-indigo-relleno text-white transition active:scale-95 disabled:opacity-40"
         >
@@ -101,7 +139,11 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
         </button>
       </div>
       <p className="flex h-6 items-center gap-1.5 overflow-hidden px-1 text-[13px] text-texto-2" aria-live="polite">
-        {estado.error ? (
+        {pensando ? (
+          <span className="truncate font-semibold text-morado">La IA está creando tus tareas…</span>
+        ) : mensajeIa ? (
+          <span className={`truncate ${mensajeIa.error ? "text-rojo" : "font-semibold text-morado"}`}>{mensajeIa.texto}</span>
+        ) : estado.error ? (
           <span className="text-rojo">{estado.error}</span>
         ) : estado.sinConexion && pistas.length === 0 ? (
           <span className="truncate font-semibold text-naranja">Guardada sin conexión · se enviará al volver internet</span>

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { accionesApuntes } from "@/app/acciones/conjunto";
+import { accionesApuntes, accionesIa } from "@/app/acciones/conjunto";
 import { VistaPagina } from "@/components/vistas/VistaPagina";
 import { adjuntosDePagina, ancestros, enlacesFirmados, pagina as leerPagina, todasLasPaginas } from "@/lib/datos/paginas";
 import { requerirSesion } from "@/lib/supabase/servidor";
@@ -25,7 +25,7 @@ export default async function PaginaApunte({ params }: PageProps<"/apuntes/[id]"
       urls={urls}
       tamanos={Object.fromEntries(adjuntos.map((a) => [a.id, a.tamano]))}
       base=""
-      acciones={accionesApuntes}
+      acciones={accionesApuntes} ia={accionesIa}
     />
   );
 }
