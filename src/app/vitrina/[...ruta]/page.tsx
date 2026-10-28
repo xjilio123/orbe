@@ -134,6 +134,11 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         calendarioConectado={false}
         acciones={accionesAjustesVitrina}
         base={base}
+        invitados={[
+          { email: "ana@ejemplo.com", activo: true, registrado: true },
+          { email: "diana@ejemplo.com", activo: true, registrado: false },
+          { email: "luis@ejemplo.com", activo: false, registrado: false },
+        ]}
       />
     );
   }

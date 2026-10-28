@@ -3,7 +3,7 @@
 export type EstadoFormulario = { ok?: boolean; errores?: Record<string, string> };
 
 /** Captura y subtareas: `n` cambia en cada guardado para que el campo se vacíe. */
-export type EstadoCaptura = { ok: boolean; error?: string; n: number };
+export type EstadoCaptura = { ok: boolean; error?: string; n: number; /** Se guardó en el teléfono para enviarla al volver internet. */ sinConexion?: boolean };
 
 export const CAPTURA_INICIAL: EstadoCaptura = { ok: false, n: 0 };
 
@@ -43,6 +43,8 @@ export type AccionesAjustes = {
   probarAvisos: () => Promise<ResultadoGuardado>;
   guardarCalendario: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
   quitarCalendario: () => Promise<void>;
+  invitar: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  quitarInvitado: (email: string) => Promise<void>;
 };
 
 export type AccionesPapelera = {

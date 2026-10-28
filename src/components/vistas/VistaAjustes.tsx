@@ -1,8 +1,9 @@
-import { cerrarSesion } from "@/app/acciones/generales";
 import { SelectorTema } from "@/app/(app)/ajustes/SelectorTema";
 import type { AccionesAjustes } from "@/app/acciones/tipos";
 import { ActivarAvisos } from "@/components/ajustes/ActivarAvisos";
+import { BotonCerrarSesion } from "@/components/ajustes/BotonCerrarSesion";
 import { ConectarCalendario } from "@/components/ajustes/ConectarCalendario";
+import { Invitados, type Invitado } from "@/components/ajustes/Invitados";
 import { Icono } from "@/components/Icono";
 import { Logo } from "@/components/Logo";
 import { Medidor } from "@/components/Medidor";
@@ -21,9 +22,11 @@ type Props = {
   calendarioConectado: boolean;
   acciones: AccionesAjustes;
   base?: string;
+  /** Solo para la administración (si no, null y la sección no aparece). */
+  invitados?: Invitado[] | null;
 };
 
-export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "" }: Props) {
+export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "", invitados = null }: Props) {
   return (
     <Pantalla>
       <header className="pt-2">
@@ -55,15 +58,9 @@ export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConec
         <Icono nombre="adelante" className="size-4 text-texto-2" />
       </Link>
 
-      <form action={cerrarSesion}>
-        <button
-          type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-[22px] bg-superficie py-4 text-[17px] font-semibold text-rojo active:scale-[0.98]"
-        >
-          <Icono nombre="salir" className="size-5" />
-          Cerrar sesión
-        </button>
-      </form>
+      {invitados && <Invitados invitados={invitados} acciones={acciones} />}
+
+      <BotonCerrarSesion />
 
       <p className="text-center text-[13px] text-texto-2">Orbe · Hecho en Lima</p>
     </Pantalla>

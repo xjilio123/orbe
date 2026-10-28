@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { interpretarCaptura } from "@/lib/captura";
-import { hoyLima } from "@/lib/fechas";
+import { diasEntre, hoyLima } from "@/lib/fechas";
 import { requerirUsuario } from "@/lib/supabase/servidor";
 import {
   datosDe,
@@ -39,7 +39,12 @@ export async function capturarTarea(anterior: EstadoCaptura, formData: FormData)
 
   // En la Agenda, lo que se escribe sin fecha va al día que estás mirando.
   const porDefecto = esquemaFecha.safeParse(datos.fecha_defecto).success ? datos.fecha_defecto : undefined;
-  const c = interpretarCaptura(validado.data.texto, hoyLima(), porDefecto);
+  // Si se escribió sin conexión, "mañana" es respecto del día en que se escribió (hasta 7 días atrás).
+  const hoyReal = hoyLima();
+  const capturado = datos.capturado_el;
+  const hoy =
+    esquemaFecha.safeParse(capturado).success && diasEntre(capturado, hoyReal) >= 0 && diasEntre(capturado, hoyReal) <= 7 ? capturado : hoyReal;
+  const c = interpretarCaptura(validado.data.texto, hoy, porDefecto);
   if (!c.titulo) return { ...anterior, ok: false, error: "Falta el título de la tarea." };
 
   // Lista: la de la pantalla donde se capturó, o la de #nombre (se crea si no existe).

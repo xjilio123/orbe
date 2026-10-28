@@ -5,6 +5,7 @@ import { CAPTURA_INICIAL, type EstadoCaptura } from "@/app/acciones/tipos";
 import { Icono } from "@/components/Icono";
 import { interpretarCaptura } from "@/lib/captura";
 import { etiquetaFecha, etiquetaHora, hoyLima } from "@/lib/fechas";
+import { agregarPendiente } from "@/lib/pendientes";
 import { etiquetaRepetir } from "@/lib/repeticion";
 
 type Props = {
@@ -24,7 +25,26 @@ const PRIORIDAD = ["", "!", "!!", "!!!"];
  * calculado en el propio teléfono, sin IA. La fila de pistas tiene altura fija: nada salta al escribir.
  */
 export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…", interpretar = true, fechaDefecto }: Props) {
-  const [estado, enviar, enviando] = useActionState(accion, CAPTURA_INICIAL);
+  // Sin conexión (o si la red falla al enviar), la tarea se guarda en el teléfono y se envía sola después.
+  const [estado, enviar, enviando] = useActionState(async (anterior: EstadoCaptura, datos: FormData): Promise<EstadoCaptura> => {
+    if (navigator.onLine) {
+      try {
+        return await accion(anterior, datos);
+      } catch {
+        // la red falló: sigue abajo
+      }
+    }
+    if (!interpretar) return { ...anterior, ok: false, error: "Sin conexión: inténtalo al volver internet." };
+    const guardada = agregarPendiente({
+      texto: String(datos.get("texto") ?? ""),
+      lista_id: listaId,
+      fecha_defecto: fechaDefecto,
+      capturado_el: hoyLima(),
+    });
+    return guardada
+      ? { ok: true, n: anterior.n + 1, sinConexion: true }
+      : { ...anterior, ok: false, error: "No se pudo guardar en el teléfono." };
+  }, CAPTURA_INICIAL);
   const [texto, setTexto] = useState("");
   const [guardados, setGuardados] = useState(estado.n);
   const campo = useRef<HTMLInputElement>(null);
@@ -83,6 +103,8 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
       <p className="flex h-6 items-center gap-1.5 overflow-hidden px-1 text-[13px] text-texto-2" aria-live="polite">
         {estado.error ? (
           <span className="text-rojo">{estado.error}</span>
+        ) : estado.sinConexion && pistas.length === 0 ? (
+          <span className="truncate font-semibold text-naranja">Guardada sin conexión · se enviará al volver internet</span>
         ) : pistas.length > 0 ? (
           pistas.map((p) => (
             <span key={String(p)} className="shrink-0 rounded-full bg-indigo-relleno/12 px-2 py-0.5 font-semibold text-indigo">

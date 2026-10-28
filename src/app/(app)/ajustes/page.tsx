@@ -9,13 +9,15 @@ export const metadata = { title: "Ajustes · Orbe" };
 
 export default async function Ajustes() {
   const { supabase, usuario } = await requerirSesion();
-  const [{ data: perfil }, uso, galletas, { data: clave }, { count }] = await Promise.all([
+  const [{ data: perfil }, uso, galletas, { data: clave }, { count }, { data: admin }] = await Promise.all([
     supabase.from("perfiles").select("nombre,calendario_ics").eq("id", usuario.id).maybeSingle(),
     miEspacio(supabase),
     cookies(),
     supabase.rpc("clave_publica_push"),
     supabase.from("suscripciones_push").select("id", { count: "exact", head: true }),
+    supabase.rpc("soy_admin"),
   ]);
+  const invitados = admin ? ((await supabase.rpc("mis_invitados")).data ?? []) : null;
 
   return (
     <VistaAjustes
@@ -26,6 +28,7 @@ export default async function Ajustes() {
       avisos={{ clavePublica: clave ?? null, dispositivos: count ?? 0 }}
       calendarioConectado={Boolean(perfil?.calendario_ics)}
       acciones={accionesAjustes}
+      invitados={invitados}
     />
   );
 }

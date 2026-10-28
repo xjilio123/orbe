@@ -33,7 +33,11 @@ No abras un issue público. Usa **Security → Report a vulnerability** en este 
 - **Cadena de suministro:** las acciones de GitHub se fijan por SHA; Dependabot espera 7 días antes de proponer
   versiones nuevas.
 - **Funciones con privilegios:** viven en el esquema `private`, que no se expone por la API.
-- **Service worker:** no guarda páginas ni notas en el teléfono; solo archivos estáticos y una pantalla sin conexión.
+- **Service worker:** guarda en el teléfono las últimas 40 pantallas visitadas para verlas sin conexión (siempre intenta
+  primero la red). Nunca guarda `/login` ni `/auth/`, y borra todas las copias al cerrar sesión o al llegar al login.
+  Las tareas capturadas sin conexión viven en `localStorage` hasta enviarse y también se borran al cerrar sesión.
+- **Búsqueda:** `public.buscar` corre como `security definer` pero filtra siempre por `auth.uid()` (probado con pgTAP).
+- **Invitados:** solo `private.administradores` puede listar, invitar o quitar; tope de 30 activos en la base.
 - **Tema:** una cookie HttpOnly sin datos personales; cualquier valor desconocido vuelve a "automático".
 - **IA (Fase 4):** Gemini en su nivel gratuito, solo desde el servidor, con topes diarios por persona y por función.
   En ese nivel Google puede usar lo enviado para mejorar sus modelos, por eso solo se envía lo que la persona elige.
