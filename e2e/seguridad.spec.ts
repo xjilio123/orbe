@@ -9,6 +9,7 @@ const RUTAS_PRIVADAS = [
   `/tareas/lista/${UUID}`,
   `/tareas/lista/${UUID}?vista=tablero`,
   "/apuntes",
+  `/apuntes/${UUID}`,
   "/agenda",
   "/ajustes",
   "/ruta-que-no-existe",

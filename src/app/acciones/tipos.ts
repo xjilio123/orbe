@@ -7,6 +7,21 @@ export type EstadoCaptura = { ok: boolean; error?: string; n: number };
 
 export const CAPTURA_INICIAL: EstadoCaptura = { ok: false, n: 0 };
 
+export type ResultadoGuardado = { ok: boolean; error?: string };
+
+export type ResultadoSubida =
+  | { ok: true; adjunto: { id: string; tipo: string; nombre: string; tamano: number; url: string } }
+  | { ok: false; error: string };
+
+export type AccionesApuntes = {
+  crear: (padreId: string | null) => Promise<void>;
+  guardar: (id: string, datos: import("@/lib/bloques").DatosPagina) => Promise<ResultadoGuardado>;
+  favorita: (id: string, favorita: boolean) => Promise<void>;
+  eliminar: (id: string) => Promise<void>;
+  subir: (paginaId: string, formData: FormData) => Promise<ResultadoSubida>;
+  eliminarAdjunto: (id: string) => Promise<void>;
+};
+
 /** Acciones que reciben las pantallas: la app usa las reales y la vitrina unas que no hacen nada. */
 export type AccionesTareas = {
   capturar: (anterior: EstadoCaptura, formData: FormData) => Promise<EstadoCaptura>;

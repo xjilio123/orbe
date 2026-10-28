@@ -1,6 +1,7 @@
-import type { AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesApuntes, AccionesTareas } from "@/app/acciones/tipos";
+import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
 import type { Lista, Tarea } from "@/lib/tareas";
-import { capturarVitrina, formularioVitrina, nadaVitrina, subtareaVitrina } from "./acciones";
+import { capturarVitrina, formularioVitrina, guardarVitrina, nadaVitrina, subirVitrina, subtareaVitrina } from "./acciones";
 
 // Datos FICTICIOS para la vitrina: realistas en cantidad y largo de textos, para medir la fluidez.
 export const HOY = "2026-10-27";
@@ -63,4 +64,45 @@ export const accionesVitrina: AccionesTareas = {
   crearLista: formularioVitrina,
   guardarLista: formularioVitrina,
   eliminarLista: nadaVitrina,
+};
+
+// ---------- Apuntes ficticios ----------
+export const PAGINAS: PaginaResumen[] = [
+  { id: "00000000-0000-4000-8000-0000000000b1", titulo: "SQL para Data Analytics", icono: "📊", favorita: true, padre_id: null, actualizado: `${HOY}T15:00:00Z` },
+  { id: "00000000-0000-4000-8000-0000000000b2", titulo: "Window functions", icono: "🪟", favorita: false, padre_id: "00000000-0000-4000-8000-0000000000b1", actualizado: `${HOY}T14:00:00Z` },
+  { id: "00000000-0000-4000-8000-0000000000b3", titulo: "Ideas para Orbe", icono: "💡", favorita: true, padre_id: null, actualizado: "2026-10-25T20:00:00Z" },
+  { id: "00000000-0000-4000-8000-0000000000b4", titulo: "Clases de inglés ICPNA", icono: "🇬🇧", favorita: false, padre_id: null, actualizado: "2026-10-20T20:00:00Z" },
+];
+
+const FOTO = "00000000-0000-4000-8000-0000000000c1";
+export const PAGINA: Pagina = {
+  ...PAGINAS[0],
+  contenido: [
+    { id: "bloque-0001", tipo: "h2", texto: "Funciones de ventana" },
+    { id: "bloque-0002", tipo: "p", texto: "Calculan sobre un grupo de filas sin colapsarlas, a diferencia de GROUP BY. Muy usadas en reportes de ventas." },
+    { id: "bloque-0003", tipo: "lista", texto: "ROW_NUMBER() para numerar dentro de cada grupo" },
+    { id: "bloque-0004", tipo: "lista", texto: "LAG() y LEAD() para comparar con la fila anterior o siguiente" },
+    { id: "bloque-0005", tipo: "lista", texto: "SUM() OVER (...) para acumulados" },
+    { id: "bloque-0006", tipo: "codigo", texto: "SELECT mes, ventas,\n  SUM(ventas) OVER (ORDER BY mes) AS acumulado\nFROM ventas_mensuales;" },
+    { id: "bloque-0007", tipo: "aviso", texto: "PARTITION BY reinicia el cálculo en cada grupo." },
+    { id: "bloque-0008", tipo: "separador", texto: "" },
+    { id: "bloque-0009", tipo: "h3", texto: "Para repasar" },
+    { id: "bloque-0010", tipo: "todo", texto: "Hacer los ejercicios del capítulo 3", hecho: true },
+    { id: "bloque-0011", tipo: "todo", texto: "Probar RANK() vs DENSE_RANK()", hecho: false },
+    { id: "bloque-0012", tipo: "num", texto: "Leer la documentación" },
+    { id: "bloque-0013", tipo: "num", texto: "Resolver 5 ejercicios en LeetCode" },
+    { id: "bloque-0014", tipo: "imagen", texto: "Diagrama de la ventana", adjunto: FOTO, ancho: 512, alto: 512 },
+    { id: "bloque-0015", tipo: "cita", texto: "Los datos cuentan historias si sabes preguntarles." },
+    { id: "bloque-0016", tipo: "p", texto: "" },
+  ],
+};
+export const URLS_PAGINA = { [FOTO]: "/iconos/icono-512.png" };
+
+export const accionesApuntesVitrina: AccionesApuntes = {
+  crear: nadaVitrina,
+  guardar: guardarVitrina,
+  favorita: nadaVitrina,
+  eliminar: nadaVitrina,
+  subir: subirVitrina,
+  eliminarAdjunto: nadaVitrina,
 };

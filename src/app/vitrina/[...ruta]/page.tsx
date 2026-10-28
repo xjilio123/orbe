@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import Agenda from "@/app/(app)/agenda/page";
-import Apuntes from "@/app/(app)/apuntes/page";
 import { VistaAjustes } from "@/components/vistas/VistaAjustes";
+import { VistaApuntes } from "@/components/vistas/VistaApuntes";
+import { VistaPagina } from "@/components/vistas/VistaPagina";
 import { VistaHoy } from "@/components/vistas/VistaHoy";
 import { VistaLista } from "@/components/vistas/VistaLista";
 import { VistaTarea } from "@/components/vistas/VistaTarea";
 import { VistaTareas } from "@/components/vistas/VistaTareas";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
-import { DETALLE, HOY, LISTAS, SUBTAREAS, TAREAS, accionesVitrina } from "../datos";
+import { DETALLE, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, accionesApuntesVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -74,8 +75,28 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
       />
     );
   }
-  if (camino === "apuntes") return <Apuntes />;
+  if (camino === "apuntes") {
+    const hijas = new Map<string, number>();
+    for (const p of PAGINAS) if (p.padre_id) hijas.set(p.padre_id, (hijas.get(p.padre_id) ?? 0) + 1);
+    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} acciones={accionesApuntesVitrina} />;
+  }
+  if (ruta[0] === "apuntes" && ruta.length === 2) {
+    return (
+      <VistaPagina
+        pagina={PAGINA}
+        camino={[]}
+        hijas={PAGINAS.filter((p) => p.padre_id === PAGINA.id)}
+        urls={URLS_PAGINA}
+        tamanos={{}}
+        base={base}
+        acciones={accionesApuntesVitrina}
+      />
+    );
+  }
   if (camino === "agenda") return <Agenda />;
-  if (camino === "ajustes") return <VistaAjustes nombre="Ana Prueba" email="ana@ejemplo.com" tema="auto" />;
+  if (camino === "ajustes") {
+    const uso = { archivos: 12.4 * 1024 * 1024, archivosMax: 30 * 1024 * 1024, texto: 410 * 1024, textoMax: 8 * 1024 * 1024 };
+    return <VistaAjustes nombre="Ana Prueba" email="ana@ejemplo.com" tema="auto" uso={uso} />;
+  }
   notFound();
 }

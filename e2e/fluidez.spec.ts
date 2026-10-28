@@ -25,6 +25,8 @@ const PRESUPUESTO = {
   javascriptKb: 260,
   /** Tocar el check de una tarea hasta verlo marcado (ms), CPU 4× más lenta. */
   check: 150,
+  /** Lo más lento que tarda en responder una tecla en el editor (ms), CPU 4× más lenta. Google: "bueno" ≤ 200. */
+  tecla: 120,
 };
 
 const IPHONE_SAFARI =
@@ -38,6 +40,7 @@ const PANTALLAS = [
   { ruta: LISTA, titulo: "Trabajo" },
   { ruta: `${LISTA}?vista=tablero`, titulo: "Trabajo" },
   { ruta: "/vitrina/apuntes", titulo: "Apuntes" },
+  { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1", titulo: "SQL para Data Analytics" },
   { ruta: "/vitrina/agenda", titulo: "Agenda" },
   { ruta: "/vitrina/ajustes", titulo: "Ajustes" },
   { ruta: "/login", titulo: "Orbe" },
@@ -164,5 +167,37 @@ test.describe("Fluidez al usar las tareas (CPU 4× más lenta)", () => {
     await expect(page.getByText("#casa")).toBeVisible();
     await expect(page.getByText("Prioridad !!")).toBeVisible();
     expect((await seccion.boundingBox())!.y, "la lista no se corre al escribir").toBe(antes);
+  });
+});
+
+test.describe("Fluidez al escribir apuntes (CPU 4× más lenta)", () => {
+  test("cada tecla responde rápido y Enter no mueve lo de arriba", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.addInitScript(() => {
+      const w = window as unknown as { __teclaMax: number };
+      w.__teclaMax = 0;
+      new PerformanceObserver((lista) => {
+        for (const e of lista.getEntries()) w.__teclaMax = Math.max(w.__teclaMax, e.duration);
+      }).observe({ type: "event", durationThreshold: 16, buffered: true } as PerformanceObserverInit);
+    });
+    await page.goto("/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1");
+    await medir(page);
+
+    // Posición dentro de la página (no en pantalla): al tocar un bloque la página se desplaza hacia él, y eso no es un salto.
+    const titulo = page.getByRole("textbox", { name: "Título 2" });
+    const posicion = () => titulo.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const antes = await posicion();
+    const ultimo = page.getByRole("textbox", { name: /Escribe, o usa #/ }).last();
+    await ultimo.click();
+    await ultimo.pressSequentially("Las funciones de ventana sirven para rankings y acumulados.");
+    await page.keyboard.press("Enter");
+    await page.keyboard.type("- ");
+    await page.keyboard.type("Nuevo punto de la lista");
+    await expect(page.getByRole("textbox", { name: "Elemento de la lista" }).last()).toHaveValue("Nuevo punto de la lista");
+
+    const teclaMax = await page.evaluate(() => (window as unknown as { __teclaMax: number }).__teclaMax);
+    console.log(`tecla más lenta en el editor: ${Math.round(teclaMax)} ms`);
+    expect(teclaMax, "respuesta de la tecla más lenta").toBeLessThanOrEqual(PRESUPUESTO.tecla);
+    expect(await posicion(), "lo de arriba no se mueve al escribir").toBe(antes);
   });
 });

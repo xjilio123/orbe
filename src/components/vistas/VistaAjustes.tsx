@@ -2,10 +2,13 @@ import { cerrarSesion } from "@/app/acciones/generales";
 import { SelectorTema } from "@/app/(app)/ajustes/SelectorTema";
 import { Icono } from "@/components/Icono";
 import { Logo } from "@/components/Logo";
+import { Medidor } from "@/components/Medidor";
 import { Pantalla } from "@/components/ui";
 import type { Tema } from "@/lib/tema";
 
-export function VistaAjustes({ nombre, email, tema }: { nombre: string; email: string; tema: Tema }) {
+type Uso = { archivos: number; archivosMax: number; texto: number; textoMax: number };
+
+export function VistaAjustes({ nombre, email, tema, uso }: { nombre: string; email: string; tema: Tema; uso: Uso }) {
   return (
     <Pantalla>
       <header className="pt-2">
@@ -21,6 +24,8 @@ export function VistaAjustes({ nombre, email, tema }: { nombre: string; email: s
       </section>
 
       <SelectorTema actual={tema} />
+
+      <Medidor uso={uso} />
 
       <form action={cerrarSesion}>
         <button
