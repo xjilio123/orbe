@@ -1,5 +1,6 @@
-import { accionesIa, accionesTareas } from "@/app/acciones/conjunto";
+import { accionesIa, accionesProgreso, accionesTareas } from "@/app/acciones/conjunto";
 import { VistaHoy } from "@/components/vistas/VistaHoy";
+import { misFechas, misHabitos } from "@/lib/datos/progreso";
 import { listas, tareasActivas } from "@/lib/datos/tareas";
 import { fechaEncabezado, hoyLima, saludo } from "@/lib/fechas";
 import { requerirSesion } from "@/lib/supabase/servidor";
@@ -13,11 +14,13 @@ export default async function Hoy() {
   const { supabase, usuario } = await requerirSesion();
   const hoy = hoyLima();
   // Consultas en paralelo: la pantalla espera solo a la más lenta.
-  const [{ data: perfil }, tareas, misListas, { data: guardado }] = await Promise.all([
+  const [{ data: perfil }, tareas, misListas, { data: guardado }, habitos, fechas] = await Promise.all([
     supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle(),
     tareasActivas(supabase, hoy),
     listas(supabase),
     supabase.from("ia_guardado").select("clave,fecha,datos"),
+    misHabitos(supabase, hoy),
+    misFechas(supabase, hoy),
   ]);
   // El plan vale solo hoy y el resumen, solo esta semana.
   const plan = guardado?.find((g) => g.clave === "plan" && g.fecha === hoy)?.datos as unknown as Plan | undefined;
@@ -38,6 +41,9 @@ export default async function Hoy() {
       acciones={accionesTareas}
       ia={accionesIa}
       iaGuardado={{ plan: plan ?? null, semana: semana ?? null }}
+      habitos={habitos}
+      fechas={fechas}
+      progreso={accionesProgreso}
     />
   );
 }

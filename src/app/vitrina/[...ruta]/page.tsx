@@ -4,7 +4,9 @@ import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
 import { VistaNuevaPagina } from "@/components/vistas/VistaNuevaPagina";
+import { VistaFoco } from "@/components/vistas/VistaFoco";
 import { VistaPapelera } from "@/components/vistas/VistaPapelera";
+import { VistaProgreso } from "@/components/vistas/VistaProgreso";
 import { VistaPreguntar } from "@/components/vistas/VistaPreguntar";
 import { VistaPagina } from "@/components/vistas/VistaPagina";
 import { VistaHoy } from "@/components/vistas/VistaHoy";
@@ -15,7 +17,7 @@ import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
 import { PLAN_VITRINA } from "../ejemplosIa";
-import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
+import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -39,6 +41,9 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         listas={LISTAS}
         acciones={accionesVitrina} ia={accionesIaVitrina}
         iaGuardado={{ plan: PLAN_VITRINA, semana: null }}
+        habitos={HABITOS}
+        fechas={FECHAS}
+        progreso={accionesProgresoVitrina}
       />
     );
   }
@@ -95,6 +100,26 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
   }
   if (camino === "preguntar") {
     return <VistaPreguntar base={base} preguntar={accionesIaVitrina.preguntar} />;
+  }
+  if (camino === "progreso") {
+    return (
+      <VistaProgreso
+        hoy={HOY}
+        base={base}
+        anio={2026}
+        habitos={HABITOS}
+        metas={METAS}
+        fechas={FECHAS}
+        estadisticas={ESTADISTICAS}
+        minutosHoy={50}
+        listas={LISTAS}
+        acciones={accionesProgresoVitrina}
+      />
+    );
+  }
+  if (camino === "foco") {
+    const pendientes = TAREAS.filter((t) => t.estado !== "hecha").map((t) => ({ id: t.id, titulo: t.titulo }));
+    return <VistaFoco base={base} tareas={pendientes} tareaInicial={pendientes[0].id} minutosHoy={50} guardar={accionesProgresoVitrina.guardarFoco} />;
   }
   if (camino === "papelera") {
     return <VistaPapelera tareas={PAPELERA.tareas} paginas={PAPELERA.paginas} base={base} ahora={`${HOY}T20:00:00Z`} acciones={accionesPapeleraVitrina} />;

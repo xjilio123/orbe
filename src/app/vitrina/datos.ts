@@ -1,4 +1,5 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
+import type { FechaImportante, Habito, Meta, SemanaEstadistica } from "@/lib/progreso";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
 import type { Lista, Tarea } from "@/lib/tareas";
@@ -180,4 +181,48 @@ export const accionesIaVitrina: AccionesIa = {
   tarjetas: tarjetasVitrina,
   foto: fotoVitrina,
   audio: audioVitrina,
+};
+
+// ---------- Progreso ficticio (hábitos, metas, fechas y estadísticas) ----------
+// HOY es martes 27: la semana empieza el lunes 26.
+export const HABITOS: Habito[] = [
+  { id: "00000000-0000-4000-8000-0000000000d1", nombre: "Leer 20 min", icono: "📚", color: "naranja", dias_semana: 7, hecho_hoy: true, marcas_semana: ["2026-10-26", HOY], racha: 12 },
+  { id: "00000000-0000-4000-8000-0000000000d2", nombre: "Gimnasio", icono: "💪", color: "rojo", dias_semana: 3, hecho_hoy: false, marcas_semana: ["2026-10-26"], racha: 4 },
+  { id: "00000000-0000-4000-8000-0000000000d3", nombre: "Tomar 2 L de agua", icono: "💧", color: "celeste", dias_semana: 7, hecho_hoy: false, marcas_semana: ["2026-10-26"], racha: 1 },
+  { id: "00000000-0000-4000-8000-0000000000d4", nombre: "Practicar inglés", icono: "🇬🇧", color: "morado", dias_semana: 5, hecho_hoy: true, marcas_semana: ["2026-10-26", HOY], racha: 0 },
+];
+
+export const METAS: Meta[] = [
+  { id: "00000000-0000-4000-8000-0000000000e1", titulo: "Leer 12 libros", tipo: "numero", lista_id: null, lista: null, objetivo: 12, actual: 9, unidad: "libros", color: "naranja" },
+  { id: "00000000-0000-4000-8000-0000000000e2", titulo: "Aprobar el B2 de inglés", tipo: "lista", lista_id: "00000000-0000-4000-8000-0000000000a3", lista: "Inglés", objetivo: 14, actual: 6, unidad: "", color: "morado" },
+  { id: "00000000-0000-4000-8000-0000000000e3", titulo: "Correr 300 km", tipo: "numero", lista_id: null, lista: null, objetivo: 300, actual: 212.5, unidad: "km", color: "verde" },
+];
+
+export const FECHAS: FechaImportante[] = [
+  { id: "00000000-0000-4000-8000-0000000000f1", titulo: "Examen final de SQL", fecha: "2026-11-09", icono: "📝", color: "rojo" },
+  { id: "00000000-0000-4000-8000-0000000000f2", titulo: "Viaje a Cusco", fecha: "2026-12-18", icono: "✈️", color: "azul" },
+  { id: "00000000-0000-4000-8000-0000000000f3", titulo: "Entrega del portfolio", fecha: "2026-10-30", icono: "🎯", color: "naranja" },
+];
+
+export const ESTADISTICAS: SemanaEstadistica[] = [
+  { semana: "2026-09-07", tareas: 9, minutos: 75 },
+  { semana: "2026-09-14", tareas: 14, minutos: 150 },
+  { semana: "2026-09-21", tareas: 11, minutos: 100 },
+  { semana: "2026-09-28", tareas: 17, minutos: 225 },
+  { semana: "2026-10-05", tareas: 8, minutos: 50 },
+  { semana: "2026-10-12", tareas: 15, minutos: 175 },
+  { semana: "2026-10-19", tareas: 19, minutos: 250 },
+  { semana: "2026-10-26", tareas: 6, minutos: 50 },
+];
+
+export const accionesProgresoVitrina: AccionesProgreso = {
+  crearHabito: formularioVitrina,
+  eliminarHabito: nadaVitrina,
+  marcarHabito: guardarVitrina,
+  crearMeta: formularioVitrina,
+  avanzarMeta: guardarVitrina,
+  eliminarMeta: nadaVitrina,
+  crearFecha: formularioVitrina,
+  eliminarFecha: nadaVitrina,
+  guardarFoco: guardarVitrina,
 };

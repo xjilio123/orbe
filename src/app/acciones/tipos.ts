@@ -53,7 +53,19 @@ export type AccionesPapelera = {
   vaciar: () => Promise<void>;
 };
 
-export type ResultadoBusqueda = { tipo: "tarea" | "pagina"; id: string; titulo: string; icono: string; detalle: string };
+export type AccionesProgreso = {
+  crearHabito: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  eliminarHabito: (id: string) => Promise<void>;
+  marcarHabito: (id: string, fecha: string, hecho: boolean) => Promise<ResultadoGuardado>;
+  crearMeta: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  avanzarMeta: (id: string, actual: number) => Promise<ResultadoGuardado>;
+  eliminarMeta: (id: string) => Promise<void>;
+  crearFecha: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  eliminarFecha: (id: string) => Promise<void>;
+  guardarFoco: (datos: { tarea_id: string | null; inicio: string; minutos: number }) => Promise<ResultadoGuardado>;
+};
+
+export type ResultadoBusqueda ={ tipo: "tarea" | "pagina"; id: string; titulo: string; icono: string; detalle: string };
 export type Buscar = (consulta: string) => Promise<ResultadoBusqueda[]>;
 
 export type ResultadoIa<T> = { ok: true; datos: T } | { ok: false; error: string };

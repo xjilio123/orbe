@@ -1,19 +1,21 @@
 import Link from "next/link";
-import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
 import { Anillo } from "@/components/Anillo";
 import { Icono } from "@/components/Icono";
 import { TuDiaIa } from "@/components/ia/TuDiaIa";
+import { AnillosHabitos } from "@/components/progreso/AnillosHabitos";
 import { AvisoInstalar } from "@/components/pwa/AvisoInstalar";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
 import { FilaTarea } from "@/components/tareas/FilaTarea";
 import { Encabezado, IconoModulo, Pantalla, TEXTO_COLOR, TituloSeccion, enlace, type ColorModulo } from "@/components/ui";
 import type { NombreIcono } from "@/components/Icono";
 import type { Plan, ResumenSemana } from "@/lib/ia/contenido";
+import { proximasFechas, textoFaltan, type FechaImportante, type Habito } from "@/lib/progreso";
 import type { Lista, Tarea } from "@/lib/tareas";
 
 const proximamente: { nombre: string; texto: string; icono: NombreIcono; color: ColorModulo; fase: string }[] = [
-  { nombre: "Enlaces entre notas", texto: "Backlinks y modo estudio.", icono: "apuntes", color: "naranja", fase: "Fase 5" },
-  { nombre: "Hábitos y metas", texto: "Rachas, metas y modo estudio.", icono: "check", color: "verde", fase: "Fase 5" },
+  { nombre: "Enlaces entre notas", texto: "Backlinks, mapa de notas y modo estudio.", icono: "apuntes", color: "naranja", fase: "Fase 5" },
+  { nombre: "Revisión semanal", texto: "Matriz urgente/importante y nuevas vistas.", icono: "tablero", color: "azul", fase: "Fase 5" },
 ];
 
 type Props = {
@@ -29,12 +31,16 @@ type Props = {
   ia?: AccionesIa;
   /** Plan del día y resumen semanal guardados (hechos con IA). */
   iaGuardado?: { plan: Plan | null; semana: ResumenSemana | null };
+  habitos?: Habito[];
+  fechas?: FechaImportante[];
+  progreso?: Pick<AccionesProgreso, "marcarHabito">;
 };
 
 /** Pantalla Hoy sin acceso a datos: la página real y la vitrina le pasan lo que debe mostrar. */
-export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, listas, acciones, ia, iaGuardado }: Props) {
+export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, listas, acciones, ia, iaGuardado, habitos = [], fechas = [], progreso }: Props) {
   const porId = new Map(listas.map((l) => [l.id, l]));
   const quedan = resumen.total - resumen.hechas;
+  const proximas = proximasFechas(fechas, hoy, 3);
 
   return (
     <Pantalla>
@@ -84,6 +90,38 @@ export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, lis
         )}
       </section>
 
+      {habitos.length > 0 && progreso && (
+        <section className="flex flex-col gap-2" aria-labelledby="titulo-habitos-hoy">
+          <TituloSeccion
+            id="titulo-habitos-hoy"
+            titulo="Hábitos"
+            extra={
+              <Link href={enlace(base, "/progreso")} className="font-semibold text-azul">
+                Progreso
+              </Link>
+            }
+          />
+          <AnillosHabitos habitos={habitos} hoy={hoy} marcar={progreso.marcarHabito} />
+        </section>
+      )}
+
+      {proximas.length > 0 && (
+        <section className="flex flex-col gap-2" aria-labelledby="titulo-fechas-hoy">
+          <TituloSeccion id="titulo-fechas-hoy" titulo="Cuenta regresiva" />
+          <ul className="divide-y divide-separador/60 overflow-hidden rounded-[22px] bg-superficie">
+            {proximas.map((f) => (
+              <li key={f.id} className="flex items-center gap-3 px-4 py-3">
+                <span aria-hidden="true" className="text-[22px]">
+                  {f.icono}
+                </span>
+                <p className="min-w-0 flex-1 truncate text-[17px] font-semibold">{f.titulo}</p>
+                <span className={`shrink-0 text-[15px] font-semibold ${TEXTO_COLOR[f.color]}`}>{textoFaltan(f.fecha, hoy)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {ia && <TuDiaIa plan={iaGuardado?.plan ?? null} semana={iaGuardado?.semana ?? null} ia={ia} />}
 
       <Link
@@ -95,6 +133,20 @@ export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, lis
         <span className="text-[15px] text-texto-2">{inbox === 0 ? "Vacío" : `${inbox} sin ordenar`}</span>
         <Icono nombre="adelante" className="size-4 text-texto-2" />
       </Link>
+
+      {habitos.length === 0 && (
+        <Link
+          href={enlace(base, "/progreso")}
+          className="flex items-center gap-3 rounded-[22px] bg-superficie px-4 py-3 active:scale-[0.99]"
+        >
+          <IconoModulo nombre="llama" color="naranja" />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="text-[17px] font-semibold">Progreso</span>
+            <span className="truncate text-[15px] text-texto-2">Hábitos, metas, fechas y modo foco</span>
+          </div>
+          <Icono nombre="adelante" className="size-4 text-texto-2" />
+        </Link>
+      )}
 
       <section className="flex flex-col gap-2" aria-labelledby="titulo-camino">
         <TituloSeccion id="titulo-camino" titulo="En camino" />

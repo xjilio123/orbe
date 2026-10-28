@@ -53,6 +53,16 @@ export function VistaTarea({ tarea, subtareas, listas, hoy, base, acciones, ia }
         </section>
       )}
 
+      {!esSubtarea && tarea.estado !== "hecha" && (
+        <Link
+          href={enlace(base, `/foco?tarea=${tarea.id}`)}
+          className="flex items-center justify-center gap-2 rounded-[22px] bg-superficie py-4 text-[17px] font-semibold text-rojo active:scale-[0.98]"
+        >
+          <Icono nombre="foco" className="size-5" />
+          Enfocarme en esta tarea
+        </Link>
+      )}
+
       <ConfirmarEliminar
         texto="Mover a la papelera"
         pregunta={`¿Mover “${tarea.titulo}” a la papelera?`}

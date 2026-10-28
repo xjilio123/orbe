@@ -70,6 +70,58 @@ export const esquemaLista = z.object({
   color: z.enum(COLORES_LISTA),
 });
 
+// ---------- Progreso: hábitos, metas, fechas importantes y foco ----------
+
+const icono = (porDefecto: string) =>
+  z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : porDefecto))
+    .pipe(z.string().min(1).max(8, "Usa un solo emoji"));
+
+const numeroPositivo = (mensaje: string) =>
+  z
+    .string()
+    .trim()
+    .transform((s) => Number(s.replace(",", ".")))
+    .pipe(z.number({ error: mensaje }).positive(mensaje).max(1_000_000_000, "Ese número es demasiado grande"));
+
+export const esquemaHabito = z.object({
+  nombre: textoLimpio(60).pipe(z.string().min(1, "Ponle un nombre al hábito")),
+  icono: icono("✅"),
+  color: z.enum(COLORES_LISTA),
+  dias_semana: z.coerce.number().int().min(1).max(7),
+});
+
+export const esquemaMeta = z.discriminatedUnion("tipo", [
+  z.object({
+    tipo: z.literal("numero"),
+    titulo: textoLimpio(120).pipe(z.string().min(1, "Escribe tu meta")),
+    objetivo: numeroPositivo("Escribe cuánto quieres lograr (un número mayor que 0)"),
+    unidad: textoLimpio(20),
+    color: z.enum(COLORES_LISTA),
+  }),
+  z.object({
+    tipo: z.literal("lista"),
+    titulo: textoLimpio(120).pipe(z.string().min(1, "Escribe tu meta")),
+    lista_id: z.uuid("Elige la lista que mide tu avance"),
+    color: z.enum(COLORES_LISTA),
+  }),
+]);
+
+export const esquemaFechaImportante = z.object({
+  titulo: textoLimpio(80).pipe(z.string().min(1, "Escribe qué pasa ese día")),
+  fecha: z.iso.date("Elige la fecha"),
+  icono: icono("📅"),
+  color: z.enum(COLORES_LISTA),
+});
+
+export const esquemaSesionFoco = z.object({
+  tarea_id: z.uuid().nullable(),
+  inicio: z.iso.datetime({ offset: true }),
+  minutos: z.number().int().min(1).max(180),
+});
+
 /** Convierte un FormData en objeto plano (solo campos de texto). */
 export function datosDe(formData: FormData): Record<string, string> {
   const datos: Record<string, string> = {};
