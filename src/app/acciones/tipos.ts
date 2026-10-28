@@ -39,6 +39,19 @@ export type AccionesOrganizacion = {
   eliminarVista: (id: string) => Promise<void>;
 };
 
+/** Checklists reutilizables y biblioteca. */
+export type AccionesColeccion = {
+  crearChecklist: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  eliminarChecklist: (id: string) => Promise<void>;
+  agregarItem: (checklistId: string, texto: string) => Promise<ResultadoGuardado>;
+  alternarItem: (id: string, hecho: boolean) => Promise<void>;
+  eliminarItem: (id: string) => Promise<void>;
+  desmarcarTodo: (checklistId: string) => Promise<void>;
+  crearObra: (anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  actualizarObra: (id: string, cambios: { progreso?: number; estado?: string; nota?: number | null }) => Promise<ResultadoGuardado>;
+  eliminarObra: (id: string) => Promise<void>;
+};
+
 export type ResultadoImportacion = { ok: true; creadas: number; carpetaId: string } | { ok: false; error: string; carpetaId?: string };
 
 /** Enlaces entre notas e importación de Markdown. */

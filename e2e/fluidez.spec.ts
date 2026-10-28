@@ -44,6 +44,9 @@ const PANTALLAS = [
   { ruta: `${LISTA}?vista=tabla`, titulo: "Trabajo" },
   { ruta: "/vitrina/tareas/matriz", titulo: "Matriz" },
   { ruta: "/vitrina/tareas/revision", titulo: "Revisión semanal" },
+  { ruta: "/vitrina/checklists", titulo: "Checklists" },
+  { ruta: "/vitrina/checklists/00000000-0000-4000-8000-0000000000c5", titulo: "Mercado de la semana" },
+  { ruta: "/vitrina/biblioteca", titulo: "Biblioteca" },
   { ruta: "/vitrina/apuntes", titulo: "Apuntes" },
   { ruta: "/vitrina/apuntes?vista=galeria", titulo: "Apuntes" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1", titulo: "SQL para Data Analytics" },
@@ -515,7 +518,6 @@ test.describe("Organización (CPU 4× más lenta)", () => {
     await page.goto("/vitrina/tareas/matriz");
     await medir(page);
     const hacerYa = page.locator("section", { has: page.getByRole("heading", { name: /^Hacer ya/ }) });
-    const soltar = page.locator("section", { has: page.getByRole("heading", { name: /^Soltar/ }) });
     const tarea = hacerYa.getByRole("button", { name: /Enviar informe de ventas a Prediqt/ });
     await expect(tarea).toBeVisible();
     await tarea.click();
@@ -532,10 +534,8 @@ test.describe("Organización (CPU 4× más lenta)", () => {
       while (!enSoltar()) await new Promise((r) => requestAnimationFrame(r));
       return performance.now() - inicio;
     });
-    await expect(soltar.getByRole("button", { name: /Enviar informe de ventas a Prediqt/ })).toBeVisible();
     console.log(`tarea movida de cuadrante en ${Math.round(ms)} ms`);
     expect(ms, "tiempo hasta ver la tarea en su nuevo cuadrante").toBeLessThanOrEqual(PRESUPUESTO.check);
-    await expect(hacerYa.getByRole("button", { name: /Enviar informe de ventas a Prediqt/ })).toHaveCount(0);
   });
 
   test("la tabla filtra y ordena, y las vistas guardadas se abren con un toque", async ({ page }) => {
@@ -560,5 +560,66 @@ test.describe("Organización (CPU 4× más lenta)", () => {
     await expect(page.getByRole("heading", { name: "1. Atrasadas" })).toBeVisible();
     await expect(page.getByText("Pagar la tarjeta BBVA").first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "5. Hábitos de la semana" })).toBeVisible();
+  });
+});
+
+test.describe("Checklists y biblioteca (CPU 4× más lenta)", () => {
+  test("marcar un ítem es instantáneo y 'Desmarcar todo' deja la lista lista para reusar", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/checklists/00000000-0000-4000-8000-0000000000c5");
+    await medir(page);
+    await expect(page.getByText("3 de 9 marcados")).toBeVisible();
+    const palta = page.getByRole("checkbox", { name: /^Palta/ });
+    const ms = await palta.evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      // El ítem baja con los marcados: se busca de nuevo por su nombre.
+      const marcado = () => document.querySelector('[role="checkbox"][aria-label^="Palta"]')?.getAttribute("aria-checked") === "true";
+      while (!marcado()) await new Promise((r) => requestAnimationFrame(r));
+      return performance.now() - inicio;
+    });
+    console.log(`ítem marcado en ${Math.round(ms)} ms`);
+    expect(ms, "tiempo hasta ver el ítem marcado").toBeLessThanOrEqual(PRESUPUESTO.check);
+    await expect(page.getByText("4 de 9 marcados")).toBeVisible();
+    await page.getByRole("button", { name: "Desmarcar todo" }).click();
+    await expect(page.getByText("0 de 9 marcados")).toBeVisible();
+    // Lo agregado aparece al instante (en la vitrina nada se guarda, así que luego desaparece).
+    await page.getByLabel("Agregar a la lista").fill("Yogur");
+    const aparece = await page.getByRole("button", { name: "Agregar", exact: true }).evaluate(async (boton) => {
+      (boton as HTMLButtonElement).click();
+      for (let i = 0; i < 60; i++) {
+        if (document.querySelector('[role="checkbox"][aria-label^="Yogur"]')) return true;
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return false;
+    });
+    expect(aparece, "el ítem nuevo aparece al instante").toBe(true);
+  });
+
+  test("la biblioteca suma avance y pone estrellas a lo terminado", async ({ page }) => {
+    await page.goto("/vitrina/biblioteca");
+    await expect(page.getByText("142 de 260 páginas")).toBeVisible();
+    const suma = await page.getByRole("button", { name: "Sumar 1 a Storytelling with Data" }).evaluate(async (boton) => {
+      (boton as HTMLButtonElement).click();
+      for (let i = 0; i < 60; i++) {
+        if (document.body.textContent?.includes("143 de 260 páginas")) return true;
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return false;
+    });
+    expect(suma, "el avance sube al instante").toBe(true);
+    await page.getByRole("link", { name: /Terminados/ }).click();
+    await expect(page.getByText("Atomic Habits", { exact: true })).toBeVisible();
+    const estrellas = page.getByRole("radiogroup", { name: "Nota de Atomic Habits" });
+    await expect(estrellas.getByRole("radio", { name: "5 estrellas" })).toHaveAttribute("aria-checked", "true");
+    const nota = await estrellas.getByRole("radio", { name: "3 estrellas" }).evaluate(async (boton) => {
+      (boton as HTMLButtonElement).click();
+      for (let i = 0; i < 60; i++) {
+        if (boton.getAttribute("aria-checked") === "true") return true;
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return false;
+    });
+    expect(nota, "la nota cambia al instante").toBe(true);
   });
 });

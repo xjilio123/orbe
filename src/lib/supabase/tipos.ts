@@ -56,6 +56,122 @@ export type Database = {
           },
         ]
       }
+      biblioteca: {
+        Row: {
+          actualizado: string
+          autor: string
+          creado: string
+          estado: string
+          id: string
+          nota: number | null
+          progreso: number
+          resena: string
+          terminado_en: string | null
+          tipo: string
+          titulo: string
+          total: number | null
+          user_id: string
+        }
+        Insert: {
+          actualizado?: string
+          autor?: string
+          creado?: string
+          estado?: string
+          id?: string
+          nota?: number | null
+          progreso?: number
+          resena?: string
+          terminado_en?: string | null
+          tipo?: string
+          titulo: string
+          total?: number | null
+          user_id?: string
+        }
+        Update: {
+          actualizado?: string
+          autor?: string
+          creado?: string
+          estado?: string
+          id?: string
+          nota?: number | null
+          progreso?: number
+          resena?: string
+          terminado_en?: string | null
+          tipo?: string
+          titulo?: string
+          total?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      checklist_items: {
+        Row: {
+          checklist_id: string
+          creado: string
+          hecho: boolean
+          id: string
+          orden: number
+          texto: string
+          user_id: string
+        }
+        Insert: {
+          checklist_id: string
+          creado?: string
+          hecho?: boolean
+          id?: string
+          orden?: number
+          texto: string
+          user_id?: string
+        }
+        Update: {
+          checklist_id?: string
+          creado?: string
+          hecho?: boolean
+          id?: string
+          orden?: number
+          texto?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_user_id_fkey"
+            columns: ["checklist_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      checklists: {
+        Row: {
+          color: string
+          creado: string
+          icono: string
+          id: string
+          nombre: string
+          orden: number
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          creado?: string
+          icono?: string
+          id?: string
+          nombre: string
+          orden?: number
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          creado?: string
+          icono?: string
+          id?: string
+          nombre?: string
+          orden?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       diario: {
         Row: {
           animo: number | null
