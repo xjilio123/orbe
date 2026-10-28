@@ -151,4 +151,6 @@ export const accionesAjustesVitrina: AccionesAjustes = {
   probarAvisos: guardarVitrina,
   guardarCalendario: formularioVitrina,
   quitarCalendario: nadaVitrina,
+  invitar: formularioVitrina,
+  quitarInvitado: nadaVitrina,
 };

@@ -327,6 +327,18 @@ export type Database = {
         }[]
       }
       clave_publica_push: { Args: never; Returns: string }
+      invitar: { Args: { p_email: string }; Returns: undefined }
+      mis_invitados: {
+        Args: never
+        Returns: {
+          activo: boolean
+          creado: string
+          email: string
+          registrado: boolean
+        }[]
+      }
+      quitar_invitado: { Args: { p_email: string }; Returns: undefined }
+      soy_admin: { Args: never; Returns: boolean }
       guardar_suscripcion_push: {
         Args: {
           p_auth: string

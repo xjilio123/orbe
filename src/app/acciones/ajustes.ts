@@ -77,3 +77,24 @@ export async function quitarCalendario(): Promise<void> {
   olvidarCalendario(usuario.id);
   revalidatePath("/", "layout");
 }
+
+/** Invita un correo (solo la administración; la base lo verifica y pone el tope de 30). */
+export async function invitar(_anterior: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!z.email().safeParse(email).success || email.length > 254) return { errores: { email: "Escribe un correo válido." } };
+  const { supabase } = await requerirUsuario();
+  const { error } = await supabase.rpc("invitar", { p_email: email });
+  if (error) {
+    const msg = error.message.includes("30 personas") ? "Ya hay 30 personas invitadas: quita a alguien primero." : "No se pudo invitar.";
+    return { errores: { email: msg } };
+  }
+  revalidatePath("/ajustes");
+  return { ok: true };
+}
+
+export async function quitarInvitado(email: string): Promise<void> {
+  if (typeof email !== "string" || email.length > 254) return;
+  const { supabase } = await requerirUsuario();
+  await supabase.rpc("quitar_invitado", { p_email: email });
+  revalidatePath("/ajustes");
+}

@@ -1,9 +1,13 @@
 // Service worker de Orbe.
-// Privacidad: NO guarda páginas ni notas en el teléfono. Solo cachea archivos estáticos
-// (JS/CSS con hash, íconos) y una pantalla "sin conexión". El modo offline con datos llega en la Fase 3.
+// Sin conexión: guarda en el teléfono las últimas pantallas que visitaste (máximo 40) para poder verlas
+// sin internet. Siempre intenta primero la red (datos frescos); la copia solo se usa si no hay conexión.
+// Al cerrar sesión (o al abrir la pantalla de login) esas copias se borran.
 // Avisos push: muestra el aviso que manda Orbe y, al tocarlo, abre la tarea dentro de la app.
-const VERSION = "orbe-v2";
+const VERSION = "orbe-v3";
+const PANTALLAS = "orbe-pantallas-v1";
+const MAX_PANTALLAS = 40;
 const PRECACHE = ["/offline", "/iconos/icono-192.png"];
+const NUNCA_GUARDAR = ["/login", "/auth/", "/offline", "/sw.js", "/api/"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -18,10 +22,38 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((claves) => Promise.all(claves.filter((c) => c !== VERSION).map((c) => caches.delete(c))))
+      .then((claves) => Promise.all(claves.filter((c) => c !== VERSION && c !== PANTALLAS).map((c) => caches.delete(c))))
       .then(() => self.clients.claim()),
   );
 });
+
+const sePuedeGuardar = (url) => url.origin === self.location.origin && !NUNCA_GUARDAR.some((r) => url.pathname.startsWith(r));
+
+/** Guarda una pantalla (solo HTML propio, sin redirecciones) y deja las 40 más recientes. */
+async function guardarPantalla(clave, respuesta) {
+  if (!respuesta.ok || respuesta.redirected || respuesta.type !== "basic") return;
+  if (!(respuesta.headers.get("content-type") || "").includes("text/html")) return;
+  // También sus archivos JS y CSS (con hash, no cambian): así la pantalla funciona completa sin conexión.
+  const html = await respuesta.clone().text();
+  const recursos = [...new Set(html.match(/\/_next\/static\/[\w./-]+?\.(?:js|css)/g) || [])].slice(0, 80);
+  const estaticos = await caches.open(VERSION);
+  await Promise.all(
+    recursos.map(async (r) => {
+      if (await estaticos.match(r)) return;
+      try {
+        const archivo = await fetch(r);
+        if (archivo.ok) await estaticos.put(r, archivo);
+      } catch {
+        // sin conexión: queda para la próxima
+      }
+    }),
+  );
+  const cache = await caches.open(PANTALLAS);
+  await cache.delete(clave); // al volver a guardarla pasa a ser la más reciente
+  await cache.put(clave, respuesta);
+  const claves = await cache.keys();
+  await Promise.all(claves.slice(0, Math.max(0, claves.length - MAX_PANTALLAS)).map((k) => cache.delete(k)));
+}
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -47,9 +79,54 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navegación: siempre a la red (datos frescos y privados). Sin conexión: pantalla "offline".
-  if (request.mode === "navigate") {
+  if (request.mode !== "navigate") return;
+
+  // Pantalla de login: la sesión terminó, se borran las copias guardadas.
+  if (url.pathname === "/login") {
+    event.waitUntil(caches.delete(PANTALLAS));
     event.respondWith(fetch(request).catch(() => caches.match("/offline")));
+    return;
+  }
+
+  // Navegación: primero la red; sin conexión, la última copia de esa pantalla o la pantalla "offline".
+  event.respondWith(
+    fetch(request)
+      .then((respuesta) => {
+        if (sePuedeGuardar(url)) event.waitUntil(guardarPantalla(url.href, respuesta.clone()));
+        return respuesta;
+      })
+      .catch(
+        async () =>
+          (await caches.match(url.href, { cacheName: PANTALLAS })) ||
+          (await caches.match(url.origin + url.pathname, { cacheName: PANTALLAS })) ||
+          caches.match("/offline"),
+      ),
+  );
+});
+
+// La app pide guardar las pantallas principales (y la que estás viendo) para tenerlas sin conexión,
+// o borrar todo al cerrar sesión.
+self.addEventListener("message", (event) => {
+  const datos = event.data || {};
+  if (datos.tipo === "olvidar") {
+    event.waitUntil(caches.delete(PANTALLAS));
+    return;
+  }
+  if (datos.tipo === "precalentar" && Array.isArray(datos.rutas)) {
+    event.waitUntil(
+      Promise.all(
+        datos.rutas.slice(0, 8).map(async (ruta) => {
+          const url = new URL(String(ruta), self.location.origin);
+          if (!sePuedeGuardar(url)) return;
+          try {
+            const respuesta = await fetch(url.href, { credentials: "same-origin", headers: { Accept: "text/html" } });
+            await guardarPantalla(url.href, respuesta);
+          } catch {
+            // sin conexión: se intenta la próxima vez
+          }
+        }),
+      ),
+    );
   }
 });
 

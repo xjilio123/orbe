@@ -282,3 +282,32 @@ test.describe("Fluidez de la barra ⌘K (CPU 4× más lenta)", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Agenda" })).toBeVisible();
   });
 });
+
+test.describe("Sin conexión (service worker)", () => {
+  test("se ven las pantallas guardadas y la captura espera a internet", async ({ page, context }) => {
+    test.setTimeout(60_000);
+    await page.goto("/vitrina/hoy");
+    // El service worker toma el control y guarda las pantallas principales (con sus archivos).
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller)))) await page.reload();
+    await expect
+      .poll(() => page.evaluate(async () => Boolean(await caches.match(`${location.origin}/vitrina/apuntes`))), { timeout: 20_000 })
+      .toBe(true);
+
+    await context.setOffline(true);
+    await page.goto("/vitrina/apuntes");
+    await expect(page.getByRole("heading", { level: 1, name: "Apuntes" })).toBeVisible();
+    await expect(page.getByRole("status").getByText(/Sin conexión/)).toBeVisible();
+
+    await page.getByRole("navigation", { name: "Navegación principal" }).getByRole("link", { name: "Hoy", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Hoy" })).toBeVisible();
+    await page.getByLabel("Captura rápida").fill("comprar pilas mañana");
+    await page.keyboard.press("Enter");
+    await expect(page.getByText("Guardada sin conexión")).toBeVisible();
+    await expect(page.getByRole("status").getByText(/1 por enviar/)).toBeVisible();
+
+    await context.setOffline(false);
+    await expect(page.getByRole("status").getByText(/1 tarea enviada/)).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("orbe:pendientes"))).toBeNull();
+  });
+});

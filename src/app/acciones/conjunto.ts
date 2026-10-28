@@ -1,4 +1,4 @@
-import { guardarCalendario, guardarSuscripcion, probarAvisos, quitarCalendario, quitarSuscripcion } from "./ajustes";
+import { guardarCalendario, guardarSuscripcion, invitar, probarAvisos, quitarCalendario, quitarInvitado, quitarSuscripcion } from "./ajustes";
 import {
   alternarFavorita,
   alternarPlantilla,
@@ -49,4 +49,12 @@ export const accionesApuntes: AccionesApuntes = {
 
 export const accionesPapelera: AccionesPapelera = { restaurar, eliminar: eliminarDefinitivo, vaciar: vaciarPapelera };
 
-export const accionesAjustes: AccionesAjustes = { guardarSuscripcion, quitarSuscripcion, probarAvisos, guardarCalendario, quitarCalendario };
+export const accionesAjustes: AccionesAjustes = {
+  guardarSuscripcion,
+  quitarSuscripcion,
+  probarAvisos,
+  guardarCalendario,
+  quitarCalendario,
+  invitar,
+  quitarInvitado,
+};

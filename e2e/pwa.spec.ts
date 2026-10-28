@@ -14,7 +14,11 @@ test.describe("PWA instalable", () => {
     expect(respuesta.status()).toBe(200);
     expect(respuesta.headers()["content-type"]).toContain("javascript");
     expect(respuesta.headers()["cache-control"]).toContain("no-store");
-    expect(await respuesta.text()).toContain("NO guarda páginas ni notas");
+    // Privacidad del modo sin conexión: nunca guarda el login ni la autenticación, y borra las copias al cerrar sesión.
+    const codigo = await respuesta.text();
+    expect(codigo).toContain('const NUNCA_GUARDAR = ["/login", "/auth/"');
+    expect(codigo).toContain('if (datos.tipo === "olvidar")');
+    expect(codigo).toContain("caches.delete(PANTALLAS)");
   });
 
   test("los íconos están disponibles", async ({ request }) => {
