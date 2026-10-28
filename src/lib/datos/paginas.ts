@@ -6,7 +6,7 @@ import type { Database } from "@/lib/supabase/tipos";
 type Cliente = SupabaseClient<Database>;
 
 export type PaginaResumen = { id: string; titulo: string; icono: string; favorita: boolean; padre_id: string | null; actualizado: string };
-export type Pagina = PaginaResumen & { contenido: Bloque[]; plantilla?: boolean };
+export type Pagina = PaginaResumen & { contenido: Bloque[]; plantilla?: boolean; curso?: boolean };
 export type Adjunto = { id: string; ruta: string; tipo: string; tamano: number; nombre: string };
 
 /** Todas las páginas sin su contenido (liviano): alcanza para el árbol, las migas y los contadores. */
@@ -21,7 +21,7 @@ export async function todasLasPaginas(supabase: Cliente): Promise<PaginaResumen[
 }
 
 export async function pagina(supabase: Cliente, id: string): Promise<Pagina | null> {
-  const { data } = await supabase.from("paginas").select("id,titulo,icono,favorita,padre_id,actualizado,contenido,plantilla")
+  const { data } = await supabase.from("paginas").select("id,titulo,icono,favorita,padre_id,actualizado,contenido,plantilla,curso")
     .eq("id", id)
     .is("borrado_en", null)
     .maybeSingle();

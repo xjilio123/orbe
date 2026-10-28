@@ -47,6 +47,9 @@ const PANTALLAS = [
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/historial", titulo: "Historial" },
   { ruta: "/vitrina/papelera", titulo: "Papelera" },
   { ruta: "/vitrina/apuntes/mapa", titulo: "Mapa de notas" },
+  { ruta: "/vitrina/estudio", titulo: "Modo estudio" },
+  { ruta: "/vitrina/estudio/repaso", titulo: "Repasar: SQL para Data Analytics" },
+  { ruta: "/vitrina/diario", titulo: "Diario" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/imprimir", titulo: "SQL para Data Analytics" },
   { ruta: "/vitrina/preguntar", titulo: "Pregunta a tus notas" },
   { ruta: "/vitrina/progreso", titulo: "Progreso" },
@@ -454,5 +457,50 @@ test.describe("Enlaces entre notas (CPU 4× más lenta)", () => {
     const mapa = page.getByRole("img", { name: /Mapa con 4 páginas/ });
     await expect(mapa).toBeVisible();
     await expect(page.getByRole("link", { name: /^SQL para Data Analytics: 2 conexiones/ })).toBeVisible();
+  });
+});
+
+test.describe("Modo estudio y diario (CPU 4× más lenta)", () => {
+  test("el repaso muestra la respuesta, reencola las que fallas y termina", async ({ page }) => {
+    await page.goto("/vitrina/estudio/repaso");
+    await expect(page.getByText("0/4")).toBeVisible();
+    const botones = page.locator("div.grid.h-14");
+    const altoBotones = (await botones.boundingBox())!.y;
+    await page.getByRole("button", { name: "Mostrar respuesta" }).click();
+    await expect(page.getByText("Respuesta", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Otra vez" }).click();
+    await expect(page.getByText("0/4")).toBeVisible();
+    for (let i = 0; i < 4; i++) {
+      await page.getByRole("button", { name: "Mostrar respuesta" }).click();
+      await page.getByRole("button", { name: "La sabía" }).click();
+    }
+    await expect(page.getByText("¡Terminaste!")).toBeVisible();
+    await expect(page.getByText("Sabías 4 de 4 a la primera.")).toBeVisible();
+    expect((await botones.boundingBox())!.y, "los botones no se movieron").toBe(altoBotones);
+  });
+
+  test("elegir el ánimo de hoy responde al instante", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/diario");
+    await medir(page);
+    const bien = page.getByRole("radio", { name: "Bien", exact: true });
+    const ms = await bien.evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      while (boton.getAttribute("aria-checked") !== "true") await new Promise((r) => requestAnimationFrame(r));
+      return performance.now() - inicio;
+    });
+    console.log(`ánimo marcado en ${Math.round(ms)} ms`);
+    expect(ms, "tiempo hasta ver el ánimo marcado").toBeLessThanOrEqual(PRESUPUESTO.check);
+    await expect(page.getByRole("button", { name: /diario de hoy/ })).toBeVisible();
+  });
+
+  test("una página se puede marcar como curso y repasar sus tarjetas desde Modo estudio", async ({ page }) => {
+    await page.goto("/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1");
+    await expect(page.getByRole("button", { name: "Es un curso" })).toBeVisible();
+    await page.goto("/vitrina/estudio");
+    await expect(page.getByText("Examen final de SQL").first()).toBeVisible();
+    await page.getByRole("link", { name: /Repasar/ }).click();
+    await expect(page.getByRole("heading", { level: 1, name: /^Repasar/ })).toBeVisible();
   });
 });

@@ -24,6 +24,14 @@ export type AccionesApuntes = {
   restaurarVersion: (paginaId: string, hueco: number) => Promise<void>;
 };
 
+/** Modo estudio y diario. */
+export type AccionesEstudio = {
+  alternarCurso: (id: string, curso: boolean) => Promise<void>;
+  crearExamen: (cursoId: string, anterior: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  marcarAnimo: (fecha: string, animo: number | null) => Promise<ResultadoGuardado>;
+  abrirDiario: (fecha: string) => Promise<void>;
+};
+
 export type ResultadoImportacion = { ok: true; creadas: number; carpetaId: string } | { ok: false; error: string; carpetaId?: string };
 
 /** Enlaces entre notas e importación de Markdown. */

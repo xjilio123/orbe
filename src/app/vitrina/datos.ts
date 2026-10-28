@@ -1,4 +1,4 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesNotas, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesEstudio, AccionesIa, AccionesNotas, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
 import type { FechaImportante, Habito, Meta, SemanaEstadistica } from "@/lib/progreso";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
@@ -229,3 +229,43 @@ export const accionesProgresoVitrina: AccionesProgreso = {
 };
 
 export const accionesNotasVitrina: AccionesNotas = { crearEnlazada: nadaVitrina, importar: importarVitrina };
+
+export const accionesEstudioVitrina: AccionesEstudio = {
+  alternarCurso: nadaVitrina,
+  crearExamen: formularioVitrina,
+  marcarAnimo: guardarVitrina,
+  abrirDiario: nadaVitrina,
+};
+
+// ---------- Modo estudio y diario ficticios ----------
+export const CURSOS = [
+  {
+    id: PAGINAS[0].id,
+    titulo: PAGINAS[0].titulo,
+    icono: PAGINAS[0].icono,
+    temas: 6,
+    tarjetas: 12,
+    examen: { titulo: "Examen final de SQL", fecha: "2026-11-09" },
+  },
+  {
+    id: PAGINAS[3].id,
+    titulo: PAGINAS[3].titulo,
+    icono: PAGINAS[3].icono,
+    temas: 3,
+    tarjetas: 0,
+    examen: null,
+  },
+];
+
+export const TARJETAS = [
+  { id: "t1", pregunta: "¿Qué hace ROW_NUMBER()?", respuesta: "Numera las filas dentro de cada grupo, empezando en 1.", pagina: "Tarjetas: SQL" },
+  { id: "t2", pregunta: "¿En qué se diferencia una función de ventana de GROUP BY?", respuesta: "Calcula sobre un grupo de filas sin colapsarlas en una sola.", pagina: "Tarjetas: SQL" },
+  { id: "t3", pregunta: "¿Qué hacen LAG() y LEAD()?", respuesta: "Traen el valor de la fila anterior (LAG) o siguiente (LEAD).", pagina: "Tarjetas: SQL" },
+  { id: "t4", pregunta: "¿Para qué sirve PARTITION BY?", respuesta: "Reinicia el cálculo en cada grupo.", pagina: "Tarjetas: SQL" },
+];
+
+export const DIARIO = [1, 2, 3, 5, 6, 8, 9, 10, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 25, 26].map((d, i) => ({
+  fecha: `2026-10-${String(d).padStart(2, "0")}`,
+  animo: [4, 5, 3, 4, 2, 4, 5, 3, 4, 4, 1, 3, 4, 5, 4, 3, 4, 5, 2, 4][i],
+  pagina_id: i % 3 === 0 ? PAGINAS[2].id : null,
+}));

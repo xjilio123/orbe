@@ -56,6 +56,38 @@ export type Database = {
           },
         ]
       }
+      diario: {
+        Row: {
+          animo: number | null
+          creado: string
+          fecha: string
+          pagina_id: string | null
+          user_id: string
+        }
+        Insert: {
+          animo?: number | null
+          creado?: string
+          fecha: string
+          pagina_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          animo?: number | null
+          creado?: string
+          fecha?: string
+          pagina_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diario_pagina_id_user_id_fkey"
+            columns: ["pagina_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "paginas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       fechas_importantes: {
         Row: {
           color: string
@@ -63,6 +95,7 @@ export type Database = {
           fecha: string
           icono: string
           id: string
+          pagina_id: string | null
           titulo: string
           user_id: string
         }
@@ -72,6 +105,7 @@ export type Database = {
           fecha: string
           icono?: string
           id?: string
+          pagina_id?: string | null
           titulo: string
           user_id?: string
         }
@@ -81,10 +115,19 @@ export type Database = {
           fecha?: string
           icono?: string
           id?: string
+          pagina_id?: string | null
           titulo?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fechas_importantes_pagina_fkey"
+            columns: ["pagina_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "paginas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       habitos: {
         Row: {
@@ -262,6 +305,7 @@ export type Database = {
           busqueda: unknown
           contenido: Json
           creado: string
+          curso: boolean
           enlaces: string[]
           favorita: boolean
           icono: string
@@ -277,6 +321,7 @@ export type Database = {
           busqueda?: unknown
           contenido?: Json
           creado?: string
+          curso?: boolean
           enlaces?: string[]
           favorita?: boolean
           icono?: string
@@ -292,6 +337,7 @@ export type Database = {
           busqueda?: unknown
           contenido?: Json
           creado?: string
+          curso?: boolean
           enlaces?: string[]
           favorita?: boolean
           icono?: string

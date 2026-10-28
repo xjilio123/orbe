@@ -17,6 +17,8 @@ type Props = {
 const HERRAMIENTAS: { ruta: string; nombre: string; icono: NombreIcono; clase: string }[] = [
   { ruta: "/preguntar", nombre: "Pregunta a tus notas", icono: "chispa", clase: "bg-morado-relleno/12 text-morado" },
   { ruta: "/apuntes/mapa", nombre: "Mapa de notas", icono: "mapa", clase: "bg-naranja-relleno/15 text-naranja" },
+  { ruta: "/estudio", nombre: "Modo estudio", icono: "estudio", clase: "bg-azul-relleno/12 text-azul" },
+  { ruta: "/diario", nombre: "Diario", icono: "diario", clase: "bg-verde-relleno/15 text-verde" },
 ];
 
 function FilaPagina({ p, hoy, base }: { p: PaginaResumen & { hijas: number }; hoy: string; base: string }) {
