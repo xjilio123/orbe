@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(10);
+select plan(11);
 
 insert into private.correos_permitidos (email) values ('a@prueba.local'), ('b@prueba.local');
 insert into auth.users (id, email) values
@@ -29,7 +29,13 @@ select is(
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000a","role":"authenticated"}', true);
 
--- 2-3. Backlinks de A: solo sus páginas
+-- 2. Con su sesión normal, una persona crea y renombra páginas (el índice de títulos no pide permisos extra)
+select lives_ok(
+  $$insert into public.paginas (titulo) values ('Nueva de A'); update public.paginas set titulo = 'Nueva de A (2)' where titulo = 'Nueva de A'$$,
+  'Crear y renombrar páginas funciona con los permisos de la app'
+);
+
+-- 3-4. Backlinks de A: solo sus páginas
 select results_eq(
   $$select id from public.paginas_que_enlazan('00000000-0000-0000-0000-0000000007a1')$$,
   $$values ('00000000-0000-0000-0000-0000000007a2'::uuid)$$,
