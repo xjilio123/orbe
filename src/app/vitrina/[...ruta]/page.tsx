@@ -13,6 +13,7 @@ import { VistaTareas } from "@/components/vistas/VistaTareas";
 import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
+import { PLAN_VITRINA } from "../ejemplosIa";
 import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
@@ -36,6 +37,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         inbox={TAREAS.filter(esInbox).length}
         listas={LISTAS}
         acciones={accionesVitrina} ia={accionesIaVitrina}
+        iaGuardado={{ plan: PLAN_VITRINA, semana: null }}
       />
     );
   }

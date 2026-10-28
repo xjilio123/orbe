@@ -10,6 +10,7 @@ import {
   subirAdjunto,
 } from "./apuntes";
 import { capturaIa, dividirIa, ordenarInboxIa, resumirIa, textoIa } from "./ia";
+import { audioIa, fotoIa, planIa, semanaIa, tarjetasIa } from "./iaContenido";
 import { eliminarDefinitivo, restaurar, vaciarPapelera } from "./papelera";
 import {
   alternarTarea,
@@ -60,4 +61,15 @@ export const accionesAjustes: AccionesAjustes = {
   quitarInvitado,
 };
 
-export const accionesIa: AccionesIa = { captura: capturaIa, dividir: dividirIa, ordenarInbox: ordenarInboxIa, texto: textoIa, resumir: resumirIa };
+export const accionesIa: AccionesIa = {
+  captura: capturaIa,
+  dividir: dividirIa,
+  ordenarInbox: ordenarInboxIa,
+  texto: textoIa,
+  resumir: resumirIa,
+  plan: planIa,
+  semana: semanaIa,
+  tarjetas: tarjetasIa,
+  foto: fotoIa,
+  audio: audioIa,
+};

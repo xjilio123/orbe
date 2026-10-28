@@ -1,8 +1,10 @@
 "use server";
 
 import type { ResultadoIa } from "@/app/acciones/tipos";
-import type { Bloque } from "@/lib/bloques";
+import { nuevoBloque, type Bloque } from "@/lib/bloques";
+import type { Plan, ResumenSemana } from "@/lib/ia/contenido";
 import { vitrinaActiva } from "@/lib/vitrina";
+import { PLAN_VITRINA, SEMANA_VITRINA } from "./ejemplosIa";
 
 // IA de mentira para la vitrina: responde al instante y sin Gemini, para medir la fluidez de las pantallas.
 function exigirVitrina() {
@@ -28,4 +30,24 @@ export async function textoVitrina(_modo: string, bloques: Bloque[]): Promise<Re
 export async function resumirVitrina(): Promise<ResultadoIa<{ resumen: string; puntos: string[] }>> {
   exigirVitrina();
   return { ok: true, datos: { resumen: "Las funciones de ventana calculan sobre grupos de filas sin colapsarlas.", puntos: ["ROW_NUMBER numera", "LAG y LEAD comparan filas"] } };
+}
+export async function planVitrina(): Promise<ResultadoIa<Plan>> {
+  exigirVitrina();
+  return { ok: true, datos: PLAN_VITRINA };
+}
+export async function semanaVitrina(): Promise<ResultadoIa<ResumenSemana>> {
+  exigirVitrina();
+  return { ok: true, datos: SEMANA_VITRINA };
+}
+export async function tarjetasVitrina(paginaId: string): Promise<ResultadoIa<{ id: string }>> {
+  exigirVitrina();
+  return { ok: true, datos: { id: paginaId } };
+}
+export async function fotoVitrina(): Promise<ResultadoIa<{ titulo: string; bloques: Bloque[] }>> {
+  exigirVitrina();
+  return { ok: true, datos: { titulo: "Pizarra", bloques: [nuevoBloque("h3", "Desde la foto"), nuevoBloque("todo", "Repasar la clase 4")] } };
+}
+export async function audioVitrina(): Promise<ResultadoIa<{ titulo: string; bloques: Bloque[] }>> {
+  exigirVitrina();
+  return { ok: true, datos: { titulo: "Nota de voz", bloques: [nuevoBloque("p", "Idea dictada: probar Orbe en el iPad.")] } };
 }

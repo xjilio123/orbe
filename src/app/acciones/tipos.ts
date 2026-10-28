@@ -65,4 +65,9 @@ export type AccionesIa = {
   ordenarInbox: () => Promise<ResultadoIa<{ ordenadas: number }>>;
   texto: (modo: "mejorar" | "traducir", bloques: import("@/lib/bloques").Bloque[]) => Promise<ResultadoIa<{ id: string; texto: string }[]>>;
   resumir: (bloques: import("@/lib/bloques").Bloque[]) => Promise<ResultadoIa<{ resumen: string; puntos: string[] }>>;
+  plan: () => Promise<ResultadoIa<import("@/lib/ia/contenido").Plan>>;
+  semana: () => Promise<ResultadoIa<import("@/lib/ia/contenido").ResumenSemana>>;
+  tarjetas: (paginaId: string, titulo: string, bloques: import("@/lib/bloques").Bloque[]) => Promise<ResultadoIa<{ id: string }>>;
+  foto: (formData: FormData) => Promise<ResultadoIa<{ titulo: string; bloques: import("@/lib/bloques").Bloque[] }>>;
+  audio: (formData: FormData) => Promise<ResultadoIa<{ titulo: string; bloques: import("@/lib/bloques").Bloque[] }>>;
 };

@@ -1,37 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import type { Bloque } from "@/lib/bloques";
 import { esInbox } from "@/lib/tareas";
 import { listas as leerListas, tareaConSubtareas, tareasActivas } from "@/lib/datos/tareas";
 import { hoyLima } from "@/lib/fechas";
-import { ErrorIa, generarJson, iaConfigurada } from "@/lib/ia/gemini";
-import { bloquesParaIa, captura, datos, dividir, etiquetas, mejorar, mensajeTope, resumir, type FuncionIa, type ModoTexto } from "@/lib/ia/funciones";
-import { requerirUsuario } from "@/lib/supabase/servidor";
+import { ErrorIa, generarJson } from "@/lib/ia/gemini";
+import { bloquesParaIa, captura, datos, dividir, esquemaBloquesIa, etiquetas, mejorar, resumir, type ModoTexto } from "@/lib/ia/funciones";
+import { conTope } from "@/lib/ia/tope";
 import { esquemaFecha, esquemaId } from "@/lib/validacion";
 import type { ResultadoIa } from "./tipos";
 
-type Cliente = Awaited<ReturnType<typeof requerirUsuario>>["supabase"];
-
-/**
- * Toda función de IA pasa por aquí: la base reserva el uso (topes, esperas, freno general),
- * se llama a Gemini y se marca si salió bien. Los errores no cuentan para los topes.
- */
-async function conTope<T>(funcion: FuncionIa, ejecutar: (supabase: Cliente, usuario: string) => Promise<T>): Promise<ResultadoIa<T>> {
-  if (!iaConfigurada()) return { ok: false, error: "La IA aún no está configurada." };
-  const { supabase, usuario } = await requerirUsuario();
-  const { data: id, error } = await supabase.rpc("reservar_ia", { p_funcion: funcion });
-  if (error || id === null) return { ok: false, error: mensajeTope(error?.message ?? "") };
-  try {
-    const resultado = await ejecutar(supabase, usuario.id);
-    await supabase.rpc("terminar_ia", { p_id: id, p_ok: true });
-    return { ok: true, datos: resultado };
-  } catch (e) {
-    await supabase.rpc("terminar_ia", { p_id: id, p_ok: false });
-    return { ok: false, error: e instanceof ErrorIa ? e.message : "No se pudo completar. Intenta de nuevo." };
-  }
-}
 
 /** Captura inteligente: convierte una frase en una o varias tareas con fecha, hora, lista y prioridad. */
 export async function capturaIa(texto: string, extra: { lista_id?: string; fecha_defecto?: string } = {}): Promise<ResultadoIa<{ titulos: string[] }>> {
@@ -114,12 +93,11 @@ export async function ordenarInboxIa(): Promise<ResultadoIa<{ ordenadas: number 
   });
 }
 
-const esquemaBloques = z.array(z.object({ id: z.string().max(24), tipo: z.string().max(12), texto: z.string().max(10_000) })).max(2000);
 
 /** Mejora la redacción o traduce al inglés los bloques de texto. Devuelve los textos nuevos; el editor los aplica. */
 export async function textoIa(modo: ModoTexto, bloques: Bloque[]): Promise<ResultadoIa<{ id: string; texto: string }[]>> {
   if (modo !== "mejorar" && modo !== "traducir") return { ok: false, error: "Opción no válida." };
-  const validado = esquemaBloques.safeParse(bloques);
+  const validado = esquemaBloquesIa.safeParse(bloques);
   if (!validado.success) return { ok: false, error: "La página tiene datos no válidos." };
   const enviados = bloquesParaIa(validado.data as Bloque[]);
   if (enviados.length === 0) return { ok: false, error: "No hay texto para trabajar." };
@@ -138,7 +116,7 @@ export async function textoIa(modo: ModoTexto, bloques: Bloque[]): Promise<Resul
 
 /** Resume una página: una frase y hasta 5 puntos clave. */
 export async function resumirIa(bloques: Bloque[]): Promise<ResultadoIa<{ resumen: string; puntos: string[] }>> {
-  const validado = esquemaBloques.safeParse(bloques);
+  const validado = esquemaBloquesIa.safeParse(bloques);
   if (!validado.success) return { ok: false, error: "La página tiene datos no válidos." };
   const enviados = bloquesParaIa(validado.data as Bloque[]);
   if (enviados.reduce((n, b) => n + b.texto.length, 0) < 80) return { ok: false, error: "La página es muy corta para resumirla." };
