@@ -5,15 +5,18 @@ import { usePathname } from "next/navigation";
 import { Icono, type NombreIcono } from "@/components/Icono";
 
 // Cada pestaña lleva el color de su módulo cuando está activa.
-const pestanas: { ruta: string; nombre: string; icono: NombreIcono; activa: string }[] = [
-  { ruta: "/", nombre: "Hoy", icono: "hoy", activa: "bg-indigo-relleno/15 text-indigo" },
-  { ruta: "/tareas", nombre: "Tareas", icono: "tareas", activa: "bg-azul-relleno/15 text-azul" },
-  { ruta: "/apuntes", nombre: "Apuntes", icono: "apuntes", activa: "bg-naranja-relleno/15 text-naranja" },
-  { ruta: "/agenda", nombre: "Agenda", icono: "agenda", activa: "bg-morado-relleno/15 text-morado" },
+const pestanas: { segmento: string; nombre: string; icono: NombreIcono; activa: string }[] = [
+  { segmento: "", nombre: "Hoy", icono: "hoy", activa: "bg-indigo-relleno/15 text-indigo" },
+  { segmento: "tareas", nombre: "Tareas", icono: "tareas", activa: "bg-azul-relleno/15 text-azul" },
+  { segmento: "apuntes", nombre: "Apuntes", icono: "apuntes", activa: "bg-naranja-relleno/15 text-naranja" },
+  { segmento: "agenda", nombre: "Agenda", icono: "agenda", activa: "bg-morado-relleno/15 text-morado" },
 ];
 
-/** Barra flotante de vidrio al estilo de iOS. */
-export function BarraPestanas() {
+/**
+ * Barra flotante de vidrio al estilo de iOS. `prefijo` permite reutilizarla en la vitrina
+ * (/vitrina/hoy, /vitrina/tareas…) con las mismas pantallas y datos ficticios.
+ */
+export function BarraPestanas({ prefijo = "" }: { prefijo?: string }) {
   const ruta = usePathname();
 
   return (
@@ -23,11 +26,12 @@ export function BarraPestanas() {
     >
       <div className="flex flex-1 items-center justify-between rounded-full border border-black/5 bg-vidrio p-2 shadow-[0_8px_24px_rgb(0_0_0/0.12)] backdrop-blur-xl dark:border-white/10">
         {pestanas.map((p) => {
-          const activa = p.ruta === "/" ? ruta === "/" : ruta.startsWith(p.ruta);
+          const href = prefijo ? `${prefijo}/${p.segmento || "hoy"}` : `/${p.segmento}`;
+          const activa = p.segmento === "" && !prefijo ? ruta === "/" : ruta === href || ruta.startsWith(`${href}/`);
           return (
             <Link
-              key={p.ruta}
-              href={p.ruta}
+              key={p.nombre}
+              href={href}
               prefetch
               aria-label={p.nombre}
               aria-current={activa ? "page" : undefined}

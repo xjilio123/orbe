@@ -25,6 +25,21 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 - **Vercel** (plan Hobby, región São Paulo) con despliegue automático desde `main`.
 - **PWA** instalable desde el navegador, sin tiendas de apps.
 
+## Fluidez
+
+Cada PR pasa por el check **Fluidez (rendimiento)** (`e2e/fluidez.spec.ts`): las pantallas reales, con datos
+ficticios en una vitrina que nunca existe en Vercel, se abren como en un iPhone con la CPU 4× más lenta.
+
+| Medida | Presupuesto | Fase 0 |
+|---|---|---|
+| Bloques que se corren al abrir ("tirón") | ≤ 1 px | 0 px |
+| Primer contenido visible | ≤ 1.5 s | 0.14–0.26 s |
+| Bloqueo del hilo principal | ≤ 600 ms | 125–225 ms |
+| Cambio de pestaña | ≤ 0.8 s | 0.07–0.2 s |
+| JavaScript de la primera pantalla | ≤ 260 KB | 139 KB |
+
+Para medir en local: `npm run build && FLUIDEZ=1 npm run e2e`.
+
 ## Costo
 
 US$0 al mes para uso personal (hasta 30 personas): Vercel Hobby, Supabase Free, GitHub Actions en repo público.

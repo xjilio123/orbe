@@ -51,3 +51,6 @@ supabase/.branches
 /test-results/
 /playwright-report/
 /blob-report/
+
+# caché local de herramientas de diseño
+.impeccable/

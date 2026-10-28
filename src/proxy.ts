@@ -2,8 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { construirCsp, generarNonce } from "@/lib/seguridad/csp";
+import { vitrinaActiva } from "@/lib/vitrina";
 
-const RUTAS_PUBLICAS = ["/login", "/auth/callback", "/offline"];
+// /vitrina (datos ficticios para medir la fluidez) solo es pública cuando está activada fuera de Vercel.
+const RUTAS_PUBLICAS = ["/login", "/auth/callback", "/offline", ...(vitrinaActiva() ? ["/vitrina"] : [])];
 
 const esPublica = (ruta: string) => RUTAS_PUBLICAS.some((r) => ruta === r || ruta.startsWith(`${r}/`));
 
