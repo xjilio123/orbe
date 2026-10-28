@@ -23,6 +23,8 @@ export type Tarea = {
   repetir: Repetir | null;
   /** Minutos antes de la hora para avisar; null = sin aviso. */
   aviso: number | null;
+  /** Cuadrante de la matriz elegido a mano (1-4); vacío = se calcula solo. */
+  cuadrante?: number | null;
 };
 
 export type Lista = { id: string; nombre: string; color: ColorLista; orden: number };

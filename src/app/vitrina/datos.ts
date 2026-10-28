@@ -1,4 +1,4 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesEstudio, AccionesIa, AccionesNotas, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesEstudio, AccionesIa, AccionesNotas, AccionesOrganizacion, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
 import type { FechaImportante, Habito, Meta, SemanaEstadistica } from "@/lib/progreso";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
@@ -269,3 +269,10 @@ export const DIARIO = [1, 2, 3, 5, 6, 8, 9, 10, 12, 13, 14, 15, 16, 19, 20, 21, 
   animo: [4, 5, 3, 4, 2, 4, 5, 3, 4, 4, 1, 3, 4, 5, 4, 3, 4, 5, 2, 4][i],
   pagina_id: i % 3 === 0 ? PAGINAS[2].id : null,
 }));
+
+export const accionesOrganizacionVitrina: AccionesOrganizacion = { moverCuadrante: guardarVitrina, guardarVista: guardarVitrina, eliminarVista: nadaVitrina };
+
+export const VISTAS_GUARDADAS = [
+  { id: "00000000-0000-4000-8000-0000000000e9", nombre: "Urgentes", config: { orden: "prioridad", estado: "pendientes", prioridad: 2 } },
+  { id: "00000000-0000-4000-8000-0000000000ea", nombre: "Todo por fecha", config: { orden: "fecha", estado: "todas", prioridad: 0 } },
+];

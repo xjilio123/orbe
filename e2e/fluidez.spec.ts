@@ -41,7 +41,11 @@ const PANTALLAS = [
   { ruta: "/vitrina/tareas/00000000-0000-4000-8000-000000000001", titulo: "Detalle" },
   { ruta: LISTA, titulo: "Trabajo" },
   { ruta: `${LISTA}?vista=tablero`, titulo: "Trabajo" },
+  { ruta: `${LISTA}?vista=tabla`, titulo: "Trabajo" },
+  { ruta: "/vitrina/tareas/matriz", titulo: "Matriz" },
+  { ruta: "/vitrina/tareas/revision", titulo: "Revisión semanal" },
   { ruta: "/vitrina/apuntes", titulo: "Apuntes" },
+  { ruta: "/vitrina/apuntes?vista=galeria", titulo: "Apuntes" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1", titulo: "SQL para Data Analytics" },
   { ruta: "/vitrina/apuntes/nueva", titulo: "Nueva página" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/historial", titulo: "Historial" },
@@ -502,5 +506,59 @@ test.describe("Modo estudio y diario (CPU 4× más lenta)", () => {
     await expect(page.getByText("Examen final de SQL").first()).toBeVisible();
     await page.getByRole("link", { name: /Repasar/ }).click();
     await expect(page.getByRole("heading", { level: 1, name: /^Repasar/ })).toBeVisible();
+  });
+});
+
+test.describe("Organización (CPU 4× más lenta)", () => {
+  test("mover una tarea en la matriz la cambia de cuadrante al instante", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/tareas/matriz");
+    await medir(page);
+    const hacerYa = page.locator("section", { has: page.getByRole("heading", { name: /^Hacer ya/ }) });
+    const soltar = page.locator("section", { has: page.getByRole("heading", { name: /^Soltar/ }) });
+    const tarea = hacerYa.getByRole("button", { name: /Enviar informe de ventas a Prediqt/ });
+    await expect(tarea).toBeVisible();
+    await tarea.click();
+    const dialogo = page.getByRole("dialog");
+    await expect(dialogo.getByRole("heading", { name: "Enviar informe de ventas a Prediqt" })).toBeVisible();
+    const ms = await dialogo.getByRole("button", { name: /^Soltar/ }).evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      // Espera al cuadro en que la tarea ya aparece en "Soltar".
+      const enSoltar = () =>
+        [...document.querySelectorAll("section")].some(
+          (s) => s.querySelector("h2")?.textContent?.startsWith("Soltar") && s.textContent?.includes("Enviar informe de ventas a Prediqt"),
+        );
+      while (!enSoltar()) await new Promise((r) => requestAnimationFrame(r));
+      return performance.now() - inicio;
+    });
+    await expect(soltar.getByRole("button", { name: /Enviar informe de ventas a Prediqt/ })).toBeVisible();
+    console.log(`tarea movida de cuadrante en ${Math.round(ms)} ms`);
+    expect(ms, "tiempo hasta ver la tarea en su nuevo cuadrante").toBeLessThanOrEqual(PRESUPUESTO.check);
+    await expect(hacerYa.getByRole("button", { name: /Enviar informe de ventas a Prediqt/ })).toHaveCount(0);
+  });
+
+  test("la tabla filtra y ordena, y las vistas guardadas se abren con un toque", async ({ page }) => {
+    await page.goto(`${LISTA}?vista=tabla`);
+    const tabla = page.getByRole("table");
+    await expect(tabla).toBeVisible();
+    const filas = () => tabla.locator("tbody tr");
+    const antes = await filas().count();
+    const prioridad = page.getByRole("combobox", { name: "Prioridad", exact: true });
+    await prioridad.selectOption("3");
+    await expect(filas()).toHaveCount(1);
+    await expect(filas().first()).toContainText("Enviar informe de ventas a Prediqt");
+    await prioridad.selectOption("0");
+    await expect(filas()).toHaveCount(antes);
+    await page.getByRole("link", { name: "Urgentes" }).click();
+    await expect(page).toHaveURL(/orden=prioridad/);
+    await expect(page.getByLabel("Ordenar por")).toHaveValue("prioridad");
+  });
+
+  test("la revisión semanal muestra lo atrasado y los hábitos", async ({ page }) => {
+    await page.goto("/vitrina/tareas/revision");
+    await expect(page.getByRole("heading", { name: "1. Atrasadas" })).toBeVisible();
+    await expect(page.getByText("Pagar la tarjeta BBVA").first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "5. Hábitos de la semana" })).toBeVisible();
   });
 });

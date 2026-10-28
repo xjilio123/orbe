@@ -12,6 +12,8 @@ type Props = {
   base: string;
   error?: boolean;
   notas?: AccionesNotas;
+  /** Cómo se ven las páginas: lista (por defecto) o galería de tarjetas. */
+  vista?: "lista" | "galeria";
 };
 
 const HERRAMIENTAS: { ruta: string; nombre: string; icono: NombreIcono; clase: string }[] = [
@@ -41,7 +43,7 @@ function FilaPagina({ p, hoy, base }: { p: PaginaResumen & { hijas: number }; ho
   );
 }
 
-export function VistaApuntes({ paginas, hoy, base, error, notas }: Props) {
+export function VistaApuntes({ paginas, hoy, base, error, notas, vista = "lista" }: Props) {
   const favoritas = paginas.filter((p) => p.favorita);
   const raiz = paginas.filter((p) => !p.padre_id);
 
@@ -82,8 +84,43 @@ export function VistaApuntes({ paginas, hoy, base, error, notas }: Props) {
       )}
 
       <section className="flex flex-col gap-2" aria-labelledby="titulo-paginas">
-        <TituloSeccion id="titulo-paginas" titulo="Páginas" extra={raiz.length || undefined} />
-        {raiz.length > 0 ? (
+        <TituloSeccion
+          id="titulo-paginas"
+          titulo="Páginas"
+          extra={
+            <nav aria-label="Vista de páginas" className="flex rounded-[10px] bg-control p-0.5">
+              {(["lista", "galeria"] as const).map((v) => (
+                <Link
+                  key={v}
+                  href={enlace(base, v === "lista" ? "/apuntes" : "/apuntes?vista=galeria")}
+                  aria-current={vista === v ? "page" : undefined}
+                  aria-label={v === "lista" ? "Ver como lista" : "Ver como galería"}
+                  className={`grid size-8 place-items-center rounded-[8px] ${vista === v ? "bg-superficie text-texto shadow-sm" : "text-texto-2"}`}
+                >
+                  <Icono nombre={v} className="size-4" />
+                </Link>
+              ))}
+            </nav>
+          }
+        />
+        {raiz.length > 0 && vista === "galeria" ? (
+          <ul className="grid grid-cols-2 gap-2">
+            {raiz.map((p) => (
+              <li key={p.id}>
+                <Link href={enlace(base, `/apuntes/${p.id}`)} className="flex h-full flex-col gap-2 rounded-[20px] bg-superficie p-3.5 active:scale-[0.98]">
+                  <span aria-hidden="true" className="grid h-16 place-items-center rounded-[14px] bg-naranja-relleno/15 text-[34px]">
+                    {p.icono || "📄"}
+                  </span>
+                  <span className="line-clamp-2 text-[15px] leading-snug font-semibold">{p.titulo || "Sin título"}</span>
+                  <span className="mt-auto text-[12px] text-texto-2">
+                    {etiquetaFecha(hoyLima(new Date(p.actualizado)), hoy)}
+                    {p.hijas > 0 && ` · ${p.hijas}`}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : raiz.length > 0 ? (
           <ul className="divide-y divide-separador/60 overflow-hidden rounded-[22px] bg-superficie">
             {raiz.map((p) => (
               <FilaPagina key={p.id} p={p} hoy={hoy} base={base} />

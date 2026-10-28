@@ -461,6 +461,7 @@ export type Database = {
           busqueda: unknown
           aviso: number | null
           creado: string
+          cuadrante: number | null
           estado: string
           fecha: string | null
           hecha_en: string | null
@@ -483,6 +484,7 @@ export type Database = {
           busqueda?: unknown
           aviso?: number | null
           creado?: string
+          cuadrante?: number | null
           estado?: string
           fecha?: string | null
           hecha_en?: string | null
@@ -505,6 +507,7 @@ export type Database = {
           busqueda?: unknown
           aviso?: number | null
           creado?: string
+          cuadrante?: number | null
           estado?: string
           fecha?: string | null
           hecha_en?: string | null
@@ -559,6 +562,41 @@ export type Database = {
           vector?: string
         }
         Relationships: []
+      }
+      vistas_guardadas: {
+        Row: {
+          config: Json
+          creado: string
+          id: string
+          lista_id: string
+          nombre: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          creado?: string
+          id?: string
+          lista_id: string
+          nombre: string
+          user_id?: string
+        }
+        Update: {
+          config?: Json
+          creado?: string
+          id?: string
+          lista_id?: string
+          nombre?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vistas_guardadas_lista_id_user_id_fkey"
+            columns: ["lista_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "listas"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
       }
       versiones_pagina: {
         Row: {

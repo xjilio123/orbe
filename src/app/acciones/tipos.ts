@@ -32,6 +32,13 @@ export type AccionesEstudio = {
   abrirDiario: (fecha: string) => Promise<void>;
 };
 
+/** Matriz urgente/importante y vistas guardadas de una lista. */
+export type AccionesOrganizacion = {
+  moverCuadrante: (id: string, cuadrante: number | null) => Promise<ResultadoGuardado>;
+  guardarVista: (listaId: string, nombre: string, config: import("@/lib/organizacion").ConfigTabla) => Promise<ResultadoGuardado>;
+  eliminarVista: (id: string) => Promise<void>;
+};
+
 export type ResultadoImportacion = { ok: true; creadas: number; carpetaId: string } | { ok: false; error: string; carpetaId?: string };
 
 /** Enlaces entre notas e importación de Markdown. */

@@ -5,6 +5,8 @@ import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { VistaDiario } from "@/components/vistas/VistaDiario";
 import { VistaEstudio } from "@/components/vistas/VistaEstudio";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
+import { VistaMatriz } from "@/components/vistas/VistaMatriz";
+import { VistaRevision } from "@/components/vistas/VistaRevision";
 import { VistaRepaso } from "@/components/vistas/VistaRepaso";
 import { VistaImprimir } from "@/components/vistas/VistaImprimir";
 import { VistaMapa } from "@/components/vistas/VistaMapa";
@@ -22,14 +24,16 @@ import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
 import { armarGrafo, distribuir, type Arista } from "@/lib/grafo";
+import { leerConfig, revisionSemanal } from "@/lib/organizacion";
 import { PLAN_VITRINA } from "../ejemplosIa";
-import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, CURSOS, DIARIO, TARJETAS, accionesEstudioVitrina, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
+import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, CURSOS, DIARIO, TARJETAS, VISTAS_GUARDADAS, accionesEstudioVitrina, accionesOrganizacionVitrina, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
 export default async function Pantalla({ params, searchParams }: PageProps<"/vitrina/[...ruta]">) {
   if (!vitrinaActiva()) notFound();
-  const [{ ruta }, { vista, dia }] = await Promise.all([params, searchParams]);
+  const [{ ruta }, consulta] = await Promise.all([params, searchParams]);
+  const { vista, dia } = consulta;
   const camino = ruta.join("/");
   const base = "/vitrina";
   const subtareas = { [DETALLE.id]: { hechas: 1, total: 3 } };
@@ -66,13 +70,22 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
       />
     );
   }
+  if (camino === "tareas/matriz") {
+    return <VistaMatriz tareas={TAREAS} hoy={HOY} base={base} acciones={accionesOrganizacionVitrina} />;
+  }
+  if (camino === "tareas/revision") {
+    const hechas = TAREAS.filter((t) => t.estado === "hecha");
+    return <VistaRevision hoy={HOY} base={base} revision={revisionSemanal(TAREAS, hechas, HOY)} habitos={HABITOS} acciones={accionesVitrina} />;
+  }
   if (camino.startsWith("tareas/lista/")) {
     const lista = LISTAS.find((l) => l.id === ruta[2]) ?? LISTAS[1];
     return (
       <VistaLista
         lista={lista}
         tareas={TAREAS.filter((t) => t.lista_id === lista.id)}
-        vista={vista === "tablero" ? "tablero" : "lista"}
+        vista={vista === "tablero" || vista === "tabla" ? vista : "lista"}
+        tabla={{ config: leerConfig(consulta), vistas: VISTAS_GUARDADAS }}
+        organizacion={accionesOrganizacionVitrina}
         hoy={HOY}
         base={base}
         subtareas={subtareas}
@@ -96,7 +109,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
   if (camino === "apuntes") {
     const hijas = new Map<string, number>();
     for (const p of PAGINAS) if (p.padre_id) hijas.set(p.padre_id, (hijas.get(p.padre_id) ?? 0) + 1);
-    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} notas={accionesNotasVitrina} />;
+    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} notas={accionesNotasVitrina} vista={vista === "galeria" ? "galeria" : "lista"} />;
   }
   if (camino === "apuntes/nueva") {
     return <VistaNuevaPagina padreId={null} propias={[{ id: PAGINAS[2].id, titulo: "Ideas para Orbe", icono: "💡" }]} base={base} acciones={accionesApuntesVitrina} />;
