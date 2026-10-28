@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EstadoCaptura } from "@/app/acciones/tipos";
+import type { AccionesIa, EstadoCaptura } from "@/app/acciones/tipos";
 import { ListaDelDia } from "@/components/agenda/ListaDelDia";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
 import { INICIALES_SEMANA, fechaLarga, puntosDelDia, type ItemAgenda } from "@/lib/agenda";
@@ -15,6 +15,7 @@ type Props = {
   porDia: Record<string, ItemAgenda[]>;
   capturar: (anterior: EstadoCaptura, formData: FormData) => Promise<EstadoCaptura>;
   alternar: (id: string, hecha: boolean) => Promise<void>;
+  ia?: AccionesIa["captura"];
 };
 
 const COLOR_PUNTO = { evento: "bg-celeste-relleno", tarea: "bg-azul-relleno", hecha: "bg-verde-relleno" } as const;
@@ -23,7 +24,7 @@ const COLOR_PUNTO = { evento: "bg-celeste-relleno", tarea: "bg-azul-relleno", he
  * Mes al estilo del Calendario de iOS: tocar un día muestra lo que hay debajo, al instante y sin ir al servidor.
  * La cuadrícula siempre tiene 6 semanas, así nada de abajo se mueve al cambiar de mes.
  */
-export function AgendaMes({ dias, mes, inicial, hoy, base, porDia, capturar, alternar }: Props) {
+export function AgendaMes({ dias, mes, inicial, hoy, base, porDia, capturar, alternar, ia }: Props) {
   const [elegido, setElegido] = useState(inicial);
 
   function elegir(dia: string) {
@@ -90,7 +91,7 @@ export function AgendaMes({ dias, mes, inicial, hoy, base, porDia, capturar, alt
         <h2 id="titulo-dia-elegido" className="px-1 text-[20px] font-bold tracking-tight first-letter:uppercase">
           {elegido === hoy ? `Hoy · ${titulo}` : titulo}
         </h2>
-        <CapturaRapida accion={capturar} fechaDefecto={elegido} placeholder="Agregar a este día…" />
+        <CapturaRapida accion={capturar} fechaDefecto={elegido} placeholder="Agregar a este día…" ia={ia} />
         <ListaDelDia items={items} hoy={hoy} base={base} alternar={alternar} />
       </section>
     </>

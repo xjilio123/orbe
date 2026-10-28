@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
 import { Anillo } from "@/components/Anillo";
 import { Icono } from "@/components/Icono";
 import { AvisoInstalar } from "@/components/pwa/AvisoInstalar";
@@ -24,10 +24,11 @@ type Props = {
   inbox: number;
   listas: Lista[];
   acciones: Pick<AccionesTareas, "capturar" | "alternar">;
+  ia?: AccionesIa;
 };
 
 /** Pantalla Hoy sin acceso a datos: la página real y la vitrina le pasan lo que debe mostrar. */
-export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, listas, acciones }: Props) {
+export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, listas, acciones, ia }: Props) {
   const porId = new Map(listas.map((l) => [l.id, l]));
   const quedan = resumen.total - resumen.hechas;
 
@@ -52,7 +53,7 @@ export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, lis
         </div>
       </section>
 
-      <CapturaRapida accion={acciones.capturar} />
+      <CapturaRapida accion={acciones.capturar} ia={ia?.captura} />
 
       <section className="flex flex-col gap-2" aria-labelledby="titulo-para-hoy">
         <TituloSeccion id="titulo-para-hoy" titulo="Para hoy" extra={resumen.pendientes.length || undefined} />

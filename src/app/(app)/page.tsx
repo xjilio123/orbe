@@ -1,4 +1,4 @@
-import { accionesTareas } from "@/app/acciones/conjunto";
+import { accionesIa, accionesTareas } from "@/app/acciones/conjunto";
 import { VistaHoy } from "@/components/vistas/VistaHoy";
 import { listas, tareasActivas } from "@/lib/datos/tareas";
 import { fechaEncabezado, hoyLima, saludo } from "@/lib/fechas";
@@ -29,7 +29,7 @@ export default async function Hoy() {
       resumen={resumenDelDia(tareas, hoy, (t) => t.hecha_en !== null && Date.parse(t.hecha_en) >= inicioHoy)}
       inbox={tareas.filter(esInbox).length}
       listas={misListas}
-      acciones={accionesTareas}
+      acciones={accionesTareas} ia={accionesIa}
     />
   );
 }

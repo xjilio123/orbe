@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition, type KeyboardEvent } from "react";
-import type { AccionesApuntes } from "@/app/acciones/tipos";
+import type { AccionesApuntes, AccionesIa } from "@/app/acciones/tipos";
+import { Destello } from "@/components/ia/BotonIa";
 import { Icono } from "@/components/Icono";
 import { MAX_ARCHIVO } from "@/lib/archivos";
 import {
@@ -25,7 +26,15 @@ type Props = {
   urls: Record<string, string>;
   tamanos: Record<string, number>;
   acciones: Pick<AccionesApuntes, "guardar" | "subir" | "eliminarAdjunto">;
+  /** IA sobre la página: trabaja con lo que ves en pantalla y el guardado automático hace el resto. */
+  ia?: Pick<AccionesIa, "texto" | "resumir">;
 };
+
+const OPCIONES_IA = [
+  { modo: "resumir", nombre: "Resumir" },
+  { modo: "mejorar", nombre: "Mejorar redacción" },
+  { modo: "traducir", nombre: "Traducir al inglés" },
+] as const;
 
 type Estado = "guardado" | "pendiente" | "guardando" | "error";
 
@@ -44,7 +53,7 @@ const TIPOS_BARRA: { tipo: TipoBloque; corto: string }[] = [
 
 const ESPERA_GUARDADO = 800;
 
-export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, contenido, urls: urlsIniciales, tamanos, acciones }: Props) {
+export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, contenido, urls: urlsIniciales, tamanos, acciones, ia }: Props) {
   const [titulo, setTitulo] = useState(tituloInicial);
   const [icono, setIcono] = useState(iconoInicial);
   const [bloques, setBloques] = useState<Bloque[]>(() => (contenido.length ? contenido : [nuevoBloque()]));
@@ -54,6 +63,10 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
   const [aviso, setAviso] = useState<string | null>(null);
   const [foco, setFoco] = useState<{ id: string; pos: number } | null>(null);
   const [, iniciar] = useTransition();
+  const [iaOcupada, iniciarIa] = useTransition();
+  const [iaMensaje, setIaMensaje] = useState<{ texto: string; error: boolean } | null>(null);
+  const [puedeDeshacer, setPuedeDeshacer] = useState(false);
+  const antesDeIa = useRef<Bloque[] | null>(null);
 
   const campos = useRef(new Map<string, HTMLTextAreaElement>());
   // Copia estable de los bloques: los manejadores la leen sin cambiar en cada tecla, así cada bloque
@@ -288,6 +301,45 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
     actualizar((lista) => lista.map((b) => (b.id === temporal.id ? { ...b, adjunto: r.adjunto.id } : b)));
   }
 
+  // ---------- IA ----------
+  function usarIa(modo: "resumir" | "mejorar" | "traducir") {
+    if (!ia) return;
+    setIaMensaje(null);
+    iniciarIa(async () => {
+      const actuales = bloquesRef.current;
+      try {
+        if (modo === "resumir") {
+          const r = await ia.resumir(actuales);
+          if (!r.ok) return setIaMensaje({ texto: r.error, error: true });
+          const nuevos = [nuevoBloque("aviso", `Resumen: ${r.datos.resumen}`), ...r.datos.puntos.map((p) => nuevoBloque("lista", p))];
+          antesDeIa.current = actuales;
+          actualizar((lista) => [...nuevos, ...lista]);
+          setIaMensaje({ texto: "Agregué el resumen arriba.", error: false });
+        } else {
+          const r = await ia.texto(modo, actuales);
+          if (!r.ok) return setIaMensaje({ texto: r.error, error: true });
+          const porId = new Map(r.datos.map((b) => [b.id, b.texto]));
+          antesDeIa.current = actuales;
+          actualizar((lista) => lista.map((b) => (porId.has(b.id) ? { ...b, texto: porId.get(b.id)! } : b)));
+          const n = porId.size;
+          setIaMensaje({ texto: `${modo === "mejorar" ? "Mejoré" : "Traduje"} ${n} ${n === 1 ? "bloque" : "bloques"}.`, error: false });
+        }
+        setPuedeDeshacer(true);
+      } catch {
+        setIaMensaje({ texto: "Sin conexión: la IA necesita internet.", error: true });
+      }
+    });
+  }
+
+  function deshacerIa() {
+    const anteriores = antesDeIa.current;
+    if (!anteriores) return;
+    antesDeIa.current = null;
+    actualizar(() => anteriores);
+    setPuedeDeshacer(false);
+    setIaMensaje({ texto: "Listo, volvió a como estaba.", error: false });
+  }
+
   const numeros = numeracion(bloques);
   const bloqueActual = bloques.find((b) => b.id === actual);
   const textoEstado = { guardado: "Guardado", pendiente: "Sin guardar", guardando: "Guardando…", error: "No se guardó" }[estado];
@@ -432,6 +484,33 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
       >
         Toca aquí para seguir escribiendo
       </button>
+
+      {ia && (
+        <section aria-label="IA para esta página" className="flex flex-col gap-2 rounded-[18px] bg-superficie p-3">
+          <div className="flex flex-wrap gap-2">
+            {OPCIONES_IA.map((o) => (
+              <button
+                key={o.modo}
+                type="button"
+                onClick={() => usarIa(o.modo)}
+                disabled={iaOcupada}
+                className="flex items-center gap-1.5 rounded-full bg-morado-relleno/12 px-3 py-1.5 text-[14px] font-semibold text-morado active:scale-95 disabled:opacity-50"
+              >
+                <Destello className="size-3.5" />
+                {o.nombre}
+              </button>
+            ))}
+          </div>
+          <p className={`flex h-5 items-center gap-2 px-1 text-[13px] ${iaMensaje?.error ? "text-rojo" : "text-texto-2"}`} aria-live="polite">
+            <span className="truncate">{iaOcupada ? "La IA está trabajando…" : iaMensaje?.texto}</span>
+            {puedeDeshacer && !iaOcupada && (
+              <button type="button" onClick={deshacerIa} className="shrink-0 font-semibold text-indigo">
+                Deshacer
+              </button>
+            )}
+          </p>
+        </section>
+      )}
     </div>
   );
 }

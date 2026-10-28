@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { accionesTareas } from "@/app/acciones/conjunto";
+import { accionesIa, accionesTareas } from "@/app/acciones/conjunto";
 import { VistaLista } from "@/components/vistas/VistaLista";
 import { conteoSubtareas, listas, tareasDeLista } from "@/lib/datos/tareas";
 import { hoyLima } from "@/lib/fechas";
@@ -26,7 +26,7 @@ export default async function PaginaLista({ params, searchParams }: PageProps<"/
       hoy={hoy}
       base=""
       subtareas={Object.fromEntries(conteo)}
-      acciones={accionesTareas}
+      acciones={accionesTareas} ia={accionesIa}
     />
   );
 }

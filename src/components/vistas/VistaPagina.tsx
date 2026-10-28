@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AccionesApuntes } from "@/app/acciones/tipos";
+import type { AccionesApuntes, AccionesIa } from "@/app/acciones/tipos";
 import { BotonFavorita } from "@/components/apuntes/BotonFavorita";
 import { Editor } from "@/components/apuntes/Editor";
 import { ConfirmarEliminar } from "@/components/ConfirmarEliminar";
@@ -15,9 +15,10 @@ type Props = {
   tamanos: Record<string, number>;
   base: string;
   acciones: AccionesApuntes;
+  ia?: AccionesIa;
 };
 
-export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, acciones }: Props) {
+export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, acciones, ia }: Props) {
   const padre = camino.at(-1);
 
   return (
@@ -49,6 +50,7 @@ export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, accion
         urls={urls}
         tamanos={tamanos}
         acciones={acciones}
+        ia={ia}
       />
 
       <section className="flex flex-col gap-2" aria-labelledby="titulo-subpaginas">

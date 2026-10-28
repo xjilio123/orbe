@@ -1,4 +1,4 @@
-import { accionesTareas } from "@/app/acciones/conjunto";
+import { accionesIa, accionesTareas } from "@/app/acciones/conjunto";
 import { VistaTareas } from "@/components/vistas/VistaTareas";
 import { conteoSubtareas, listas, tareasActivas } from "@/lib/datos/tareas";
 import { hoyLima } from "@/lib/fechas";
@@ -25,7 +25,7 @@ export default async function Tareas() {
       grupos={agruparPorFecha(tareas, hoy)}
       listas={misListas.map((l) => ({ ...l, pendientes: pendientesPorLista.get(l.id) ?? 0 }))}
       subtareas={Object.fromEntries(conteo)}
-      acciones={accionesTareas}
+      acciones={accionesTareas} ia={accionesIa}
     />
   );
 }

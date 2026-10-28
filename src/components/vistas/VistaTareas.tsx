@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
+import { BotonOrdenarInbox } from "@/components/ia/BotonIa";
 import { Icono } from "@/components/Icono";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
 import { FilaTarea } from "@/components/tareas/FilaTarea";
@@ -15,9 +16,10 @@ type Props = {
   listas: (Lista & { pendientes: number })[];
   subtareas: Record<string, { hechas: number; total: number }>;
   acciones: Pick<AccionesTareas, "capturar" | "alternar" | "crearLista">;
+  ia?: AccionesIa;
 };
 
-export function VistaTareas({ hoy, base, inbox, grupos, listas, subtareas, acciones }: Props) {
+export function VistaTareas({ hoy, base, inbox, grupos, listas, subtareas, acciones, ia }: Props) {
   const porId = new Map(listas.map((l) => [l.id, l]));
   const fila = (t: Tarea) => {
     const lista = t.lista_id ? porId.get(t.lista_id) : undefined;
@@ -37,13 +39,15 @@ export function VistaTareas({ hoy, base, inbox, grupos, listas, subtareas, accio
   return (
     <Pantalla>
       <Encabezado titulo="Tareas" />
-      <CapturaRapida accion={acciones.capturar} />
+      <CapturaRapida accion={acciones.capturar} ia={ia?.captura} />
 
       <section id="inbox" className="flex scroll-mt-6 flex-col gap-2" aria-labelledby="titulo-inbox">
         <TituloSeccion id="titulo-inbox" titulo="Inbox" extra={inbox.length || undefined} />
-        {inbox.length > 0 ? (
-          <ul className="divide-y divide-separador/60 overflow-hidden rounded-[22px] bg-superficie">{inbox.map(fila)}</ul>
-        ) : (
+        {inbox.length > 0 && <ul className="divide-y divide-separador/60 overflow-hidden rounded-[22px] bg-superficie">{inbox.map(fila)}</ul>}
+        {inbox.length > 1 && ia && listas.length > 0 && (
+          <BotonOrdenarInbox accion={ia.ordenarInbox} />
+        )}
+        {inbox.length === 0 && (
           <p className="rounded-[22px] bg-superficie px-4 py-5 text-center text-[15px] text-texto-2">
             Inbox vacío. Lo que captures sin fecha ni lista llega aquí.
           </p>

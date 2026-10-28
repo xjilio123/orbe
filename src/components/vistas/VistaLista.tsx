@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
 import { ConfirmarEliminar } from "@/components/ConfirmarEliminar";
 import { Icono } from "@/components/Icono";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
@@ -18,9 +18,10 @@ type Props = {
   base: string;
   subtareas: Record<string, { hechas: number; total: number }>;
   acciones: Pick<AccionesTareas, "capturar" | "alternar" | "mover" | "guardarLista" | "eliminarLista">;
+  ia?: AccionesIa;
 };
 
-export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, acciones }: Props) {
+export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, acciones, ia }: Props) {
   const ordenadas = [...tareas].sort(compararTareas);
   const abiertas = ordenadas.filter((t) => t.estado !== "hecha");
   const hechas = ordenadas.filter((t) => t.estado === "hecha");
@@ -50,7 +51,7 @@ export function VistaLista({ lista, tareas, vista, hoy, base, subtareas, accione
         </div>
       </header>
 
-      <CapturaRapida accion={acciones.capturar} listaId={lista.id} placeholder={`Agregar a ${lista.nombre}…`} />
+      <CapturaRapida accion={acciones.capturar} listaId={lista.id} placeholder={`Agregar a ${lista.nombre}…`} ia={ia?.captura} />
 
       {vista === "lista" ? (
         <>

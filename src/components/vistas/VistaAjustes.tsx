@@ -4,6 +4,7 @@ import { ActivarAvisos } from "@/components/ajustes/ActivarAvisos";
 import { BotonCerrarSesion } from "@/components/ajustes/BotonCerrarSesion";
 import { ConectarCalendario } from "@/components/ajustes/ConectarCalendario";
 import { Invitados, type Invitado } from "@/components/ajustes/Invitados";
+import { MedidorIa, type UsoIa } from "@/components/ajustes/MedidorIa";
 import { Icono } from "@/components/Icono";
 import { Logo } from "@/components/Logo";
 import { Medidor } from "@/components/Medidor";
@@ -24,9 +25,10 @@ type Props = {
   base?: string;
   /** Solo para la administración (si no, null y la sección no aparece). */
   invitados?: Invitado[] | null;
+  ia: { uso: UsoIa; configurada: boolean };
 };
 
-export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "", invitados = null }: Props) {
+export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "", invitados = null, ia }: Props) {
   return (
     <Pantalla>
       <header className="pt-2">
@@ -46,6 +48,8 @@ export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConec
       <ConectarCalendario conectado={calendarioConectado} acciones={acciones} />
 
       <SelectorTema actual={tema} />
+
+      <MedidorIa uso={ia.uso} configurada={ia.configurada} />
 
       <Medidor uso={uso} />
 

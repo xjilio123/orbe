@@ -311,3 +311,34 @@ test.describe("Sin conexión (service worker)", () => {
     expect(await page.evaluate(() => localStorage.getItem("orbe:pendientes"))).toBeNull();
   });
 });
+
+test.describe("Fluidez de la IA (vitrina, sin Gemini)", () => {
+  test("crear con IA desde la captura no mueve la pantalla", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/hoy");
+    await medir(page);
+    const seccion = page.getByRole("heading", { name: "Para hoy" });
+    const antes = (await seccion.boundingBox())!.y;
+    await page.getByLabel("Captura rápida").fill("mañana llamar al banco y pagar la luz el viernes");
+    await page.getByRole("button", { name: "Crear con IA" }).click();
+    await expect(page.getByText(/^Creé/)).toBeVisible();
+    await expect(page.getByLabel("Captura rápida")).toHaveValue("");
+    expect((await seccion.boundingBox())!.y, "la lista no se movió").toBe(antes);
+  });
+
+  test("mejorar una página con IA aplica los cambios y se puede deshacer", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1");
+    await medir(page);
+    const titulo = page.getByRole("textbox", { name: "Título 2" });
+    const posicion = () => titulo.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const antes = await posicion();
+    await page.getByRole("button", { name: "Mejorar redacción" }).click();
+    await expect(page.getByText(/^Mejoré \d+ bloque/)).toBeVisible();
+    await expect(page.getByText(/\(mejorado\)/).first()).toBeAttached();
+    expect(await posicion(), "lo de arriba no se movió").toBe(antes);
+    await page.getByRole("button", { name: "Deshacer" }).click();
+    await expect(page.getByText("Listo, volvió a como estaba.")).toBeVisible();
+    await expect(page.locator("textarea").filter({ hasText: "(mejorado)" })).toHaveCount(0);
+  });
+});

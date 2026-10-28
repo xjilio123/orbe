@@ -55,3 +55,14 @@ export type AccionesPapelera = {
 
 export type ResultadoBusqueda = { tipo: "tarea" | "pagina"; id: string; titulo: string; icono: string; detalle: string };
 export type Buscar = (consulta: string) => Promise<ResultadoBusqueda[]>;
+
+export type ResultadoIa<T> = { ok: true; datos: T } | { ok: false; error: string };
+
+/** Funciones de IA que reciben las pantallas (la vitrina usa unas de mentira, sin Gemini). */
+export type AccionesIa = {
+  captura: (texto: string, extra?: { lista_id?: string; fecha_defecto?: string }) => Promise<ResultadoIa<{ titulos: string[] }>>;
+  dividir: (tareaId: string) => Promise<ResultadoIa<{ pasos: number }>>;
+  ordenarInbox: () => Promise<ResultadoIa<{ ordenadas: number }>>;
+  texto: (modo: "mejorar" | "traducir", bloques: import("@/lib/bloques").Bloque[]) => Promise<ResultadoIa<{ id: string; texto: string }[]>>;
+  resumir: (bloques: import("@/lib/bloques").Bloque[]) => Promise<ResultadoIa<{ resumen: string; puntos: string[] }>>;
+};

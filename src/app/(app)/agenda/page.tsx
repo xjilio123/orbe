@@ -1,4 +1,4 @@
-import { accionesTareas } from "@/app/acciones/conjunto";
+import { accionesIa, accionesTareas } from "@/app/acciones/conjunto";
 import { VistaAgenda } from "@/components/vistas/VistaAgenda";
 import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { eventosDeGoogle } from "@/lib/datos/calendario";
@@ -39,6 +39,7 @@ export default async function Agenda({ searchParams }: PageProps<"/agenda">) {
       google={{ conectado: google.conectado, error: google.error }}
       base=""
       acciones={accionesTareas}
+      ia={accionesIa}
     />
   );
 }

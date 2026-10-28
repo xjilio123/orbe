@@ -328,6 +328,9 @@ export type Database = {
       }
       clave_publica_push: { Args: never; Returns: string }
       invitar: { Args: { p_email: string }; Returns: undefined }
+      mi_uso_ia: { Args: never; Returns: Json }
+      reservar_ia: { Args: { p_funcion: string }; Returns: number }
+      terminar_ia: { Args: { p_id: number; p_ok: boolean }; Returns: undefined }
       mis_invitados: {
         Args: never
         Returns: {

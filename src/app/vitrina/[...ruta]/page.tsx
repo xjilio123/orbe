@@ -13,7 +13,7 @@ import { VistaTareas } from "@/components/vistas/VistaTareas";
 import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
-import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
+import { DETALLE, EVENTOS, HOY, LISTAS, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -35,7 +35,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         resumen={resumenDelDia(TAREAS, HOY, (t) => t.hecha_en?.startsWith(HOY) ?? false)}
         inbox={TAREAS.filter(esInbox).length}
         listas={LISTAS}
-        acciones={accionesVitrina}
+        acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
   }
@@ -48,7 +48,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         grupos={agruparPorFecha(TAREAS, HOY)}
         listas={LISTAS.map((l) => ({ ...l, pendientes: TAREAS.filter((t) => t.lista_id === l.id && t.estado !== "hecha").length }))}
         subtareas={subtareas}
-        acciones={accionesVitrina}
+        acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
   }
@@ -62,7 +62,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         hoy={HOY}
         base={base}
         subtareas={subtareas}
-        acciones={accionesVitrina}
+        acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
   }
@@ -75,7 +75,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         listas={LISTAS}
         hoy={HOY}
         base={base}
-        acciones={accionesVitrina}
+        acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
   }
@@ -103,6 +103,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         tamanos={{}}
         base={base}
         acciones={accionesApuntesVitrina}
+        ia={accionesIaVitrina}
       />
     );
   }
@@ -118,7 +119,7 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         porDia={itemsPorDia(TAREAS, EVENTOS, desde, hasta)}
         google={{ conectado: true, error: false }}
         base={base}
-        acciones={accionesVitrina}
+        acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
   }
@@ -134,6 +135,26 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         calendarioConectado={false}
         acciones={accionesAjustesVitrina}
         base={base}
+        ia={{
+          configurada: true,
+          uso: {
+            usados: 4,
+            tope: 15,
+            funciones: [
+              { funcion: "captura", usados: 2, tope: 8, periodo: "dia" },
+              { funcion: "etiquetas", usados: 0, tope: 5, periodo: "dia" },
+              { funcion: "dividir", usados: 1, tope: 3, periodo: "dia" },
+              { funcion: "audio", usados: 0, tope: 2, periodo: "dia" },
+              { funcion: "plan", usados: 1, tope: 1, periodo: "dia" },
+              { funcion: "resumen_semanal", usados: 0, tope: 1, periodo: "semana" },
+              { funcion: "preguntar", usados: 0, tope: 5, periodo: "dia" },
+              { funcion: "mejorar", usados: 0, tope: 5, periodo: "dia" },
+              { funcion: "resumir", usados: 0, tope: 3, periodo: "dia" },
+              { funcion: "tarjetas", usados: 0, tope: 2, periodo: "dia" },
+              { funcion: "foto", usados: 0, tope: 2, periodo: "dia" },
+            ],
+          },
+        }}
         invitados={[
           { email: "ana@ejemplo.com", activo: true, registrado: true },
           { email: "diana@ejemplo.com", activo: true, registrado: false },
