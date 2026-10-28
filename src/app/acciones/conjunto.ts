@@ -12,6 +12,7 @@ import {
 import { capturaIa, dividirIa, ordenarInboxIa, resumirIa, textoIa } from "./ia";
 import { audioIa, fotoIa, planIa, semanaIa, tarjetasIa } from "./iaContenido";
 import { preguntarIa } from "./iaNotas";
+import { crearPaginaEnlazada, importarMarkdown } from "./notas";
 import { eliminarDefinitivo, restaurar, vaciarPapelera } from "./papelera";
 import {
   avanzarMeta,
@@ -35,7 +36,7 @@ import {
   guardarTarea,
   moverTarea,
 } from "./tareas";
-import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesPapelera, AccionesProgreso, AccionesTareas } from "./tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesIa, AccionesNotas, AccionesPapelera, AccionesProgreso, AccionesTareas } from "./tipos";
 
 /** Las acciones reales que reciben las pantallas (la vitrina usa unas que no hacen nada). */
 export const accionesTareas: AccionesTareas = {
@@ -98,3 +99,5 @@ export const accionesProgreso: AccionesProgreso = {
   eliminarFecha: eliminarFechaImportante,
   guardarFoco,
 };
+
+export const accionesNotas: AccionesNotas = { crearEnlazada: crearPaginaEnlazada, importar: importarMarkdown };

@@ -1,7 +1,10 @@
 import { numeracion, type Bloque } from "@/lib/bloques";
 
-/** Una página en solo lectura (vista previa del historial). Las fotos y PDF se muestran como un rótulo. */
-export function VistaBloques({ bloques }: { bloques: Bloque[] }) {
+/**
+ * Una página en solo lectura (historial y versión para imprimir). Con `urls`, las fotos se ven;
+ * sin ellas, fotos y PDF se muestran como un rótulo.
+ */
+export function VistaBloques({ bloques, urls }: { bloques: Bloque[]; urls?: Record<string, string> }) {
   const numeros = numeracion(bloques);
   if (bloques.every((b) => !b.texto.trim() && b.tipo !== "imagen" && b.tipo !== "archivo")) {
     return <p className="text-[15px] text-texto-2">Página vacía.</p>;
@@ -30,8 +33,18 @@ export function VistaBloques({ bloques }: { bloques: Bloque[] }) {
             return <p key={b.id} className="rounded-[10px] bg-naranja-relleno/12 px-3 py-2">{b.texto}</p>;
           case "separador":
             return <hr key={b.id} className="my-2 border-separador" />;
-          case "imagen":
-            return <p key={b.id} className="text-[13px] text-texto-2">🖼️ Foto{b.texto ? `: ${b.texto}` : ""}</p>;
+          case "imagen": {
+            const url = b.adjunto ? urls?.[b.adjunto] : undefined;
+            return url ? (
+              <figure key={b.id} className="my-1 break-inside-avoid">
+                {/* eslint-disable-next-line @next/next/no-img-element -- enlace firmado y temporal de un archivo privado */}
+                <img src={url} alt={b.texto || "Foto del apunte"} width={b.ancho} height={b.alto} className="h-auto max-w-full rounded-[12px]" />
+                {b.texto && <figcaption className="mt-1 text-[13px] text-texto-2">{b.texto}</figcaption>}
+              </figure>
+            ) : (
+              <p key={b.id} className="text-[13px] text-texto-2">🖼️ Foto{b.texto ? `: ${b.texto}` : ""}</p>
+            );
+          }
           case "archivo":
             return <p key={b.id} className="text-[13px] text-texto-2">📎 PDF{b.texto ? `: ${b.texto}` : ""}</p>;
           default:

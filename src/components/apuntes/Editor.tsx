@@ -6,6 +6,7 @@ import { Destello } from "@/components/ia/BotonIa";
 import { HerramientasIa } from "@/components/ia/HerramientasIa";
 import { Icono } from "@/components/Icono";
 import { MAX_ARCHIVO } from "@/lib/archivos";
+import { completarEnlace, consultaEnlace, sugerirPaginas, type PaginaEnlazable } from "@/lib/enlaces";
 import {
   MAX_BLOQUES,
   NOMBRE_TIPO,
@@ -31,6 +32,8 @@ type Props = {
   ia?: Pick<AccionesIa, "texto" | "resumir" | "tarjetas" | "foto" | "audio">;
   /** "" en la app, "/vitrina" en la vitrina (para abrir la página de tarjetas). */
   base?: string;
+  /** Tus páginas, para sugerir al escribir [[ (enlaces entre notas). */
+  paginas?: PaginaEnlazable[];
 };
 
 const OPCIONES_IA = [
@@ -56,7 +59,7 @@ const TIPOS_BARRA: { tipo: TipoBloque; corto: string }[] = [
 
 const ESPERA_GUARDADO = 800;
 
-export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, contenido, urls: urlsIniciales, tamanos, acciones, ia, base = "" }: Props) {
+export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, contenido, urls: urlsIniciales, tamanos, acciones, ia, base = "", paginas = [] }: Props) {
   const [titulo, setTitulo] = useState(tituloInicial);
   const [icono, setIcono] = useState(iconoInicial);
   const [bloques, setBloques] = useState<Bloque[]>(() => (contenido.length ? contenido : [nuevoBloque()]));
@@ -70,6 +73,8 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
   const [iaMensaje, setIaMensaje] = useState<{ texto: string; error: boolean } | null>(null);
   const [puedeDeshacer, setPuedeDeshacer] = useState(false);
   const antesDeIa = useRef<Bloque[] | null>(null);
+  // Lo que se escribe después de "[[" en el bloque actual (para sugerir páginas).
+  const [enlace, setEnlace] = useState<{ id: string; consulta: string; desde: number; cursor: number } | null>(null);
 
   const campos = useRef(new Map<string, HTMLTextAreaElement>());
   // Copia estable de los bloques: los manejadores la leen sin cambiar en cada tecla, así cada bloque
@@ -160,10 +165,23 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
         actualizar((lista) => lista.map((b) => (b.id === id ? { id: b.id, tipo: nuevoTipo, texto: "", ...(nuevoTipo === "todo" ? { hecho: false } : {}) } : b)));
       } else {
         actualizar((lista) => lista.map((b) => (b.id === id ? { ...b, texto } : b)));
+        const cursor = campos.current.get(id)?.selectionStart ?? texto.length;
+        const c = bloque.tipo === "codigo" ? null : consultaEnlace(texto, cursor);
+        setEnlace(c ? { id, ...c, cursor } : null);
       }
     },
     [actualizar],
   );
+
+  function elegirEnlace(titulo: string) {
+    if (!enlace) return;
+    const bloque = bloquesRef.current.find((b) => b.id === enlace.id);
+    if (!bloque) return;
+    const r = completarEnlace(bloque.texto, enlace.cursor, enlace.desde, titulo);
+    actualizar((lista) => lista.map((b) => (b.id === enlace.id ? { ...b, texto: r.texto } : b)));
+    setEnlace(null);
+    setFoco({ id: enlace.id, pos: r.cursor });
+  }
 
   const teclas = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>, bloque: Bloque) => {
@@ -343,6 +361,8 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
     setIaMensaje({ texto: "Listo, volvió a como estaba.", error: false });
   }
 
+  const enlaceActivo = enlace && enlace.id === actual ? enlace : null;
+  const sugeridas = enlaceActivo ? sugerirPaginas(enlaceActivo.consulta, paginas, paginaId) : [];
   const numeros = numeracion(bloques);
   const bloqueActual = bloques.find((b) => b.id === actual);
   const textoEstado = { guardado: "Guardado", pendiente: "Sin guardar", guardando: "Guardando…", error: "No se guardó" }[estado];
@@ -351,6 +371,33 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
     <div className="flex flex-col gap-4">
       {/* Barra fija arriba: en el iPhone el teclado tapa la parte de abajo. Altura constante: no empuja nada. */}
       <div className="sticky top-[max(env(safe-area-inset-top),8px)] z-10 -mx-1 flex items-center gap-1 overflow-x-auto rounded-[16px] border border-black/5 bg-vidrio p-1.5 shadow-sm backdrop-blur-xl dark:border-white/10">
+        {enlaceActivo ? (
+          // Escribiendo "[[…": la barra muestra tus páginas para enlazar (misma altura, nada se mueve).
+          <div role="listbox" aria-label="Enlazar una página" className="flex min-w-0 flex-1 items-center gap-1">
+            <span className="shrink-0 px-1.5 text-[13px] font-semibold text-texto-2">Enlazar</span>
+            {sugeridas.length > 0 ? (
+              sugeridas.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="option"
+                  aria-selected="false"
+                  onPointerDown={(e) => e.preventDefault()}
+                  onClick={() => elegirEnlace(p.titulo)}
+                  className="flex h-9 max-w-48 shrink-0 items-center gap-1.5 rounded-[10px] bg-naranja-relleno/15 px-2.5 text-[14px] font-semibold"
+                >
+                  <span aria-hidden="true">{p.icono || "📄"}</span>
+                  <span className="truncate">{p.titulo}</span>
+                </button>
+              ))
+            ) : (
+              <span className="truncate px-1 text-[13px] text-texto-2">
+                {enlaceActivo.consulta.trim() ? `Nueva: cierra con ]] para enlazar “${enlaceActivo.consulta.trim()}”` : "Escribe el título de una página"}
+              </span>
+            )}
+          </div>
+        ) : (
+          <>
         {TIPOS_BARRA.map((t) => (
           <button
             key={t.tipo}
@@ -385,6 +432,8 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
         >
           <Icono nombre="basura" className="size-5" />
         </button>
+          </>
+        )}
         <input
           ref={subidaFoto}
           type="file"

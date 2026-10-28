@@ -46,6 +46,8 @@ const PANTALLAS = [
   { ruta: "/vitrina/apuntes/nueva", titulo: "Nueva página" },
   { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/historial", titulo: "Historial" },
   { ruta: "/vitrina/papelera", titulo: "Papelera" },
+  { ruta: "/vitrina/apuntes/mapa", titulo: "Mapa de notas" },
+  { ruta: "/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1/imprimir", titulo: "SQL para Data Analytics" },
   { ruta: "/vitrina/preguntar", titulo: "Pregunta a tus notas" },
   { ruta: "/vitrina/progreso", titulo: "Progreso" },
   { ruta: "/vitrina/foco", titulo: "Modo foco" },
@@ -417,5 +419,40 @@ test.describe("Fluidez del progreso (CPU 4× más lenta)", () => {
     await expect(page.getByLabel("Captura rápida")).toBeFocused();
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText("Escribe primero lo que quieres hacer.")).toBeVisible();
+  });
+});
+
+test.describe("Enlaces entre notas (CPU 4× más lenta)", () => {
+  test("al escribir [[ la barra sugiere páginas sin moverse y completa el enlace", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1");
+    await medir(page);
+    const barra = page.getByRole("button", { name: "Título 1" }).locator("xpath=..");
+    const altoAntes = (await barra.boundingBox())!.height;
+    const ultimo = page.getByRole("textbox", { name: /Escribe, o usa #/ }).last();
+    await ultimo.click();
+    await ultimo.pressSequentially("Repasar [[Win");
+    const sugerencia = page.getByRole("option", { name: /Window functions/ });
+    await expect(sugerencia).toBeVisible();
+    expect((await page.getByRole("listbox", { name: "Enlazar una página" }).locator("xpath=..").boundingBox())!.height, "la barra no cambia de alto").toBe(altoAntes);
+    await sugerencia.click();
+    await expect(ultimo).toHaveValue("Repasar [[Window functions]]");
+    await expect(page.getByRole("listbox", { name: "Enlazar una página" })).toHaveCount(0);
+  });
+
+  test("la página muestra a cuáles enlaza, cuáles faltan crear y quién la menciona", async ({ page }) => {
+    await page.goto("/vitrina/apuntes/00000000-0000-4000-8000-0000000000b1");
+    const conexiones = page.locator("section", { has: page.getByRole("heading", { name: "Conexiones" }) });
+    await expect(conexiones.getByRole("link", { name: /Window functions/ })).toBeVisible();
+    await expect(conexiones.getByText("Funciones de agregación")).toBeVisible();
+    await expect(conexiones.getByRole("button", { name: "Crear" })).toBeVisible();
+    await expect(conexiones.getByRole("link", { name: /Ideas para Orbe/ })).toBeVisible();
+  });
+
+  test("el mapa de notas dibuja las páginas como enlaces", async ({ page }) => {
+    await page.goto("/vitrina/apuntes/mapa");
+    const mapa = page.getByRole("img", { name: /Mapa con 4 páginas/ });
+    await expect(mapa).toBeVisible();
+    await expect(page.getByRole("link", { name: /^SQL para Data Analytics: 2 conexiones/ })).toBeVisible();
   });
 });

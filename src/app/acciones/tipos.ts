@@ -24,6 +24,14 @@ export type AccionesApuntes = {
   restaurarVersion: (paginaId: string, hueco: number) => Promise<void>;
 };
 
+export type ResultadoImportacion = { ok: true; creadas: number; carpetaId: string } | { ok: false; error: string; carpetaId?: string };
+
+/** Enlaces entre notas e importación de Markdown. */
+export type AccionesNotas = {
+  crearEnlazada: (titulo: string, padreId: string | null) => Promise<void>;
+  importar: (archivos: { nombre: string; texto: string }[], carpetaId: string | null) => Promise<ResultadoImportacion>;
+};
+
 /** Acciones que reciben las pantallas: la app usa las reales y la vitrina unas que no hacen nada. */
 export type AccionesTareas = {
   capturar: (anterior: EstadoCaptura, formData: FormData) => Promise<EstadoCaptura>;

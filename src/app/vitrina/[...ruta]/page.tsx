@@ -3,6 +3,8 @@ import { VistaAgenda } from "@/components/vistas/VistaAgenda";
 import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
+import { VistaImprimir } from "@/components/vistas/VistaImprimir";
+import { VistaMapa } from "@/components/vistas/VistaMapa";
 import { VistaNuevaPagina } from "@/components/vistas/VistaNuevaPagina";
 import { VistaFoco } from "@/components/vistas/VistaFoco";
 import { VistaPapelera } from "@/components/vistas/VistaPapelera";
@@ -16,8 +18,9 @@ import { VistaTareas } from "@/components/vistas/VistaTareas";
 import { itemsPorDia, leerParametros, rangoDeVista } from "@/lib/agenda";
 import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/tareas";
 import { vitrinaActiva } from "@/lib/vitrina";
+import { armarGrafo, distribuir, type Arista } from "@/lib/grafo";
 import { PLAN_VITRINA } from "../ejemplosIa";
-import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
+import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -90,10 +93,21 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
   if (camino === "apuntes") {
     const hijas = new Map<string, number>();
     for (const p of PAGINAS) if (p.padre_id) hijas.set(p.padre_id, (hijas.get(p.padre_id) ?? 0) + 1);
-    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} />;
+    return <VistaApuntes paginas={PAGINAS.map((p) => ({ ...p, hijas: hijas.get(p.id) ?? 0 }))} hoy={HOY} base={base} notas={accionesNotasVitrina} />;
   }
   if (camino === "apuntes/nueva") {
     return <VistaNuevaPagina padreId={null} propias={[{ id: PAGINAS[2].id, titulo: "Ideas para Orbe", icono: "💡" }]} base={base} acciones={accionesApuntesVitrina} />;
+  }
+  if (camino === "apuntes/mapa") {
+    const aristas: Arista[] = [
+      { origen: PAGINA.id, destino: PAGINAS[2].id, tipo: "enlace" },
+      ...PAGINAS.flatMap((p) => (p.padre_id ? [{ origen: p.padre_id, destino: p.id, tipo: "dentro" as const }] : [])),
+    ];
+    const g = armarGrafo(PAGINAS, aristas);
+    return <VistaMapa nodos={distribuir(g.nodos, g.aristas, 380, 456)} aristas={g.aristas} ancho={380} alto={456} total={PAGINAS.length} base={base} />;
+  }
+  if (ruta[0] === "apuntes" && ruta[2] === "imprimir") {
+    return <VistaImprimir pagina={PAGINA} urls={URLS_PAGINA} base={base} />;
   }
   if (ruta[0] === "apuntes" && ruta[2] === "historial") {
     return <VistaHistorial pagina={PAGINA} versiones={VERSIONES} base={base} acciones={accionesApuntesVitrina} />;
@@ -135,6 +149,9 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         base={base}
         acciones={accionesApuntesVitrina}
         ia={accionesIaVitrina}
+        paginas={PAGINAS}
+        mencionan={[PAGINAS[2]]}
+        notas={accionesNotasVitrina}
       />
     );
   }
