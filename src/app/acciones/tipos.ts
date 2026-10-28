@@ -50,3 +50,6 @@ export type AccionesPapelera = {
   eliminar: (tipo: string, id: string) => Promise<void>;
   vaciar: () => Promise<void>;
 };
+
+export type ResultadoBusqueda = { tipo: "tarea" | "pagina"; id: string; titulo: string; icono: string; detalle: string };
+export type Buscar = (consulta: string) => Promise<ResultadoBusqueda[]>;

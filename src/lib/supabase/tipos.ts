@@ -87,6 +87,7 @@ export type Database = {
         Row: {
           actualizado: string
           borrado_en: string | null
+          busqueda: unknown
           contenido: Json
           creado: string
           favorita: boolean
@@ -100,6 +101,7 @@ export type Database = {
         Insert: {
           actualizado?: string
           borrado_en?: string | null
+          busqueda?: unknown
           contenido?: Json
           creado?: string
           favorita?: boolean
@@ -113,6 +115,7 @@ export type Database = {
         Update: {
           actualizado?: string
           borrado_en?: string | null
+          busqueda?: unknown
           contenido?: Json
           creado?: string
           favorita?: boolean
@@ -199,6 +202,7 @@ export type Database = {
           avisado_en: string | null
           avisar_en: string | null
           borrado_en: string | null
+          busqueda: unknown
           aviso: number | null
           creado: string
           estado: string
@@ -220,6 +224,7 @@ export type Database = {
           avisado_en?: string | null
           avisar_en?: string | null
           borrado_en?: string | null
+          busqueda?: unknown
           aviso?: number | null
           creado?: string
           estado?: string
@@ -241,6 +246,7 @@ export type Database = {
           avisado_en?: string | null
           avisar_en?: string | null
           borrado_en?: string | null
+          busqueda?: unknown
           aviso?: number | null
           creado?: string
           estado?: string
@@ -309,6 +315,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      buscar: {
+        Args: { consulta: string }
+        Returns: {
+          detalle: string
+          icono: string
+          id: string
+          rango: number
+          tipo: string
+          titulo: string
+        }[]
+      }
       clave_publica_push: { Args: never; Returns: string }
       guardar_suscripcion_push: {
         Args: {

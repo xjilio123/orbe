@@ -27,6 +27,8 @@ const PRESUPUESTO = {
   check: 150,
   /** Lo más lento que tarda en responder una tecla en el editor (ms), CPU 4× más lenta. Google: "bueno" ≤ 200. */
   tecla: 120,
+  /** Tocar la lupa hasta ver la barra ⌘K lista para escribir (ms), CPU 4× más lenta. */
+  barra: 300,
 };
 
 const IPHONE_SAFARI =
@@ -244,5 +246,39 @@ test.describe("Fluidez en la Agenda (CPU 4× más lenta)", () => {
     console.log(`mes siguiente en ${ms} ms`);
     expect(ms, "cambio de mes").toBeLessThanOrEqual(PRESUPUESTO.cambioPestana);
     expect(await alto(), "6 semanas siempre").toBe(antes);
+  });
+});
+
+test.describe("Fluidez de la barra ⌘K (CPU 4× más lenta)", () => {
+  test("la lupa abre la barra al instante, busca y no mueve la pantalla", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/hoy");
+    await medir(page);
+    const seccion = page.getByRole("heading", { name: "Para hoy" });
+    const antes = (await seccion.boundingBox())!.y;
+    const ms = await page.getByRole("button", { name: "Buscar", exact: true }).evaluate(async (boton) => {
+      const inicio = performance.now();
+      (boton as HTMLButtonElement).click();
+      while (document.activeElement?.getAttribute("role") !== "combobox") await new Promise((r) => requestAnimationFrame(r));
+      return performance.now() - inicio;
+    });
+    console.log(`barra ⌘K lista en ${Math.round(ms)} ms`);
+    expect(ms, "tiempo hasta poder escribir en la barra").toBeLessThanOrEqual(PRESUPUESTO.barra);
+
+    await page.keyboard.type("sql");
+    await expect(page.getByRole("option", { name: /SQL para Data Analytics/ })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Buscar en Orbe" })).toBeHidden();
+    expect((await seccion.boundingBox())!.y, "la pantalla no se movió").toBe(antes);
+  });
+
+  test("Ctrl+K, escribir y Enter lleva a la pantalla", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/tareas");
+    await medir(page);
+    await page.keyboard.press("Control+k");
+    await page.getByRole("combobox", { name: /Buscar/ }).fill("agen");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { level: 1, name: "Agenda" })).toBeVisible();
   });
 });
