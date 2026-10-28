@@ -10,6 +10,12 @@ const trazos = {
   mas: "M12 5v14M5 12h14",
   salir: "M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l4-4-4-4M14 12H4",
   compartir: "M12 3v12M8 7l4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1",
+  check: "M5 12.5l4.5 4.5L19 7.5",
+  atras: "M15 5l-7 7 7 7",
+  adelante: "M9 5l7 7-7 7",
+  basura: "M4 7h16M10 11v6M14 11v6M5.5 7l.9 12.1A2 2 0 0 0 8.4 21h7.2a2 2 0 0 0 2-1.9L18.5 7M9 7V4.5h6V7",
+  lista: "M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01",
+  tablero: "M4 4.5h4.5v15H4ZM10 4.5h4.5v10H10ZM16 4.5h4v6.5h-4Z",
 } as const;
 
 export type NombreIcono = keyof typeof trazos;

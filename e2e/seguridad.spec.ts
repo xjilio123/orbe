@@ -1,7 +1,20 @@
 import { expect, test } from "@playwright/test";
 
 // /vitrina (datos ficticios) solo existe con ORBE_VITRINA=1 fuera de Vercel: en una compilación normal es privada.
-const RUTAS_PRIVADAS = ["/", "/tareas", "/apuntes", "/agenda", "/ajustes", "/ruta-que-no-existe", "/vitrina/hoy"];
+const UUID = "00000000-0000-0000-0000-000000000000";
+const RUTAS_PRIVADAS = [
+  "/",
+  "/tareas",
+  `/tareas/${UUID}`,
+  `/tareas/lista/${UUID}`,
+  `/tareas/lista/${UUID}?vista=tablero`,
+  "/apuntes",
+  "/agenda",
+  "/ajustes",
+  "/ruta-que-no-existe",
+  "/vitrina/hoy",
+  "/vitrina/tareas",
+];
 
 test.describe("Sin sesión no se ve nada privado", () => {
   for (const ruta of RUTAS_PRIVADAS) {
