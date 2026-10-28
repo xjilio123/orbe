@@ -2,16 +2,18 @@ import Link from "next/link";
 import type { AccionesIa, AccionesTareas } from "@/app/acciones/tipos";
 import { Anillo } from "@/components/Anillo";
 import { Icono } from "@/components/Icono";
+import { TuDiaIa } from "@/components/ia/TuDiaIa";
 import { AvisoInstalar } from "@/components/pwa/AvisoInstalar";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
 import { FilaTarea } from "@/components/tareas/FilaTarea";
 import { Encabezado, IconoModulo, Pantalla, TEXTO_COLOR, TituloSeccion, enlace, type ColorModulo } from "@/components/ui";
 import type { NombreIcono } from "@/components/Icono";
+import type { Plan, ResumenSemana } from "@/lib/ia/contenido";
 import type { Lista, Tarea } from "@/lib/tareas";
 
 const proximamente: { nombre: string; texto: string; icono: NombreIcono; color: ColorModulo; fase: string }[] = [
-  { nombre: "Búsqueda y sin conexión", texto: "Encuentra todo y úsalo sin internet.", icono: "buscar", color: "azul", fase: "Fase 3" },
-  { nombre: "IA con topes", texto: "Captura inteligente y resúmenes.", icono: "chispa", color: "morado", fase: "Fase 4" },
+  { nombre: "Pregunta a tus notas", texto: "Respuestas con lo que ya escribiste.", icono: "chispa", color: "morado", fase: "Fase 4" },
+  { nombre: "Hábitos y metas", texto: "Rachas, metas y modo estudio.", icono: "check", color: "verde", fase: "Fase 5" },
 ];
 
 type Props = {
@@ -25,10 +27,12 @@ type Props = {
   listas: Lista[];
   acciones: Pick<AccionesTareas, "capturar" | "alternar">;
   ia?: AccionesIa;
+  /** Plan del día y resumen semanal guardados (hechos con IA). */
+  iaGuardado?: { plan: Plan | null; semana: ResumenSemana | null };
 };
 
 /** Pantalla Hoy sin acceso a datos: la página real y la vitrina le pasan lo que debe mostrar. */
-export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, listas, acciones, ia }: Props) {
+export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, listas, acciones, ia, iaGuardado }: Props) {
   const porId = new Map(listas.map((l) => [l.id, l]));
   const quedan = resumen.total - resumen.hechas;
 
@@ -79,6 +83,8 @@ export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, lis
           </p>
         )}
       </section>
+
+      {ia && <TuDiaIa plan={iaGuardado?.plan ?? null} semana={iaGuardado?.semana ?? null} ia={ia} />}
 
       <Link
         href={enlace(base, "/tareas#inbox")}

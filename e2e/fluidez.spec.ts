@@ -342,3 +342,19 @@ test.describe("Fluidez de la IA (vitrina, sin Gemini)", () => {
     await expect(page.locator("textarea").filter({ hasText: "(mejorado)" })).toHaveCount(0);
   });
 });
+
+test.describe("Fluidez del plan del día con IA (vitrina)", () => {
+  test("planificar el día responde y no mueve lo de arriba", async ({ page }) => {
+    await prepararMedicion(page);
+    await page.goto("/vitrina/hoy");
+    await medir(page);
+    // Posición dentro de la página: tocar el botón desplaza la pantalla hasta él, y eso no es un salto.
+    const captura = page.getByLabel("Captura rápida");
+    const posicion = () => captura.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const antes = await posicion();
+    await expect(page.getByText("Repasar window functions de SQL").first()).toBeVisible();
+    await page.getByRole("button", { name: "Replanificar" }).click();
+    await expect(page.getByText("Listo, tu plan está arriba.")).toBeVisible();
+    expect(await posicion(), "la captura no se movió").toBe(antes);
+  });
+});

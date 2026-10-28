@@ -56,6 +56,30 @@ export type Database = {
           },
         ]
       }
+      ia_guardado: {
+        Row: {
+          clave: string
+          creado: string
+          datos: Json
+          fecha: string
+          user_id: string
+        }
+        Insert: {
+          clave: string
+          creado?: string
+          datos: Json
+          fecha: string
+          user_id?: string
+        }
+        Update: {
+          clave?: string
+          creado?: string
+          datos?: Json
+          fecha?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       listas: {
         Row: {
           color: string

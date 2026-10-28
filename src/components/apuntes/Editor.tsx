@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition, type KeyboardEvent } from "react";
 import type { AccionesApuntes, AccionesIa } from "@/app/acciones/tipos";
 import { Destello } from "@/components/ia/BotonIa";
+import { HerramientasIa } from "@/components/ia/HerramientasIa";
 import { Icono } from "@/components/Icono";
 import { MAX_ARCHIVO } from "@/lib/archivos";
 import {
@@ -27,7 +28,9 @@ type Props = {
   tamanos: Record<string, number>;
   acciones: Pick<AccionesApuntes, "guardar" | "subir" | "eliminarAdjunto">;
   /** IA sobre la página: trabaja con lo que ves en pantalla y el guardado automático hace el resto. */
-  ia?: Pick<AccionesIa, "texto" | "resumir">;
+  ia?: Pick<AccionesIa, "texto" | "resumir" | "tarjetas" | "foto" | "audio">;
+  /** "" en la app, "/vitrina" en la vitrina (para abrir la página de tarjetas). */
+  base?: string;
 };
 
 const OPCIONES_IA = [
@@ -53,7 +56,7 @@ const TIPOS_BARRA: { tipo: TipoBloque; corto: string }[] = [
 
 const ESPERA_GUARDADO = 800;
 
-export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, contenido, urls: urlsIniciales, tamanos, acciones, ia }: Props) {
+export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, contenido, urls: urlsIniciales, tamanos, acciones, ia, base = "" }: Props) {
   const [titulo, setTitulo] = useState(tituloInicial);
   const [icono, setIcono] = useState(iconoInicial);
   const [bloques, setBloques] = useState<Bloque[]>(() => (contenido.length ? contenido : [nuevoBloque()]));
@@ -500,6 +503,20 @@ export function Editor({ paginaId, titulo: tituloInicial, icono: iconoInicial, c
                 {o.nombre}
               </button>
             ))}
+            <HerramientasIa
+              paginaId={paginaId}
+              base={base}
+              ia={ia}
+              ocupada={iaOcupada}
+              leer={() => ({ titulo: ultimo.current.titulo, bloques: bloquesRef.current })}
+              agregar={(nuevos) => {
+                antesDeIa.current = bloquesRef.current;
+                // Si la página está vacía (un solo párrafo en blanco), lo nuevo la reemplaza.
+                actualizar((lista) => (lista.length === 1 && lista[0].tipo === "p" && !lista[0].texto ? nuevos : [...lista, ...nuevos]));
+                setPuedeDeshacer(true);
+              }}
+              avisar={(texto, error = false) => setIaMensaje(texto ? { texto, error } : null)}
+            />
           </div>
           <p className={`flex h-5 items-center gap-2 px-1 text-[13px] ${iaMensaje?.error ? "text-rojo" : "text-texto-2"}`} aria-live="polite">
             <span className="truncate">{iaOcupada ? "La IA está trabajando…" : iaMensaje?.texto}</span>

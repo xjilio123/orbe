@@ -9,9 +9,9 @@ const cabecerasSeguridad = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
-    // Cámara y micrófono se abrirán solo para el propio sitio cuando lleguen las fotos y los audios.
+    // Cámara y micrófono solo para el propio sitio (foto a texto y nota de voz con IA).
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    value: "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()",
   },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];

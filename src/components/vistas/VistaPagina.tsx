@@ -51,6 +51,7 @@ export function VistaPagina({ pagina, camino, hijas, urls, tamanos, base, accion
         tamanos={tamanos}
         acciones={acciones}
         ia={ia}
+        base={base}
       />
 
       <section className="flex flex-col gap-2" aria-labelledby="titulo-subpaginas">

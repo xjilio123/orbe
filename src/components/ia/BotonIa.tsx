@@ -45,7 +45,7 @@ export function BotonIa<T>({ etiqueta, accion, exito, className = "" }: Props<T>
         type="button"
         onClick={usar}
         disabled={ocupado}
-        className="flex items-center justify-center gap-2 rounded-[14px] bg-morado-relleno/12 px-3 py-2.5 text-[15px] font-semibold text-morado transition active:scale-[0.98] disabled:opacity-60"
+        className="flex items-center justify-center gap-2 rounded-[14px] bg-morado-relleno/12 px-3 py-2.5 text-[15px] font-semibold whitespace-nowrap text-morado transition active:scale-[0.98] disabled:opacity-60"
       >
         <Destello className={`size-4 ${ocupado ? "motion-safe:animate-pulse" : ""}`} />
         {ocupado ? "Pensando…" : etiqueta}
@@ -71,4 +71,14 @@ export function BotonOrdenarInbox({ accion }: { accion: () => Promise<ResultadoI
 /** "Dividir en pasos con IA" para una tarea. */
 export function BotonDividir({ tareaId, accion }: { tareaId: string; accion: (id: string) => Promise<ResultadoIa<{ pasos: number }>> }) {
   return <BotonIa etiqueta="Dividir en pasos con IA" accion={() => accion(tareaId)} exito={(d) => `Agregué ${d.pasos} pasos como subtareas.`} />;
+}
+
+/** "Planificar mi día" (1 al día). El plan aparece arriba del botón al terminar. */
+export function BotonPlan({ accion, rehacer }: { accion: () => Promise<ResultadoIa<unknown>>; rehacer: boolean }) {
+  return <BotonIa etiqueta={rehacer ? "Replanificar" : "Planificar mi día"} accion={accion} exito={() => "Listo, tu plan está arriba."} className="min-w-0 flex-1" />;
+}
+
+/** "Resumen de la semana" (1 por semana). */
+export function BotonSemana({ accion }: { accion: () => Promise<ResultadoIa<unknown>> }) {
+  return <BotonIa etiqueta="Mi semana" accion={accion} exito={() => "Listo, tu resumen está arriba."} className="min-w-0 flex-1" />;
 }
