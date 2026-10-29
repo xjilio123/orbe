@@ -59,6 +59,15 @@ export function VistaProgreso({ hoy, base, anio, habitos, metas, fechas, estadis
         <Icono nombre="adelante" className="size-4 text-texto-2" />
       </Link>
 
+      <Link href={enlace(base, "/biblioteca")} className="-mt-3 flex items-center gap-3 rounded-[22px] bg-superficie px-4 py-3.5 active:scale-[0.99]">
+        <IconoModulo nombre="apuntes" color="morado" />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="text-[17px] font-semibold">Biblioteca</span>
+          <span className="text-[15px] text-texto-2">Libros, series y cursos con su avance</span>
+        </div>
+        <Icono nombre="adelante" className="size-4 text-texto-2" />
+      </Link>
+
       <section className="flex flex-col gap-2" aria-labelledby="titulo-habitos">
         <TituloSeccion
           id="titulo-habitos"

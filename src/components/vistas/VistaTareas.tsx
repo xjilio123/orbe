@@ -40,14 +40,18 @@ export function VistaTareas({ hoy, base, inbox, grupos, listas, subtareas, accio
     <Pantalla>
       <Encabezado titulo="Tareas" />
       <CapturaRapida accion={acciones.capturar} ia={ia?.captura} />
-      <nav aria-label="Herramientas de tareas" className="-mt-3 grid grid-cols-2 gap-2">
+      <nav aria-label="Herramientas de tareas" className="-mt-3 grid grid-cols-3 gap-2">
         <Link href={enlace(base, "/tareas/matriz")} className="flex items-center justify-center gap-2 rounded-[16px] bg-rojo-relleno/10 py-3 text-[15px] font-semibold text-rojo active:scale-[0.98]">
           <Icono nombre="matriz" className="size-4" />
           Matriz
         </Link>
         <Link href={enlace(base, "/tareas/revision")} className="flex items-center justify-center gap-2 rounded-[16px] bg-azul-relleno/12 py-3 text-[15px] font-semibold text-azul active:scale-[0.98]">
           <Icono nombre="revision" className="size-4" />
-          Revisión semanal
+          Revisión
+        </Link>
+        <Link href={enlace(base, "/checklists")} className="flex items-center justify-center gap-2 rounded-[16px] bg-verde-relleno/15 py-3 text-[15px] font-semibold text-verde active:scale-[0.98]">
+          <Icono nombre="check" className="size-4" />
+          Checklists
         </Link>
       </nav>
 

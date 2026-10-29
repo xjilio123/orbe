@@ -1,4 +1,4 @@
-import type { AccionesAjustes, AccionesApuntes, AccionesEstudio, AccionesIa, AccionesNotas, AccionesOrganizacion, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesColeccion, AccionesEstudio, AccionesIa, AccionesNotas, AccionesOrganizacion, AccionesPapelera, AccionesProgreso, AccionesTareas } from "@/app/acciones/tipos";
 import type { FechaImportante, Habito, Meta, SemanaEstadistica } from "@/lib/progreso";
 import type { Evento } from "@/lib/agenda";
 import type { Pagina, PaginaResumen } from "@/lib/datos/paginas";
@@ -275,4 +275,38 @@ export const accionesOrganizacionVitrina: AccionesOrganizacion = { moverCuadrant
 export const VISTAS_GUARDADAS = [
   { id: "00000000-0000-4000-8000-0000000000e9", nombre: "Urgentes", config: { orden: "prioridad", estado: "pendientes", prioridad: 2 } },
   { id: "00000000-0000-4000-8000-0000000000ea", nombre: "Todo por fecha", config: { orden: "fecha", estado: "todas", prioridad: 0 } },
+];
+
+// ---------- Checklists y biblioteca ficticias ----------
+export const accionesColeccionVitrina: AccionesColeccion = {
+  crearChecklist: formularioVitrina,
+  eliminarChecklist: nadaVitrina,
+  agregarItem: guardarVitrina,
+  alternarItem: nadaVitrina,
+  eliminarItem: nadaVitrina,
+  desmarcarTodo: nadaVitrina,
+  crearObra: formularioVitrina,
+  actualizarObra: guardarVitrina,
+  eliminarObra: nadaVitrina,
+};
+
+export const CHECKLISTS = [
+  { id: "00000000-0000-4000-8000-0000000000c5", nombre: "Mercado de la semana", icono: "🛒", color: "verde" as const, hechos: 3, total: 9 },
+  { id: "00000000-0000-4000-8000-0000000000c6", nombre: "Maleta de viaje", icono: "🧳", color: "azul" as const, hechos: 0, total: 14 },
+  { id: "00000000-0000-4000-8000-0000000000c7", nombre: "Antes de salir de casa", icono: "🔑", color: "naranja" as const, hechos: 2, total: 5 },
+];
+
+export const ITEMS = ["Pan", "Leche", "Huevos", "Palta", "Arroz", "Pollo", "Tomates", "Café", "Detergente"].map((texto, i) => ({
+  id: `00000000-0000-4000-8000-0000000001${String(i).padStart(2, "0")}`,
+  texto,
+  hecho: i < 3,
+  orden: i,
+}));
+
+export const OBRAS = [
+  { id: "00000000-0000-4000-8000-000000000201", titulo: "Storytelling with Data", autor: "Cole Nussbaumer", tipo: "libro" as const, estado: "en_curso" as const, progreso: 142, total: 260, nota: null, resena: "", terminado_en: null },
+  { id: "00000000-0000-4000-8000-000000000202", titulo: "Dark", autor: "Netflix", tipo: "serie" as const, estado: "en_curso" as const, progreso: 14, total: 26, nota: null, resena: "", terminado_en: null },
+  { id: "00000000-0000-4000-8000-000000000203", titulo: "Power BI avanzado", autor: "Platzi", tipo: "curso" as const, estado: "en_curso" as const, progreso: 3, total: null, nota: null, resena: "", terminado_en: null },
+  { id: "00000000-0000-4000-8000-000000000204", titulo: "Atomic Habits", autor: "James Clear", tipo: "libro" as const, estado: "terminado" as const, progreso: 320, total: 320, nota: 5, resena: "", terminado_en: "2026-09-14" },
+  { id: "00000000-0000-4000-8000-000000000205", titulo: "Deep Work", autor: "Cal Newport", tipo: "libro" as const, estado: "quiero" as const, progreso: 0, total: null, nota: null, resena: "", terminado_en: null },
 ];

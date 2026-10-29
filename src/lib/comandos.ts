@@ -16,6 +16,8 @@ export const COMANDOS: Comando[] = [
   { id: "mapa", nombre: "Mapa de notas", ruta: "/apuntes/mapa", icono: "mapa", palabras: "grafo enlaces conexiones backlinks" },
   { id: "matriz", nombre: "Matriz urgente/importante", ruta: "/tareas/matriz", icono: "matriz", palabras: "eisenhower prioridades cuadrantes" },
   { id: "revision", nombre: "Revisión semanal", ruta: "/tareas/revision", icono: "revision", palabras: "semana repaso atrasadas estancadas domingo" },
+  { id: "checklists", nombre: "Checklists", ruta: "/checklists", icono: "check", palabras: "mercado compras maleta viaje lista reutilizable" },
+  { id: "biblioteca", nombre: "Biblioteca", ruta: "/biblioteca", icono: "apuntes", palabras: "libros series peliculas cursos podcast leer ver" },
   { id: "apuntes", nombre: "Apuntes", ruta: "/apuntes", icono: "apuntes", palabras: "notas paginas" },
   { id: "agenda", nombre: "Agenda", ruta: "/agenda", icono: "agenda", palabras: "calendario mes semana google" },
   { id: "ajustes", nombre: "Ajustes", ruta: "/ajustes", icono: "ajustes", palabras: "avisos tema oscuro claro espacio calendario" },

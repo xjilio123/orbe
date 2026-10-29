@@ -4,6 +4,9 @@ import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { VistaApuntes } from "@/components/vistas/VistaApuntes";
 import { VistaDiario } from "@/components/vistas/VistaDiario";
 import { VistaEstudio } from "@/components/vistas/VistaEstudio";
+import { VistaBiblioteca } from "@/components/vistas/VistaBiblioteca";
+import { VistaChecklist } from "@/components/vistas/VistaChecklist";
+import { VistaChecklists } from "@/components/vistas/VistaChecklists";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
 import { VistaMatriz } from "@/components/vistas/VistaMatriz";
 import { VistaRevision } from "@/components/vistas/VistaRevision";
@@ -26,7 +29,7 @@ import { vitrinaActiva } from "@/lib/vitrina";
 import { armarGrafo, distribuir, type Arista } from "@/lib/grafo";
 import { leerConfig, revisionSemanal } from "@/lib/organizacion";
 import { PLAN_VITRINA } from "../ejemplosIa";
-import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, CURSOS, DIARIO, TARJETAS, VISTAS_GUARDADAS, accionesEstudioVitrina, accionesOrganizacionVitrina, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
+import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, CHECKLISTS, CURSOS, DIARIO, ITEMS, OBRAS, TARJETAS, accionesColeccionVitrina, VISTAS_GUARDADAS, accionesEstudioVitrina, accionesOrganizacionVitrina, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
 // Pantallas reales con datos FICTICIOS. Solo existe con ORBE_VITRINA=1 fuera de Vercel (ver lib/vitrina.ts).
 // Rutas: /vitrina/hoy, /vitrina/tareas, /vitrina/tareas/<id>, /vitrina/tareas/lista/<id>[?vista=tablero], …
@@ -69,6 +72,16 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
+  }
+  if (camino === "checklists") {
+    return <VistaChecklists checklists={CHECKLISTS} base={base} acciones={accionesColeccionVitrina} />;
+  }
+  if (ruta[0] === "checklists" && ruta.length === 2) {
+    return <VistaChecklist checklist={CHECKLISTS[0]} items={ITEMS} base={base} acciones={accionesColeccionVitrina} />;
+  }
+  if (camino === "biblioteca") {
+    const estado = consulta.estado === "terminado" || consulta.estado === "quiero" || consulta.estado === "abandonado" ? consulta.estado : "en_curso";
+    return <VistaBiblioteca obras={OBRAS} estado={estado} anio={2026} base={base} acciones={accionesColeccionVitrina} />;
   }
   if (camino === "tareas/matriz") {
     return <VistaMatriz tareas={TAREAS} hoy={HOY} base={base} acciones={accionesOrganizacionVitrina} />;

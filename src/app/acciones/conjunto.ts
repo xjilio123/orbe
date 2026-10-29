@@ -12,6 +12,17 @@ import {
 import { capturaIa, dividirIa, ordenarInboxIa, resumirIa, textoIa } from "./ia";
 import { audioIa, fotoIa, planIa, semanaIa, tarjetasIa } from "./iaContenido";
 import { preguntarIa } from "./iaNotas";
+import {
+  actualizarObra,
+  agregarItem,
+  alternarItem,
+  crearChecklist,
+  crearObra,
+  desmarcarTodo,
+  eliminarChecklist,
+  eliminarItem,
+  eliminarObra,
+} from "./coleccion";
 import { abrirDiario, alternarCurso, crearExamen, marcarAnimo } from "./estudio";
 import { crearPaginaEnlazada, importarMarkdown } from "./notas";
 import { eliminarVista, guardarVista, moverCuadrante } from "./organizacion";
@@ -38,7 +49,7 @@ import {
   guardarTarea,
   moverTarea,
 } from "./tareas";
-import type { AccionesAjustes, AccionesApuntes, AccionesEstudio, AccionesIa, AccionesNotas, AccionesOrganizacion, AccionesPapelera, AccionesProgreso, AccionesTareas } from "./tipos";
+import type { AccionesAjustes, AccionesApuntes, AccionesColeccion, AccionesEstudio, AccionesIa, AccionesNotas, AccionesOrganizacion, AccionesPapelera, AccionesProgreso, AccionesTareas } from "./tipos";
 
 /** Las acciones reales que reciben las pantallas (la vitrina usa unas que no hacen nada). */
 export const accionesTareas: AccionesTareas = {
@@ -107,3 +118,15 @@ export const accionesNotas: AccionesNotas = { crearEnlazada: crearPaginaEnlazada
 export const accionesEstudio: AccionesEstudio = { alternarCurso, crearExamen, marcarAnimo, abrirDiario };
 
 export const accionesOrganizacion: AccionesOrganizacion = { moverCuadrante, guardarVista, eliminarVista };
+
+export const accionesColeccion: AccionesColeccion = {
+  crearChecklist,
+  eliminarChecklist,
+  agregarItem,
+  alternarItem,
+  eliminarItem,
+  desmarcarTodo,
+  crearObra,
+  actualizarObra,
+  eliminarObra,
+};
