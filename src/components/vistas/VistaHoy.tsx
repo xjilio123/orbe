@@ -7,16 +7,10 @@ import { AnillosHabitos } from "@/components/progreso/AnillosHabitos";
 import { AvisoInstalar } from "@/components/pwa/AvisoInstalar";
 import { CapturaRapida } from "@/components/tareas/CapturaRapida";
 import { FilaTarea } from "@/components/tareas/FilaTarea";
-import { Encabezado, IconoModulo, Pantalla, TEXTO_COLOR, TituloSeccion, enlace, type ColorModulo } from "@/components/ui";
-import type { NombreIcono } from "@/components/Icono";
+import { Encabezado, IconoModulo, Pantalla, TEXTO_COLOR, TituloSeccion, enlace } from "@/components/ui";
 import type { Plan, ResumenSemana } from "@/lib/ia/contenido";
 import { proximasFechas, textoFaltan, type FechaImportante, type Habito } from "@/lib/progreso";
 import type { Lista, Tarea } from "@/lib/tareas";
-
-const proximamente: { nombre: string; texto: string; icono: NombreIcono; color: ColorModulo; fase: string }[] = [
-  { nombre: "Enlaces entre notas", texto: "Backlinks, mapa de notas y modo estudio.", icono: "apuntes", color: "naranja", fase: "Fase 5" },
-  { nombre: "Revisión semanal", texto: "Matriz urgente/importante y nuevas vistas.", icono: "tablero", color: "azul", fase: "Fase 5" },
-];
 
 type Props = {
   fecha: string;
@@ -147,22 +141,6 @@ export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, lis
           <Icono nombre="adelante" className="size-4 text-texto-2" />
         </Link>
       )}
-
-      <section className="flex flex-col gap-2" aria-labelledby="titulo-camino">
-        <TituloSeccion id="titulo-camino" titulo="En camino" />
-        <ul className="divide-y divide-separador/60 overflow-hidden rounded-[22px] bg-superficie">
-          {proximamente.map((m) => (
-            <li key={m.nombre} className="flex items-center gap-3 px-4 py-3">
-              <IconoModulo nombre={m.icono} color={m.color} />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-[17px] font-semibold">{m.nombre}</p>
-                <p className="truncate text-[15px] text-texto-2">{m.texto}</p>
-              </div>
-              <span className="shrink-0 text-[13px] font-semibold text-texto-2">{m.fase}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
 
       {/* Al final y flotante: aparece después de cargar sin mover nada de la pantalla. */}
       <AvisoInstalar />
