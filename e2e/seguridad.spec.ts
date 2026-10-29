@@ -21,6 +21,18 @@ const RUTAS_PRIVADAS = [
   "/vitrina/hoy",
   "/vitrina/tareas",
   "/vitrina/agenda",
+  "/progreso",
+  "/foco",
+  "/apuntes/mapa",
+  "/apuntes/exportar",
+  `/apuntes/${UUID}/markdown`,
+  "/estudio",
+  "/diario",
+  "/tareas/matriz",
+  "/tareas/revision",
+  "/checklists",
+  "/biblioteca",
+  "/compartir?texto=hola",
 ];
 
 test.describe("Sin sesión no se ve nada privado", () => {
@@ -93,5 +105,19 @@ test.describe("Tema claro / oscuro", () => {
     await page.goto("/login");
     await expect(page.locator("html")).not.toHaveAttribute("data-tema", /.*/);
     expect(await page.locator("img[src=x]").count()).toBe(0);
+  });
+});
+
+test.describe("API del atajo de Siri", () => {
+  test("sin clave, con una clave mal formada o con GET no anota nada", async ({ request }) => {
+    const sinClave = await request.post("/api/atajo", { data: { texto: "hola" } });
+    expect(sinClave.status()).toBe(401);
+    expect((await sinClave.json()).ok).toBe(false);
+
+    const mala = await request.post("/api/atajo", { data: { texto: "hola" }, headers: { Authorization: "Bearer nada' or 1=1 --" } });
+    expect(mala.status()).toBe(401);
+
+    const get = await request.get("/api/atajo", { maxRedirects: 0 });
+    expect(get.status()).toBe(405);
   });
 });

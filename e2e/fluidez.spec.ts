@@ -65,6 +65,7 @@ const PANTALLAS = [
   { ruta: "/vitrina/agenda?vista=semana", titulo: "Agenda" },
   { ruta: "/vitrina/agenda?vista=dia", titulo: "Agenda" },
   { ruta: "/vitrina/ajustes", titulo: "Ajustes" },
+  { ruta: "/vitrina/compartir?titulo=Art%C3%ADculo&texto=Mira%20esto%20https%3A%2F%2Fejemplo.com%2Fsql", titulo: "Guardar en Orbe" },
   { ruta: "/login", titulo: "Orbe" },
 ];
 
@@ -630,5 +631,25 @@ test.describe("Checklists y biblioteca (CPU 4× más lenta)", () => {
         }),
     );
     expect(marcada, "la nota cambia al instante").toBe(true);
+  });
+});
+
+test.describe("Atajo de Siri y compartir (vitrina)", () => {
+  test("crear una clave la muestra una sola vez con su botón de copiar", async ({ page }) => {
+    await page.goto("/vitrina/ajustes");
+    const seccion = page.locator("section#atajo");
+    await expect(seccion.getByText("Usada hace 2 h")).toBeVisible();
+    await seccion.getByRole("button", { name: "Crear otra clave" }).click();
+    await expect(seccion.getByText(/cópiala ahora/)).toBeVisible();
+    await expect(seccion.getByRole("button", { name: /Copiar “Bearer/ })).toBeVisible();
+  });
+
+  test("lo compartido separa el enlace y ofrece guardarlo como tarea o nota", async ({ page }) => {
+    await page.goto("/vitrina/compartir?titulo=Art%C3%ADculo&texto=Mira%20esto%20https%3A%2F%2Fejemplo.com%2Fsql");
+    await expect(page.getByLabel("Título")).toHaveValue("Artículo");
+    await expect(page.getByLabel("Texto")).toHaveValue("Mira esto");
+    await expect(page.getByText("https://ejemplo.com/sql")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Como tarea" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Como nota" })).toBeVisible();
   });
 });

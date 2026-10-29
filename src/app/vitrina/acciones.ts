@@ -41,3 +41,17 @@ export async function importarVitrina(archivos: unknown[]): Promise<{ ok: true; 
   exigirVitrina();
   return { ok: true, creadas: archivos.length, carpetaId: "00000000-0000-4000-8000-0000000000b9" };
 }
+
+export async function compartirVitrina(): Promise<void> {
+  exigirVitrina();
+}
+
+/** Clave de mentira (no sirve para nada: la vitrina no tiene base). */
+export async function crearClaveVitrina(): Promise<{ ok: true; clave: string }> {
+  exigirVitrina();
+  return { ok: true, clave: "orbe_EstaEsUnaClaveDeLaVitrinaNoSirve00" };
+}
+
+export async function nadaVitrinaAtajo(): Promise<void> {
+  exigirVitrina();
+}

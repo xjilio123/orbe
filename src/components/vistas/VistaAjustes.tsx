@@ -1,6 +1,8 @@
 import { SelectorTema } from "@/app/(app)/ajustes/SelectorTema";
 import type { AccionesAjustes } from "@/app/acciones/tipos";
 import { ActivarAvisos } from "@/components/ajustes/ActivarAvisos";
+import { AtajoSiri, type ClaveAtajo } from "@/components/ajustes/AtajoSiri";
+import type { ResultadoClave } from "@/app/acciones/atajo";
 import { BotonCerrarSesion } from "@/components/ajustes/BotonCerrarSesion";
 import { ConectarCalendario } from "@/components/ajustes/ConectarCalendario";
 import { Invitados, type Invitado } from "@/components/ajustes/Invitados";
@@ -26,9 +28,11 @@ type Props = {
   /** Solo para la administración (si no, null y la sección no aparece). */
   invitados?: Invitado[] | null;
   ia: { uso: UsoIa; configurada: boolean };
+  /** Atajo de Siri: claves (sin la clave en sí) y la dirección de Orbe. */
+  atajo?: { claves: ClaveAtajo[]; origen: string; acciones: { crear: (nombre: string) => Promise<ResultadoClave>; revocar: (id: string) => Promise<void> } };
 };
 
-export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "", invitados = null, ia }: Props) {
+export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConectado, acciones, base = "", invitados = null, ia, atajo }: Props) {
   return (
     <Pantalla>
       <header className="pt-2">
@@ -46,6 +50,8 @@ export function VistaAjustes({ nombre, email, tema, uso, avisos, calendarioConec
       <ActivarAvisos clavePublica={avisos.clavePublica} dispositivos={avisos.dispositivos} acciones={acciones} />
 
       <ConectarCalendario conectado={calendarioConectado} acciones={acciones} />
+
+      {atajo && <AtajoSiri claves={atajo.claves} origen={atajo.origen} acciones={atajo.acciones} />}
 
       <SelectorTema actual={tema} />
 

@@ -172,6 +172,42 @@ export type Database = {
         }
         Relationships: []
       }
+      claves_atajo: {
+        Row: {
+          creado: string
+          hash: string
+          id: string
+          nombre: string
+          pista: string
+          ultimo_uso: string | null
+          user_id: string
+          usos_ventana: number
+          ventana: string | null
+        }
+        Insert: {
+          creado?: string
+          hash: string
+          id?: string
+          nombre: string
+          pista: string
+          ultimo_uso?: string | null
+          user_id?: string
+          usos_ventana?: number
+          ventana?: string | null
+        }
+        Update: {
+          creado?: string
+          hash?: string
+          id?: string
+          nombre?: string
+          pista?: string
+          ultimo_uso?: string | null
+          user_id?: string
+          usos_ventana?: number
+          ventana?: string | null
+        }
+        Relationships: []
+      }
       diario: {
         Row: {
           animo: number | null
@@ -759,6 +795,17 @@ export type Database = {
           tipo: string
           titulo: string
         }[]
+      }
+      capturar_con_clave: {
+        Args: {
+          p_clave: string
+          p_fecha?: string
+          p_hora?: string
+          p_lista?: string
+          p_prioridad?: number
+          p_titulo: string
+        }
+        Returns: string
       }
       clave_publica_push: { Args: never; Returns: string }
       invitar: { Args: { p_email: string }; Returns: undefined }
