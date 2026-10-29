@@ -5,7 +5,8 @@ import { construirCsp, generarNonce } from "@/lib/seguridad/csp";
 import { vitrinaActiva } from "@/lib/vitrina";
 
 // /vitrina (datos ficticios para medir la fluidez) solo es pública cuando está activada fuera de Vercel.
-const RUTAS_PUBLICAS = ["/login", "/auth/callback", "/offline", ...(vitrinaActiva() ? ["/vitrina"] : [])];
+// /api/atajo no usa sesión: se autentica con la clave personal del atajo de Siri.
+const RUTAS_PUBLICAS = ["/login", "/auth/callback", "/offline", "/api/atajo", ...(vitrinaActiva() ? ["/vitrina"] : [])];
 
 const esPublica = (ruta: string) => RUTAS_PUBLICAS.some((r) => ruta === r || ruta.startsWith(`${r}/`));
 

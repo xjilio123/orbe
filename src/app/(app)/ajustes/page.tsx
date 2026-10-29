@@ -1,10 +1,12 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { crearClaveAtajo, revocarClaveAtajo } from "@/app/acciones/atajo";
 import { accionesAjustes } from "@/app/acciones/conjunto";
 import type { UsoIa } from "@/components/ajustes/MedidorIa";
 import { VistaAjustes } from "@/components/vistas/VistaAjustes";
 import { miEspacio } from "@/lib/datos/paginas";
 import { requerirSesion } from "@/lib/supabase/servidor";
 import { COOKIE_TEMA, leerTema } from "@/lib/tema";
+import { textoUso } from "@/lib/atajoClave";
 
 /** Lo que devuelve mi_uso_ia(), con valores seguros si algo falta. */
 function leerUsoIa(datos: unknown): UsoIa {
@@ -16,7 +18,7 @@ export const metadata = { title: "Ajustes · Orbe" };
 
 export default async function Ajustes() {
   const { supabase, usuario } = await requerirSesion();
-  const [{ data: perfil }, uso, galletas, { data: clave }, { count }, { data: admin }, { data: usoIa }] = await Promise.all([
+  const [{ data: perfil }, uso, galletas, { data: clave }, { count }, { data: admin }, { data: usoIa }, { data: claves }, cabeceras] = await Promise.all([
     supabase.from("perfiles").select("nombre,calendario_ics").eq("id", usuario.id).maybeSingle(),
     miEspacio(supabase),
     cookies(),
@@ -24,7 +26,11 @@ export default async function Ajustes() {
     supabase.from("suscripciones_push").select("id", { count: "exact", head: true }),
     supabase.rpc("soy_admin"),
     supabase.rpc("mi_uso_ia"),
+    supabase.from("claves_atajo").select("id,nombre,pista,ultimo_uso").order("creado"),
+    headers(),
   ]);
+  const host = cabeceras.get("host") ?? "orbe-nine-chi.vercel.app";
+  const origen = `${host.startsWith("localhost") ? "http" : "https"}://${host}`;
   const invitados = admin ? ((await supabase.rpc("mis_invitados")).data ?? []) : null;
 
   return (
@@ -38,6 +44,11 @@ export default async function Ajustes() {
       acciones={accionesAjustes}
       invitados={invitados}
       ia={{ uso: leerUsoIa(usoIa), configurada: Boolean(process.env.GEMINI_API_KEY) }}
+      atajo={{
+        claves: (claves ?? []).map((c) => ({ id: c.id, nombre: c.nombre, pista: c.pista, uso: textoUso(c.ultimo_uso) })),
+        origen,
+        acciones: { crear: crearClaveAtajo, revocar: revocarClaveAtajo },
+      }}
     />
   );
 }

@@ -15,7 +15,7 @@ tareas, apuntes por bloques, recordatorios, agenda e IA, con diseño al estilo A
 | 2 · Tiempo | Agenda (día, semana, mes), avisos push, tareas que se repiten, Google Calendar | Lista |
 | 3 · Pulido | Modo sin conexión, búsqueda, plantillas, barra ⌘K, papelera e historial, invitados | Lista |
 | 4 · IA | Captura inteligente, resúmenes, plan del día, preguntas a tus notas, topes de uso | Lista |
-| 5 · Extras | Listo: hábitos, metas, cuenta regresiva, modo foco, estadísticas, enlaces [[ ]] con backlinks, mapa de notas, PDF y Markdown, importar de Obsidian, modo estudio, diario, matriz urgente/importante, revisión semanal, vista tabla con vistas guardadas, galería, checklists y biblioteca. Falta la parte 4 (Siri, compartir, dibujo, cifrado, SaveWise) | En curso |
+| 5 · Extras | Hábitos, metas, cuenta regresiva, modo foco, estadísticas, enlaces [[ ]] con backlinks, mapa de notas, PDF y Markdown, importar de Obsidian, modo estudio, diario, matriz urgente/importante, revisión semanal, vista tabla, galería, checklists, biblioteca, atajo de Siri y compartir hacia Orbe (Android) | Lista |
 
 ## Stack
 

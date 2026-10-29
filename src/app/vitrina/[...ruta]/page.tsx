@@ -7,6 +7,7 @@ import { VistaEstudio } from "@/components/vistas/VistaEstudio";
 import { VistaBiblioteca } from "@/components/vistas/VistaBiblioteca";
 import { VistaChecklist } from "@/components/vistas/VistaChecklist";
 import { VistaChecklists } from "@/components/vistas/VistaChecklists";
+import { VistaCompartir } from "@/components/vistas/VistaCompartir";
 import { VistaHistorial } from "@/components/vistas/VistaHistorial";
 import { VistaMatriz } from "@/components/vistas/VistaMatriz";
 import { VistaRevision } from "@/components/vistas/VistaRevision";
@@ -28,6 +29,8 @@ import { agruparPorFecha, compararTareas, esInbox, resumenDelDia } from "@/lib/t
 import { vitrinaActiva } from "@/lib/vitrina";
 import { armarGrafo, distribuir, type Arista } from "@/lib/grafo";
 import { leerConfig, revisionSemanal } from "@/lib/organizacion";
+import { leerCompartido } from "@/lib/compartir";
+import { compartirVitrina, crearClaveVitrina, nadaVitrinaAtajo } from "../acciones";
 import { PLAN_VITRINA } from "../ejemplosIa";
 import { DETALLE, ESTADISTICAS, EVENTOS, FECHAS, HABITOS, HOY, LISTAS, METAS, CHECKLISTS, CURSOS, DIARIO, ITEMS, OBRAS, TARJETAS, accionesColeccionVitrina, VISTAS_GUARDADAS, accionesEstudioVitrina, accionesOrganizacionVitrina, accionesNotasVitrina, accionesProgresoVitrina, PAGINA, PAGINAS, SUBTAREAS, TAREAS, URLS_PAGINA, PAPELERA, VERSIONES, accionesAjustesVitrina, accionesApuntesVitrina, accionesIaVitrina, accionesPapeleraVitrina, accionesVitrina } from "../datos";
 
@@ -72,6 +75,9 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
         acciones={accionesVitrina} ia={accionesIaVitrina}
       />
     );
+  }
+  if (camino === "compartir") {
+    return <VistaCompartir compartido={leerCompartido(consulta)} guardar={compartirVitrina} />;
   }
   if (camino === "checklists") {
     return <VistaChecklists checklists={CHECKLISTS} base={base} acciones={accionesColeccionVitrina} />;
@@ -241,6 +247,11 @@ export default async function Pantalla({ params, searchParams }: PageProps<"/vit
               { funcion: "foto", usados: 0, tope: 2, periodo: "dia" },
             ],
           },
+        }}
+        atajo={{
+          claves: [{ id: "00000000-0000-4000-8000-000000000301", nombre: "iPhone", pista: "x7Qa", uso: "Usada hace 2 h" }],
+          origen: "https://orbe-nine-chi.vercel.app",
+          acciones: { crear: crearClaveVitrina, revocar: nadaVitrinaAtajo },
         }}
         invitados={[
           { email: "ana@ejemplo.com", activo: true, registrado: true },
