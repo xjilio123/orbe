@@ -14,6 +14,13 @@ describe("esquemaTarea", () => {
     expect(esquemaTarea.safeParse({ ...base, titulo: "   " }).success).toBe(false);
   });
 
+  it("guarda fecha y hora tal como las manda el iPhone (con o sin segundos)", () => {
+    const iphone = { ...base, prioridad: "3", fecha: "2026-11-02", hora: "18:00", aviso: "0", repetir: "" };
+    expect(esquemaTarea.parse(iphone)).toMatchObject({ fecha: "2026-11-02", hora: "18:00", aviso: 0, repetir: null, prioridad: 3 });
+    expect(esquemaTarea.parse({ ...iphone, hora: "18:00:00" }).hora).toBe("18:00");
+    expect(esquemaTarea.parse({ ...iphone, hora: " 18:00 " }).hora).toBe("18:00");
+  });
+
   it("no acepta hora sin fecha", () => {
     const r = esquemaTarea.safeParse({ ...base, hora: "10:00" });
     expect(r.success).toBe(false);
