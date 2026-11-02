@@ -186,7 +186,8 @@ test.describe("Fluidez al usar las tareas (CPU 4× más lenta)", () => {
     const seccion = page.getByRole("heading", { name: "Para hoy" });
     const antes = (await seccion.boundingBox())!.y;
     await page.getByLabel("Captura rápida").pressSequentially("pagar luz el viernes 9am #casa !!");
-    await expect(page.getByText("vie 30 oct")).toBeVisible();
+    // "el viernes" depende del día en que corre la prueba: basta con que entienda que es un viernes.
+    await expect(page.getByText(/^vie \d{1,2} \p{L}+$/u)).toBeVisible();
     await expect(page.getByText("#casa")).toBeVisible();
     await expect(page.getByText("Prioridad !!")).toBeVisible();
     expect((await seccion.boundingBox())!.y, "la lista no se corre al escribir").toBe(antes);

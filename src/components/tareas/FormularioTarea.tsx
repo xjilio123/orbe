@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { EstadoFormulario } from "@/app/acciones/tipos";
 import { AVISOS, NOMBRE_REPETIR, REPETICIONES } from "@/lib/repeticion";
 import { ESTADOS, NOMBRE_ESTADO, type Lista, type Tarea } from "@/lib/tareas";
@@ -23,6 +23,9 @@ const campo = "w-full rounded-[12px] bg-control px-3 py-2.5 text-[17px] outline-
 export function FormularioTarea({ tarea, listas, accion }: Props) {
   const [estado, enviar, guardando] = useActionState(accion, {});
   const e = estado.errores ?? {};
+  // El aviso necesita fecha y hora: si falta alguna, se avisa aquí en vez de no avisar en silencio.
+  const [hayFecha, setHayFecha] = useState(Boolean(tarea.fecha));
+  const [hayHora, setHayHora] = useState(Boolean(tarea.hora));
 
   return (
     <form action={enviar} className="flex flex-col gap-4">
@@ -40,20 +43,20 @@ export function FormularioTarea({ tarea, listas, accion }: Props) {
       </section>
 
       <section className="flex flex-col gap-3 rounded-[22px] bg-superficie p-4">
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+          <label className="flex min-w-0 flex-col gap-1.5">
             <span className="text-[13px] font-semibold text-texto-2">Fecha</span>
-            <input type="date" name="fecha" defaultValue={tarea.fecha ?? ""} className={campo} />
+            <input type="date" name="fecha" defaultValue={tarea.fecha ?? ""} onChange={(ev) => setHayFecha(Boolean(ev.target.value))} className={campo} />
           </label>
-          <label className="flex flex-col gap-1.5">
+          <label className="flex min-w-0 flex-col gap-1.5">
             <span className="text-[13px] font-semibold text-texto-2">Hora</span>
-            <input type="time" name="hora" defaultValue={tarea.hora ?? ""} className={campo} />
+            <input type="time" name="hora" defaultValue={tarea.hora ?? ""} onChange={(ev) => setHayHora(Boolean(ev.target.value))} className={campo} />
           </label>
         </div>
         {(e.fecha || e.hora) && <span className="text-[13px] text-rojo">{e.fecha ?? e.hora}</span>}
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+          <label className="flex min-w-0 flex-col gap-1.5">
             <span className="text-[13px] font-semibold text-texto-2">Repetir</span>
             <select name="repetir" defaultValue={tarea.repetir ?? ""} disabled={tarea.padre_id !== null} className={campo}>
               <option value="">Nunca</option>
@@ -64,7 +67,7 @@ export function FormularioTarea({ tarea, listas, accion }: Props) {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1.5">
+          <label className="flex min-w-0 flex-col gap-1.5">
             <span className="text-[13px] font-semibold text-texto-2">Aviso</span>
             <select name="aviso" defaultValue={tarea.aviso ?? ""} className={campo}>
               {AVISOS.map((a) => (
@@ -78,7 +81,11 @@ export function FormularioTarea({ tarea, listas, accion }: Props) {
         {e.repetir ? (
           <span className="text-[13px] text-rojo">{e.repetir}</span>
         ) : (
-          <span className="text-[13px] text-texto-2">El aviso llega a la hora de la tarea si activaste los avisos en Ajustes.</span>
+          <span className="text-[13px] text-texto-2">
+            {hayFecha && hayHora
+              ? "El aviso llega a la hora de la tarea si activaste los avisos en Ajustes."
+              : "Para recibir el aviso, ponle fecha y hora a la tarea."}
+          </span>
         )}
 
         <fieldset className="flex flex-col gap-1.5">

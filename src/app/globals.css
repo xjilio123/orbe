@@ -177,4 +177,24 @@ body {
   textarea {
     font-size: 16px; /* mínimo para evitar el zoom automático de iOS al enfocar */
   }
+
+  /*
+   * Fecha y hora en iPhone/iPad: Safari les pone un ancho mínimo propio y, en dos columnas,
+   * se salen de la tarjeta y se pisan. Sin el estilo nativo respetan su columna; la altura
+   * fija evita que un campo vacío se encoja.
+   */
+  input[type="date"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 2.875rem;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+  }
 }
