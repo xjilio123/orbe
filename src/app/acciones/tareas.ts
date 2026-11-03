@@ -24,6 +24,8 @@ function mensajeBase(error: { code?: string; message: string }): string {
   if (error.code === "23505") return "Ya tienes una lista con ese nombre.";
   if (error.message.includes("subtareas")) return error.message;
   if (error.message.includes("repetir_con_fecha")) return "Para repetirla, elige la fecha de la primera vez.";
+  if (error.message.includes("fecha_fin_despues")) return "La fecha de fin no puede ser antes del inicio.";
+  if (error.message.includes("hora_fin")) return "La hora de fin debe ser después de la de inicio.";
   return "No se pudo guardar. Intenta de nuevo.";
 }
 
@@ -64,6 +66,8 @@ export async function capturarTarea(anterior: EstadoCaptura, formData: FormData)
     titulo: c.titulo.slice(0, 200),
     fecha: c.fecha,
     hora: c.hora,
+    fecha_fin: c.fecha_fin,
+    hora_fin: c.hora_fin,
     prioridad: c.prioridad,
     lista_id: listaId,
     repetir: c.repetir,

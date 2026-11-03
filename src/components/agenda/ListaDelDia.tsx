@@ -2,7 +2,8 @@ import Link from "next/link";
 import { FilaTarea } from "@/components/tareas/FilaTarea";
 import { enlace } from "@/components/ui";
 import type { Evento, ItemAgenda } from "@/lib/agenda";
-import { etiquetaHora } from "@/lib/fechas";
+import { etiquetaFecha, etiquetaHora } from "@/lib/fechas";
+import { rangoHoras } from "@/lib/plazo";
 import { etiquetaRepetir } from "@/lib/repeticion";
 import type { Tarea } from "@/lib/tareas";
 
@@ -29,7 +30,7 @@ function FilaEvento({ evento }: { evento: Evento }) {
 }
 
 /** Una vez futura de una tarea que se repite: todavía no existe, se crea al marcar la anterior. */
-function FilaRepeticion({ tarea, base }: { tarea: Tarea; base: string }) {
+function FilaRepeticion({ tarea, hoy, base }: { tarea: Tarea; hoy: string; base: string }) {
   return (
     <li>
       <Link href={enlace(base, `/tareas/${tarea.id}`)} className="flex items-start gap-3 px-4 py-3 active:bg-control">
@@ -38,7 +39,8 @@ function FilaRepeticion({ tarea, base }: { tarea: Tarea; base: string }) {
           <span className="text-[17px] leading-snug text-texto-2">{tarea.titulo}</span>
           <span className="text-[13px] text-texto-2">
             ↻ {etiquetaRepetir(tarea.repetir!, tarea.fecha)}
-            {tarea.hora && ` · ${etiquetaHora(tarea.hora)}`}
+            {tarea.hora && ` · ${tarea.fecha_fin ? etiquetaHora(tarea.hora) : rangoHoras(tarea.hora, tarea.hora_fin)}`}
+            {tarea.fecha_fin && ` · hasta ${etiquetaFecha(tarea.fecha_fin, hoy)}`}
           </span>
         </span>
       </Link>
@@ -65,7 +67,7 @@ export function ListaDelDia({ items, hoy, base, alternar, vacio = "Nada para est
         i.tipo === "evento" ? (
           <FilaEvento key={i.clave} evento={i.evento} />
         ) : i.proyectada ? (
-          <FilaRepeticion key={i.clave} tarea={i.tarea} base={base} />
+          <FilaRepeticion key={i.clave} tarea={i.tarea} hoy={hoy} base={base} />
         ) : (
           <FilaTarea key={i.clave} tarea={i.tarea} hoy={hoy} base={base} alternar={alternar} />
         ),

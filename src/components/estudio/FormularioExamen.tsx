@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import type { EstadoFormulario } from "@/app/acciones/tipos";
+import { CamposPlazo } from "@/components/CamposPlazo";
 import { Icono } from "@/components/Icono";
 
 const CAMPO = "w-full rounded-[12px] bg-control px-3 py-2.5 text-[17px] outline-none focus:ring-2 focus:ring-indigo-relleno/40";
@@ -24,9 +25,9 @@ export function FormularioExamen({ accion, hoy, curso }: { accion: (anterior: Es
           <span className="text-[13px] font-semibold text-texto-2">Examen de {curso}</span>
           <input name="titulo" maxLength={80} required placeholder="Parcial, final, práctica…" className={CAMPO} />
         </label>
-        <input type="date" name="fecha" required min={hoy} aria-label="Fecha del examen" className={CAMPO} />
-        {(estado.errores?.titulo || estado.errores?.fecha || estado.errores?.general) && (
-          <span className="text-[13px] text-rojo">{estado.errores.titulo ?? estado.errores.fecha ?? estado.errores.general}</span>
+        <CamposPlazo clase={CAMPO} requerido min={hoy} errores={estado.errores} />
+        {(estado.errores?.titulo || estado.errores?.general) && (
+          <span className="text-[13px] text-rojo">{estado.errores.titulo ?? estado.errores.general}</span>
         )}
         <button
           type="submit"

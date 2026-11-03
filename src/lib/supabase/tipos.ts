@@ -245,6 +245,9 @@ export type Database = {
           color: string
           creado: string
           fecha: string
+          fecha_fin: string | null
+          hora: string | null
+          hora_fin: string | null
           icono: string
           id: string
           pagina_id: string | null
@@ -255,6 +258,9 @@ export type Database = {
           color?: string
           creado?: string
           fecha: string
+          fecha_fin: string | null
+          hora: string | null
+          hora_fin: string | null
           icono?: string
           id?: string
           pagina_id?: string | null
@@ -265,6 +271,9 @@ export type Database = {
           color?: string
           creado?: string
           fecha?: string
+          fecha_fin?: string | null
+          hora?: string | null
+          hora_fin?: string | null
           icono?: string
           id?: string
           pagina_id?: string | null
@@ -616,8 +625,10 @@ export type Database = {
           cuadrante: number | null
           estado: string
           fecha: string | null
+          fecha_fin: string | null
           hecha_en: string | null
           hora: string | null
+          hora_fin: string | null
           id: string
           lista_id: string | null
           notas: string
@@ -639,8 +650,10 @@ export type Database = {
           cuadrante?: number | null
           estado?: string
           fecha?: string | null
+          fecha_fin?: string | null
           hecha_en?: string | null
           hora?: string | null
+          hora_fin?: string | null
           id?: string
           lista_id?: string | null
           notas?: string
@@ -662,8 +675,10 @@ export type Database = {
           cuadrante?: number | null
           estado?: string
           fecha?: string | null
+          fecha_fin?: string | null
           hecha_en?: string | null
           hora?: string | null
+          hora_fin?: string | null
           id?: string
           lista_id?: string | null
           notas?: string
@@ -795,6 +810,19 @@ export type Database = {
           tipo: string
           titulo: string
         }[]
+      }
+      anotar_con_clave: {
+        Args: {
+          p_clave: string
+          p_fecha?: string
+          p_fecha_fin?: string
+          p_hora?: string
+          p_hora_fin?: string
+          p_lista?: string
+          p_prioridad?: number
+          p_titulo: string
+        }
+        Returns: string
       }
       capturar_con_clave: {
         Args: {

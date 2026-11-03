@@ -6,7 +6,7 @@ const c = (texto: string) => interpretarCaptura(texto, HOY);
 
 describe("captura rápida", () => {
   it("deja el texto tal cual si no hay fechas ni marcas", () => {
-    expect(c("comprar 3 panes")).toEqual({ titulo: "Comprar 3 panes", fecha: null, hora: null, prioridad: 0, lista: null, repetir: null });
+    expect(c("comprar 3 panes")).toEqual({ titulo: "Comprar 3 panes", fecha: null, hora: null, fecha_fin: null, hora_fin: null, prioridad: 0, lista: null, repetir: null });
   });
 
   it("entiende la frase completa del ejemplo", () => {
@@ -14,6 +14,8 @@ describe("captura rápida", () => {
       titulo: "Pagar luz",
       fecha: "2026-10-30",
       hora: "09:00",
+      fecha_fin: null,
+      hora_fin: null,
       prioridad: 2,
       lista: "casa",
       repetir: null,
@@ -101,6 +103,57 @@ describe("captura rápida", () => {
 
   it("de lunes a viernes en fin de semana empieza el lunes", () => {
     expect(interpretarCaptura("reporte diario de lunes a viernes", "2026-10-31")).toMatchObject({ repetir: "laborables", fecha: "2026-11-02" });
+  });
+});
+
+describe("captura con inicio y fin", () => {
+  it("entiende rangos de horas", () => {
+    expect(c("clase mañana de 3 a 5 pm")).toMatchObject({ titulo: "Clase", fecha: "2026-10-28", hora: "15:00", hora_fin: "17:00", fecha_fin: null });
+    expect(c("reunión de 3 a 5")).toMatchObject({ titulo: "Reunión", hora: "15:00", hora_fin: "17:00" });
+    expect(c("estudiar de 9 a 11")).toMatchObject({ hora: "09:00", hora_fin: "11:00" });
+    expect(c("taller de 10 a 12")).toMatchObject({ hora: "10:00", hora_fin: "12:00" });
+    expect(c("almuerzo de 11 a 1 pm")).toMatchObject({ hora: "11:00", hora_fin: "13:00" });
+    expect(c("cine de 8 a 10 pm")).toMatchObject({ hora: "20:00", hora_fin: "22:00" });
+    expect(c("turno desde las 9 hasta las 6 de la tarde")).toMatchObject({ hora: "09:00", hora_fin: "18:00" });
+    expect(c("examen el viernes de 15:00 a 17:30")).toMatchObject({ titulo: "Examen", fecha: "2026-10-30", hora: "15:00", hora_fin: "17:30" });
+    expect(c("partido 3-5pm")).toMatchObject({ titulo: "Partido", hora: "15:00", hora_fin: "17:00" });
+    expect(c("yoga entre las 7 y las 8 am")).toMatchObject({ hora: "07:00", hora_fin: "08:00" });
+  });
+
+  it("un rango que pasa la medianoche termina al día siguiente", () => {
+    expect(c("fiesta el sábado de 10 pm a 2 am")).toMatchObject({ fecha: "2026-10-31", hora: "22:00", fecha_fin: "2026-11-01", hora_fin: "02:00" });
+  });
+
+  it("entiende rangos de días", () => {
+    expect(c("viaje del 10 al 15 de noviembre")).toMatchObject({ titulo: "Viaje", fecha: "2026-11-10", fecha_fin: "2026-11-15" });
+    expect(c("congreso del lunes al miércoles")).toMatchObject({ titulo: "Congreso", fecha: "2026-11-02", fecha_fin: "2026-11-04" });
+    expect(c("vacaciones del 28 de diciembre al 3 de enero")).toMatchObject({ fecha: "2026-12-28", fecha_fin: "2027-01-03" });
+    expect(c("feria del 30 al 2 de noviembre")).toMatchObject({ fecha: "2026-10-30", fecha_fin: "2026-11-02" });
+    expect(c("curso del 5/11 al 7/11")).toMatchObject({ fecha: "2026-11-05", fecha_fin: "2026-11-07" });
+    expect(c("trabajo desde hoy hasta el viernes")).toMatchObject({ titulo: "Trabajo", fecha: HOY, fecha_fin: "2026-10-30" });
+  });
+
+  it("'hasta el viernes' empieza hoy", () => {
+    expect(c("entregar avance hasta el viernes")).toMatchObject({ titulo: "Entregar avance", fecha: HOY, fecha_fin: "2026-10-30" });
+    expect(c("leer libro hasta el 15 de noviembre")).toMatchObject({ fecha: HOY, fecha_fin: "2026-11-15" });
+  });
+
+  it("junta días y horas", () => {
+    expect(c("congreso del lunes al miércoles de 9 a 6 pm #trabajo")).toMatchObject({
+      titulo: "Congreso",
+      fecha: "2026-11-02",
+      fecha_fin: "2026-11-04",
+      hora: "09:00",
+      hora_fin: "18:00",
+      lista: "trabajo",
+    });
+  });
+
+  it("no confunde fechas ni cantidades con rangos", () => {
+    expect(c("algo el 3-5").hora).toBeNull(); // 3 de mayo
+    expect(c("comprar 3 panes").hora_fin).toBeNull();
+    expect(c("esperar hasta 5").fecha_fin).toBeNull();
+    expect(c("reporte diario de lunes a viernes")).toMatchObject({ repetir: "laborables", fecha_fin: null });
   });
 });
 

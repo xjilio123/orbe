@@ -36,6 +36,8 @@ const t = (datos: Partial<Tarea>): Tarea => ({
   prioridad: 0,
   fecha: null,
   hora: null,
+  fecha_fin: null,
+  hora_fin: null,
   lista_id: null,
   padre_id: null,
   hecha_en: null,
@@ -48,16 +50,17 @@ const t = (datos: Partial<Tarea>): Tarea => ({
 const [CASA, TRABAJO, INGLES] = LISTAS.map((l) => l.id);
 
 export const TAREAS: Tarea[] = [
-  t({ titulo: "Enviar informe de ventas a Prediqt", fecha: HOY, hora: "10:00", prioridad: 3, lista_id: TRABAJO }),
+  t({ titulo: "Enviar informe de ventas a Prediqt", fecha: HOY, hora: "10:00", hora_fin: "11:00", prioridad: 3, lista_id: TRABAJO }),
   t({ titulo: "Pagar la tarjeta BBVA", fecha: "2026-10-25", prioridad: 2, lista_id: CASA }),
   t({ titulo: "Repasar window functions de SQL", fecha: HOY, lista_id: TRABAJO }),
-  t({ titulo: "Clase de inglés", fecha: HOY, hora: "19:00", lista_id: INGLES }),
+  t({ titulo: "Clase de inglés", fecha: HOY, hora: "19:00", hora_fin: "20:30", lista_id: INGLES }),
   t({ titulo: "Llamar a mamá", fecha: HOY, estado: "hecha", hecha_en: `${HOY}T14:00:00Z` }),
   t({ titulo: "Comprar pan y leche", fecha: HOY, estado: "hecha", hecha_en: `${HOY}T13:00:00Z`, lista_id: CASA }),
   t({ titulo: "Renovar el DNI", fecha: "2026-10-28", lista_id: CASA }),
   t({ titulo: "Preparar la presentación del portfolio", fecha: "2026-10-30", prioridad: 1, lista_id: TRABAJO, estado: "en_curso" }),
   t({ titulo: "Leer capítulo 3 de Storytelling with Data", fecha: "2026-11-02" }),
   t({ titulo: "Cumpleaños de Diana", fecha: "2026-11-15" }),
+  t({ titulo: "Congreso de analítica", fecha: "2026-11-04", hora: "09:00", fecha_fin: "2026-11-06", hora_fin: "18:00", lista_id: TRABAJO }),
   t({ titulo: "Ideas para el diseño de Orbe" }),
   t({ titulo: "Revisar suscripciones que ya no uso" }),
   t({ titulo: "Buscar curso de Power BI avanzado" }),
@@ -200,9 +203,9 @@ export const METAS: Meta[] = [
 ];
 
 export const FECHAS: FechaImportante[] = [
-  { id: "00000000-0000-4000-8000-0000000000f1", titulo: "Examen final de SQL", fecha: "2026-11-09", icono: "📝", color: "rojo" },
-  { id: "00000000-0000-4000-8000-0000000000f2", titulo: "Viaje a Cusco", fecha: "2026-12-18", icono: "✈️", color: "azul" },
-  { id: "00000000-0000-4000-8000-0000000000f3", titulo: "Entrega del portfolio", fecha: "2026-10-30", icono: "🎯", color: "naranja" },
+  { id: "00000000-0000-4000-8000-0000000000f1", titulo: "Examen final de SQL", fecha: "2026-11-09", hora: "09:00", fecha_fin: null, hora_fin: "11:00", icono: "📝", color: "rojo" },
+  { id: "00000000-0000-4000-8000-0000000000f2", titulo: "Viaje a Cusco", fecha: "2026-12-18", hora: null, fecha_fin: "2026-12-22", hora_fin: null, icono: "✈️", color: "azul" },
+  { id: "00000000-0000-4000-8000-0000000000f3", titulo: "Entrega del portfolio", fecha: "2026-10-30", hora: null, fecha_fin: null, hora_fin: null, icono: "🎯", color: "naranja" },
 ];
 
 export const ESTADISTICAS: SemanaEstadistica[] = [
@@ -245,7 +248,7 @@ export const CURSOS = [
     icono: PAGINAS[0].icono,
     temas: 6,
     tarjetas: 12,
-    examen: { titulo: "Examen final de SQL", fecha: "2026-11-09" },
+    examen: { titulo: "Examen final de SQL", fecha: "2026-11-09", hora: "09:00", fecha_fin: null, hora_fin: "11:00" },
   },
   {
     id: PAGINAS[3].id,

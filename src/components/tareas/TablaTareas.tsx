@@ -5,9 +5,9 @@ import { useState, useTransition } from "react";
 import type { AccionesOrganizacion } from "@/app/acciones/tipos";
 import { BotonQuitar } from "@/components/progreso/BotonQuitar";
 import { enlace } from "@/components/ui";
-import { etiquetaFecha } from "@/lib/fechas";
+import { etiquetaDias } from "@/lib/plazo";
 import { aParametros, aplicarTabla, leerConfig, type ConfigTabla, type FiltroEstado, type Orden } from "@/lib/organizacion";
-import { NOMBRE_ESTADO, type Tarea } from "@/lib/tareas";
+import { NOMBRE_ESTADO, estaVencida, type Tarea } from "@/lib/tareas";
 
 type Vista = { id: string; nombre: string; config: Record<string, unknown> };
 
@@ -126,8 +126,8 @@ export function TablaTareas({ listaId, tareas, inicial, vistas, hoy, base, accio
                     {t.titulo}
                   </Link>
                 </td>
-                <td className={`py-2.5 text-[13px] ${t.fecha && t.fecha < hoy && t.estado !== "hecha" ? "text-rojo" : "text-texto-2"}`}>
-                  {t.fecha ? etiquetaFecha(t.fecha, hoy) : "—"}
+                <td className={`py-2.5 text-[13px] ${estaVencida(t, hoy) ? "text-rojo" : "text-texto-2"}`}>
+                  {t.fecha ? etiquetaDias(t, hoy) : "—"}
                 </td>
                 <td className={`py-2.5 pr-3 text-[13px] font-semibold ${COLOR_ESTADO[t.estado]}`}>{NOMBRE_ESTADO[t.estado]}</td>
               </tr>

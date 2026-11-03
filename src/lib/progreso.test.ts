@@ -118,10 +118,24 @@ describe("fechas importantes", () => {
     expect(textoFaltan("2026-10-20", HOY)).toBe("Fue hace 8 días");
   });
 
+  it("con fin: en curso, termina hoy y cuánto pasó desde el último día", () => {
+    expect(textoFaltan("2026-10-26", HOY, "2026-10-30")).toBe("En curso");
+    expect(textoFaltan("2026-10-26", HOY, HOY)).toBe("Termina hoy");
+    expect(textoFaltan(HOY, HOY, "2026-10-30")).toBe("Es hoy");
+    expect(textoFaltan("2026-11-02", HOY, "2026-11-05")).toBe("Faltan 5 días");
+    expect(textoFaltan("2026-10-20", HOY, "2026-10-25")).toBe("Fue hace 3 días");
+  });
+
   it("muestra solo las próximas, de la más cercana a la más lejana", () => {
-    const f = (titulo: string, fecha: string): FechaImportante => ({ id: titulo, titulo, fecha, icono: "📅", color: "naranja" });
+    const f = (titulo: string, fecha: string): FechaImportante => ({ id: titulo, titulo, fecha, hora: null, fecha_fin: null, hora_fin: null, icono: "📅", color: "naranja" });
     const lista = [f("Viaje", "2026-12-20"), f("Pasado", "2026-10-01"), f("Examen", "2026-11-10"), f("Hoy", HOY), f("Lejos", "2027-05-01")];
     expect(proximasFechas(lista, HOY).map((x) => x.titulo)).toEqual(["Hoy", "Examen", "Viaje"]);
+  });
+
+  it("lo que empezó antes y sigue en curso también es próximo", () => {
+    const enCurso: FechaImportante = { id: "v", titulo: "Viaje", fecha: "2026-10-25", hora: null, fecha_fin: "2026-10-30", hora_fin: null, icono: "✈️", color: "azul" };
+    const terminado: FechaImportante = { ...enCurso, id: "t", titulo: "Terminado", fecha_fin: "2026-10-27" };
+    expect(proximasFechas([enCurso, terminado], HOY).map((x) => x.titulo)).toEqual(["Viaje"]);
   });
 });
 

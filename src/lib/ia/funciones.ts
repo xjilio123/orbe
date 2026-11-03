@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { esDeTexto, type Bloque } from "@/lib/bloques";
 import { DIAS, diaSemana } from "@/lib/fechas";
+import { limpiarPlazo } from "@/lib/plazo";
 import { REPETICIONES, type Repetir } from "@/lib/repeticion";
 import type { EsquemaGemini, Parte } from "./gemini";
 
@@ -39,7 +40,17 @@ export const horaONulo = z
 const prioridad = z.number().transform((n) => Math.min(3, Math.max(0, Math.round(n))) as 0 | 1 | 2 | 3);
 
 // ---------- Captura inteligente ----------
-export type TareaIa = { titulo: string; notas: string; fecha: string | null; hora: string | null; prioridad: 0 | 1 | 2 | 3; lista: string | null; repetir: Repetir | null };
+export type TareaIa = {
+  titulo: string;
+  notas: string;
+  fecha: string | null;
+  hora: string | null;
+  fecha_fin: string | null;
+  hora_fin: string | null;
+  prioridad: 0 | 1 | 2 | 3;
+  lista: string | null;
+  repetir: Repetir | null;
+};
 
 export const captura = {
   sistema: (hoy: string, listas: string[]) =>
@@ -48,6 +59,7 @@ export const captura = {
       `Hoy es ${DIAS[diaSemana(hoy)]} ${hoy} (hora de Lima).`,
       "Convierte lo que escribió la persona en tareas concretas (máximo 5). Si es una sola idea, devuelve una sola tarea.",
       "Título corto y claro, con verbo, sin fechas ni horas dentro. Fecha en formato AAAA-MM-DD y hora HH:MM (24 h) solo si se mencionan o se deducen con seguridad.",
+      "fecha y hora son el inicio. fecha_fin y hora_fin son el fin, solo si se dice cuándo termina (\"de 3 a 5\", \"del lunes al miércoles\", \"hasta el viernes\"); si termina el mismo día, fecha_fin es null.",
       `Lista: usa exactamente una de estas si encaja, si no null: ${listas.length ? listas.join(", ") : "(no hay listas)"}.`,
       "Prioridad de 0 (ninguna) a 3 (urgente). repetir: diaria, laborables, semanal, mensual, anual o null.",
       REGLA_DATOS,
@@ -65,11 +77,13 @@ export const captura = {
             notas: { type: "STRING" },
             fecha: { type: "STRING", nullable: true },
             hora: { type: "STRING", nullable: true },
+            fecha_fin: { type: "STRING", nullable: true },
+            hora_fin: { type: "STRING", nullable: true },
             prioridad: { type: "INTEGER" },
             lista: { type: "STRING", nullable: true },
             repetir: { type: "STRING", enum: [...REPETICIONES], nullable: true },
           },
-          required: ["titulo", "notas", "fecha", "hora", "prioridad", "lista", "repetir"],
+          required: ["titulo", "notas", "fecha", "hora", "fecha_fin", "hora_fin", "prioridad", "lista", "repetir"],
         },
       },
     },
@@ -83,6 +97,9 @@ export const captura = {
           notas: z.string().transform((s) => s.trim().slice(0, 2000)),
           fecha: fechaONulo,
           hora: horaONulo,
+          // Un modelo que no los envíe no rompe la captura: quedan sin fin.
+          fecha_fin: fechaONulo.optional().transform((s) => s ?? null),
+          hora_fin: horaONulo.optional().transform((s) => s ?? null),
           prioridad,
           lista: z.string().nullable(),
           repetir: z.enum(REPETICIONES).nullable().catch(null),
@@ -90,18 +107,19 @@ export const captura = {
       )
       .max(10),
   }),
-  /** Solo tareas con título, listas que existen, y sin hora ni repetición si no hay fecha. */
+  /** Solo tareas con título, listas que existen, sin hora ni repetición si no hay fecha, y un fin con sentido. */
   limpiar(tareas: TareaIa[], listas: string[]): TareaIa[] {
     const porNombre = new Map(listas.map((l) => [l.toLowerCase(), l]));
     return tareas
       .filter((t) => t.titulo)
       .slice(0, 5)
-      .map((t) => ({
-        ...t,
-        lista: t.lista ? (porNombre.get(t.lista.toLowerCase()) ?? null) : null,
-        hora: t.fecha ? t.hora : null,
-        repetir: t.fecha ? t.repetir : null,
-      }));
+      .map((t) =>
+        limpiarPlazo({
+          ...t,
+          lista: t.lista ? (porNombre.get(t.lista.toLowerCase()) ?? null) : null,
+          repetir: t.fecha ? t.repetir : null,
+        }),
+      );
   },
 };
 

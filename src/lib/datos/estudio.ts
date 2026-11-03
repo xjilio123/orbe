@@ -33,7 +33,13 @@ export async function misCursos(supabase: Cliente, hoy: string, todas: PaginaRes
   if (!cursos?.length) return [];
   const ids = cursos.map((c) => c.id);
   const [{ data: examenes }, tarjetas] = await Promise.all([
-    supabase.from("fechas_importantes").select("titulo,fecha,pagina_id").in("pagina_id", ids).gte("fecha", hoy).order("fecha").limit(200),
+    supabase
+      .from("fechas_importantes")
+      .select("titulo,fecha,hora,fecha_fin,hora_fin,pagina_id")
+      .in("pagina_id", ids)
+      .or(`fecha.gte.${hoy},fecha_fin.gte.${hoy}`)
+      .order("fecha")
+      .limit(200),
     Promise.all(cursos.map((c) => tarjetasDePaginas(supabase, paginasDeTarjetas(todas, c.id)))),
   ]);
   return cursos.map((c, i) => {
@@ -44,7 +50,15 @@ export async function misCursos(supabase: Cliente, hoy: string, todas: PaginaRes
       icono: c.icono,
       temas: todas.filter((p) => p.padre_id === c.id && !esPaginaDeTarjetas(p.titulo)).length,
       tarjetas: tarjetas[i].length,
-      examen: examen ? { titulo: examen.titulo, fecha: examen.fecha } : null,
+      examen: examen
+        ? {
+            titulo: examen.titulo,
+            fecha: examen.fecha,
+            hora: examen.hora?.slice(0, 5) ?? null,
+            fecha_fin: examen.fecha_fin,
+            hora_fin: examen.hora_fin?.slice(0, 5) ?? null,
+          }
+        : null,
     };
   });
 }

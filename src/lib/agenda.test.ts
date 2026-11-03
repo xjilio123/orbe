@@ -18,6 +18,8 @@ import type { Tarea } from "./tareas";
 
 const tarea = (datos: Partial<Tarea>): Tarea => ({
   id: "t1",
+  fecha_fin: null,
+  hora_fin: null,
   titulo: "Tarea",
   notas: "",
   estado: "pendiente",
@@ -110,6 +112,46 @@ describe("bloquesDelDia", () => {
     expect([de("t").columna, de("t").columnas]).toEqual([1, 2]);
     expect([de("b").columna, de("b").columnas]).toEqual([0, 1]);
     expect(de("t").fin - de("t").inicio).toBe(30);
+  });
+});
+
+describe("tareas con inicio y fin", () => {
+  const congreso = tarea({ id: "c", fecha: "2026-11-04", hora: "09:00", fecha_fin: "2026-11-06", hora_fin: "18:00" });
+
+  it("una tarea de varios días sale en cada día del rango", () => {
+    const dias = itemsPorDia([congreso], [], "2026-11-02", "2026-11-08");
+    expect(Object.keys(dias).sort()).toEqual(["2026-11-04", "2026-11-05", "2026-11-06"]);
+  });
+
+  it("solo los días que caen en lo que se mira (empezó antes)", () => {
+    const dias = itemsPorDia([congreso], [], "2026-11-05", "2026-11-05");
+    expect(Object.keys(dias)).toEqual(["2026-11-05"]);
+  });
+
+  it("primer día desde su hora, el del medio todo el día y el último hasta su hora de fin", () => {
+    const dias = itemsPorDia([congreso], [], "2026-11-04", "2026-11-06");
+    const horario = (d: string) => {
+      const i = dias[d][0];
+      return i.tipo === "tarea" ? i.horario : "evento";
+    };
+    expect(horario("2026-11-04")).toEqual(["09:00", "24:00"]);
+    expect(horario("2026-11-05")).toBeNull();
+    expect(horario("2026-11-06")).toEqual(["00:00", "18:00"]);
+    expect(bloquesDelDia(dias["2026-11-05"])).toHaveLength(0);
+    const [b] = bloquesDelDia(dias["2026-11-06"]);
+    expect([b.inicio, b.fin]).toEqual([0, 18 * 60]);
+  });
+
+  it("en un solo día ocupa de su hora de inicio a la de fin", () => {
+    const dias = itemsPorDia([tarea({ id: "r", fecha: "2026-10-27", hora: "15:00", hora_fin: "17:30" })], [], "2026-10-27", "2026-10-27");
+    const [b] = bloquesDelDia(dias["2026-10-27"]);
+    expect([b.inicio, b.fin]).toEqual([15 * 60, 17 * 60 + 30]);
+  });
+
+  it("las veces futuras de una tarea que se repite duran lo mismo", () => {
+    const turno = tarea({ id: "s", fecha: "2026-10-26", fecha_fin: "2026-10-27", repetir: "semanal" });
+    const dias = itemsPorDia([turno], [], "2026-11-02", "2026-11-08");
+    expect(Object.keys(dias).sort()).toEqual(["2026-11-02", "2026-11-03"]);
   });
 });
 

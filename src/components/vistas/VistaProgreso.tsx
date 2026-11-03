@@ -7,7 +7,7 @@ import { BotonQuitar } from "@/components/progreso/BotonQuitar";
 import { FormularioFecha, FormularioHabito, FormularioMeta } from "@/components/progreso/Formularios";
 import { TarjetaMeta } from "@/components/progreso/TarjetaMeta";
 import { Encabezado, IconoModulo, Pantalla, TEXTO_COLOR, TituloSeccion, enlace } from "@/components/ui";
-import { etiquetaFecha } from "@/lib/fechas";
+import { etiquetaPlazo } from "@/lib/plazo";
 import {
   formatoHoras,
   formatoMinutos,
@@ -132,14 +132,14 @@ export function VistaProgreso({ hoy, base, anio, habitos, metas, fechas, estadis
         {fechas.length > 0 ? (
           <ul className="divide-y divide-separador/60 overflow-hidden rounded-[22px] bg-superficie">
             {fechas.map((f) => (
-              <li key={f.id} className={`flex items-center gap-3 py-2.5 pr-2 pl-4 ${f.fecha < hoy ? "opacity-60" : ""}`}>
+              <li key={f.id} className={`flex items-center gap-3 py-2.5 pr-2 pl-4 ${(f.fecha_fin ?? f.fecha) < hoy ? "opacity-60" : ""}`}>
                 <span aria-hidden="true" className="w-8 shrink-0 text-center text-[22px]">
                   {f.icono}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <p className="truncate text-[17px] font-semibold">{f.titulo}</p>
                   <p className="text-[13px] text-texto-2">
-                    {etiquetaFecha(f.fecha, hoy)} · <span className={`font-semibold ${TEXTO_COLOR[f.color]}`}>{textoFaltan(f.fecha, hoy)}</span>
+                    {etiquetaPlazo(f, hoy)} · <span className={`font-semibold ${TEXTO_COLOR[f.color]}`}>{textoFaltan(f.fecha, hoy, f.fecha_fin)}</span>
                   </p>
                 </div>
                 <BotonQuitar id={f.id} nombre={f.titulo} accion={acciones.eliminarFecha} />

@@ -1,4 +1,5 @@
 import { diasEntre } from "./fechas";
+import { finDe } from "./plazo";
 import type { Repetir } from "./repeticion";
 
 export const ESTADOS = ["pendiente", "en_curso", "hecha"] as const;
@@ -14,8 +15,12 @@ export type Tarea = {
   notas: string;
   estado: Estado;
   prioridad: number;
+  /** Inicio: fecha y hora. */
   fecha: string | null;
   hora: string | null;
+  /** Fin: vacía = termina el mismo día que empieza. */
+  fecha_fin: string | null;
+  hora_fin: string | null;
   lista_id: string | null;
   padre_id: string | null;
   hecha_en: string | null;
@@ -53,14 +58,18 @@ export function agruparPorFecha(tareas: Tarea[], hoy: string): Grupo[] {
   ];
   for (const t of [...tareas].sort(compararTareas)) {
     if (t.estado === "hecha" || t.padre_id || !t.fecha) continue;
+    // Vencida = ya pasó su último día. Lo que empezó antes y sigue en curso va en "Hoy".
     const dif = diasEntre(hoy, t.fecha);
-    const i = dif < 0 ? 0 : dif === 0 ? 1 : dif === 1 ? 2 : dif <= 7 ? 3 : 4;
+    const i = (finDe(t) as string) < hoy ? 0 : dif <= 0 ? 1 : dif === 1 ? 2 : dif <= 7 ? 3 : 4;
     grupos[i].tareas.push(t);
   }
   return grupos.filter((g) => g.tareas.length > 0);
 }
 
-/** Lo que toca hoy (incluye lo vencido) y cuánto ya se terminó hoy. */
+/** ¿Ya pasó su último día sin terminarla? */
+export const estaVencida = (t: Tarea, hoy: string) => t.estado !== "hecha" && t.fecha !== null && (finDe(t) as string) < hoy;
+
+/** Lo que toca hoy (incluye lo vencido y lo que dura varios días y sigue en curso) y cuánto ya se terminó hoy. */
 export function resumenDelDia(tareas: Tarea[], hoy: string, hechaHoy: (t: Tarea) => boolean) {
   const pendientes = tareas
     .filter((t) => t.estado !== "hecha" && !t.padre_id && t.fecha !== null && t.fecha <= hoy)

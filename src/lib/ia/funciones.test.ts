@@ -6,21 +6,21 @@ describe("captura inteligente", () => {
     const r = captura.validar.parse({
       tareas: [{ titulo: "  Ir   al dentista ", notas: "", fecha: "jueves", hora: "4pm", prioridad: 7, lista: "salud", repetir: "cada-hora" }],
     });
-    expect(r.tareas[0]).toEqual({ titulo: "Ir al dentista", notas: "", fecha: null, hora: null, prioridad: 3, lista: "salud", repetir: null });
+    expect(r.tareas[0]).toEqual({ titulo: "Ir al dentista", notas: "", fecha: null, hora: null, fecha_fin: null, hora_fin: null, prioridad: 3, lista: "salud", repetir: null });
   });
 
   it("solo usa listas que existen y no deja hora ni repetición sin fecha", () => {
     const limpias = captura.limpiar(
       [
-        { titulo: "Pagar luz", notas: "", fecha: "2026-10-30", hora: "09:00", prioridad: 2, lista: "CASA", repetir: "mensual" },
-        { titulo: "Llamar", notas: "", fecha: null, hora: "10:00", prioridad: 0, lista: "Inventada", repetir: "diaria" },
-        { titulo: "", notas: "", fecha: null, hora: null, prioridad: 0, lista: null, repetir: null },
+        { titulo: "Pagar luz", notas: "", fecha: "2026-10-30", hora: "09:00", fecha_fin: null, hora_fin: null, prioridad: 2, lista: "CASA", repetir: "mensual" },
+        { titulo: "Llamar", notas: "", fecha: null, hora: "10:00", fecha_fin: null, hora_fin: "11:00", prioridad: 0, lista: "Inventada", repetir: "diaria" },
+        { titulo: "", notas: "", fecha: null, hora: null, fecha_fin: null, hora_fin: null, prioridad: 0, lista: null, repetir: null },
       ],
       ["Casa", "Trabajo"],
     );
     expect(limpias).toEqual([
-      { titulo: "Pagar luz", notas: "", fecha: "2026-10-30", hora: "09:00", prioridad: 2, lista: "Casa", repetir: "mensual" },
-      { titulo: "Llamar", notas: "", fecha: null, hora: null, prioridad: 0, lista: null, repetir: null },
+      { titulo: "Pagar luz", notas: "", fecha: "2026-10-30", hora: "09:00", fecha_fin: null, hora_fin: null, prioridad: 2, lista: "Casa", repetir: "mensual" },
+      { titulo: "Llamar", notas: "", fecha: null, hora: null, fecha_fin: null, hora_fin: null, prioridad: 0, lista: null, repetir: null },
     ]);
   });
 

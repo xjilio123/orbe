@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 import type { EstadoFormulario } from "@/app/acciones/tipos";
+import { CamposPlazo } from "@/components/CamposPlazo";
 import { Icono } from "@/components/Icono";
 import { SelectorColor } from "@/components/SelectorColor";
 import type { Lista } from "@/lib/tareas";
@@ -161,11 +162,7 @@ export function FormularioFecha({ accion, hoy }: { accion: Accion; hoy: string }
           </label>
         </div>
         <MensajeError texto={estado.errores?.titulo ?? estado.errores?.icono} />
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-semibold text-texto-2">Fecha</span>
-          <input type="date" name="fecha" required min={hoy} className={CAMPO} />
-          <MensajeError texto={estado.errores?.fecha} />
-        </label>
+        <CamposPlazo clase={CAMPO} requerido min={hoy} errores={estado.errores} />
         <SelectorColor color="naranja" />
         <MensajeError texto={estado.errores?.general} />
         <Guardar guardando={guardando} texto="Guardar fecha" />

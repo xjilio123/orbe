@@ -1,9 +1,9 @@
--- Pruebas del atajo de Siri: claves personales y capturar_con_clave (pgTAP).
+-- Pruebas del atajo de Siri: claves personales y anotar_con_clave (pgTAP).
 -- La "clave" de estas pruebas es un texto de ejemplo: no existe fuera de esta transacción.
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(12);
 
 insert into private.correos_permitidos (email) values ('a@prueba.local'), ('b@prueba.local');
 insert into auth.users (id, email) values
@@ -42,17 +42,17 @@ select set_config('request.jwt.claims', '', true);
 
 -- 5-6. Con la clave válida, la tarea llega a A (con fecha, prioridad y lista)
 select is(
-  public.capturar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Pagar la luz', current_date + 1, '09:00', 2, 'casa'),
+  public.anotar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Pagar la luz', current_date + 1, '09:00', null, null, 2, 'casa'),
   'Pagar la luz', 'Con la clave se anota la tarea'
 );
 select throws_ok(
-  $$select public.capturar_con_clave('orbe_clave_inventada_que_no_existe_9', 'x')$$,
+  $$select public.anotar_con_clave('orbe_clave_inventada_que_no_existe_9', 'x')$$,
   'P0001', 'CLAVE_INVALIDA', 'Una clave que no existe no anota nada'
 );
 
 -- 7. Sin texto no se anota
 select throws_ok(
-  $$select public.capturar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', '   ')$$,
+  $$select public.anotar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', '   ')$$,
   'P0001', 'SIN_TEXTO', 'Sin texto no se anota'
 );
 
@@ -71,7 +71,7 @@ select results_eq(
 update public.claves_atajo set usos_ventana = 30, ventana = now();
 set local role anon;
 select throws_ok(
-  $$select public.capturar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Una más')$$,
+  $$select public.anotar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Una más')$$,
   'P0001', 'DEMASIADAS', 'Más de 30 por hora se frena'
 );
 reset role;
@@ -80,8 +80,16 @@ reset role;
 delete from public.claves_atajo;
 set local role anon;
 select throws_ok(
-  $$select public.capturar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Después de revocar')$$,
+  $$select public.anotar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Después de revocar')$$,
   'P0001', 'CLAVE_INVALIDA', 'Una clave revocada ya no sirve'
+);
+reset role;
+
+-- 12. La versión anterior (sin fin) ya no se puede llamar
+set local role anon;
+select throws_ok(
+  $$select public.capturar_con_clave('orbe_clave_de_prueba_para_pgtap_0001', 'Vieja')$$,
+  '42501', null, 'La función anterior quedó cerrada'
 );
 reset role;
 

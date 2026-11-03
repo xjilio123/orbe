@@ -7,7 +7,7 @@ import { hoyLima } from "@/lib/fechas";
 /**
  * Atajo de Siri "Anota en Orbe": POST con "Authorization: Bearer orbe_…" y el texto dictado.
  * No usa la sesión del navegador: la clave personal solo permite crear tareas en tu Inbox
- * (la base lo comprueba en capturar_con_clave y frena a 30 por hora).
+ * (la base lo comprueba en anotar_con_clave y frena a 30 por hora).
  */
 const respuesta = (estado: number, mensaje: string) =>
   Response.json({ ok: estado === 200, mensaje }, { status: estado, headers: { "Cache-Control": "no-store" } });
@@ -37,16 +37,18 @@ export async function POST(request: Request) {
   texto = texto.replace(/\s+/g, " ").trim().slice(0, 300);
   if (!texto) return respuesta(400, MENSAJES.SIN_TEXTO[1]);
 
-  // Entiende "mañana a las 5 pagar la luz #casa !!" igual que la captura rápida.
+  // Entiende "mañana a las 5 pagar la luz #casa !!" o "clase el lunes de 3 a 5" igual que la captura rápida.
   const c = interpretarCaptura(texto, hoyLima());
   const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await supabase.rpc("capturar_con_clave", {
+  const { data, error } = await supabase.rpc("anotar_con_clave", {
     p_clave: clave,
     p_titulo: c.titulo || texto,
     p_fecha: c.fecha ?? undefined,
     p_hora: c.hora ?? undefined,
+    p_fecha_fin: c.fecha_fin ?? undefined,
+    p_hora_fin: c.hora_fin ?? undefined,
     p_prioridad: c.prioridad,
     p_lista: c.lista ?? undefined,
   });

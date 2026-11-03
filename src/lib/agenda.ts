@@ -1,4 +1,5 @@
-import { diaSemana, sumarDias } from "./fechas";
+import { diaSemana, diasEntre, sumarDias } from "./fechas";
+import { finDe } from "./plazo";
 import { proximasVeces } from "./repeticion";
 import type { Tarea } from "./tareas";
 
@@ -16,7 +17,15 @@ export type Evento = {
 };
 
 export type ItemAgenda =
-  | { tipo: "tarea"; clave: string; tarea: Tarea; /** Una vez futura de una tarea que se repite (aún no existe). */ proyectada: boolean }
+  | {
+      tipo: "tarea";
+      clave: string;
+      tarea: Tarea;
+      /** Una vez futura de una tarea que se repite (aún no existe). */
+      proyectada: boolean;
+      /** Horas que ocupa ESE día ("HH:MM"); null = ese día va en "todo el día / sin hora". */
+      horario: [string, string | null] | null;
+    }
   | { tipo: "evento"; clave: string; evento: Evento };
 
 export const VISTAS = ["mes", "semana", "dia"] as const;
@@ -61,31 +70,54 @@ export function rangoCorto(desde: string, hasta: string): string {
 
 const minutos = (hora: string | null) => (hora ? Number(hora.slice(0, 2)) * 60 + Number(hora.slice(3, 5)) : -1);
 
+/**
+ * Horas que ocupa una tarea un día concreto. Si dura varios días: el primero va de su hora de inicio
+ * a medianoche, el último de medianoche a su hora de fin y los del medio son "todo el día".
+ */
+export function horarioTareaEn(t: Pick<Tarea, "fecha" | "hora" | "fecha_fin" | "hora_fin">, dia: string): [string, string | null] | null {
+  if (!t.fecha || !t.hora) return null;
+  const fin = finDe(t) as string;
+  if (fin === t.fecha) return [t.hora, t.hora_fin];
+  if (dia === t.fecha) return [t.hora, "24:00"];
+  if (dia === fin && t.hora_fin) return ["00:00", t.hora_fin];
+  return null;
+}
+
 /** Primero lo de todo el día, luego por hora. */
 function ordenar(a: ItemAgenda, b: ItemAgenda): number {
-  const hora = (i: ItemAgenda) => (i.tipo === "evento" ? i.evento.inicio : i.tarea.hora);
+  const hora = (i: ItemAgenda) => (i.tipo === "evento" ? i.evento.inicio : (i.horario?.[0] ?? null));
   const dif = minutos(hora(a)) - minutos(hora(b));
   if (dif !== 0) return dif;
   if (a.tipo !== b.tipo) return a.tipo === "evento" ? -1 : 1;
   return a.clave < b.clave ? -1 : 1;
 }
 
-/** Agrupa tareas (y sus próximas repeticiones) y eventos por día dentro de [desde, hasta]. */
+/** Agrupa tareas (y sus próximas repeticiones) y eventos por día dentro de [desde, hasta]. Una tarea de varios días sale en cada uno. */
 export function itemsPorDia(tareas: Tarea[], eventos: Evento[], desde: string, hasta: string): Record<string, ItemAgenda[]> {
   const dias: Record<string, ItemAgenda[]> = {};
   const poner = (fecha: string, item: ItemAgenda) => {
     if (fecha < desde || fecha > hasta) return;
     (dias[fecha] ??= []).push(item);
   };
+  /** Pone la tarea en cada día de su rango que caiga dentro de lo que se mira. */
+  const ponerTarea = (t: Tarea, clave: string, proyectada: boolean) => {
+    const fin = finDe(t) as string;
+    for (let d = t.fecha! < desde ? desde : t.fecha!; d <= fin && d <= hasta; d = sumarDias(d, 1)) {
+      poner(d, { tipo: "tarea", clave, tarea: t, proyectada, horario: horarioTareaEn(t, d) });
+    }
+  };
 
   const vistas = new Set<string>();
   for (const t of tareas) {
     if (!t.fecha || t.padre_id || vistas.has(t.id)) continue;
     vistas.add(t.id);
-    poner(t.fecha, { tipo: "tarea", clave: t.id, tarea: t, proyectada: false });
+    ponerTarea(t, t.id, false);
     if (t.repetir && t.estado !== "hecha") {
-      for (const f of proximasVeces(t.fecha, t.repetir, desde, hasta, 60)) {
-        poner(f, { tipo: "tarea", clave: `${t.id}:${f}`, tarea: { ...t, fecha: f, estado: "pendiente" }, proyectada: true });
+      // Cada vez futura dura lo mismo que la tarea (también las que empiezan antes del rango y terminan dentro).
+      const dura = diasEntre(t.fecha, finDe(t) as string);
+      for (const f of proximasVeces(t.fecha, t.repetir, sumarDias(desde, -dura), hasta, 60)) {
+        const vez = { ...t, fecha: f, fecha_fin: dura > 0 ? sumarDias(f, dura) : null, estado: "pendiente" as const };
+        ponerTarea(vez, `${t.id}:${f}`, true);
       }
     }
   }
@@ -108,7 +140,7 @@ export type Bloque = { item: ItemAgenda; inicio: number; fin: number; columna: n
 export function bloquesDelDia(items: ItemAgenda[]): Bloque[] {
   const conHora = items
     .map((item) => {
-      const [ini, fin] = item.tipo === "evento" ? [item.evento.inicio, item.evento.fin] : [item.tarea.hora, null];
+      const [ini, fin] = item.tipo === "evento" ? [item.evento.inicio, item.evento.fin] : (item.horario ?? [null, null]);
       if (!ini) return null;
       const inicio = minutos(ini);
       const final = fin ? Math.max(minutos(fin), inicio + 15) : inicio + 30;
