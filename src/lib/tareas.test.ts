@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { agruparPorFecha, compararTareas, esInbox, progresoSubtareas, resumenDelDia, type Tarea } from "./tareas";
+import { agruparPorFecha, compararTareas, esInbox, estaVencida, progresoSubtareas, resumenDelDia, type Tarea } from "./tareas";
 
 const HOY = "2026-10-27";
 let n = 0;
 const t = (datos: Partial<Tarea>): Tarea => ({
   id: `id-${++n}`,
+  fecha_fin: null,
+  hora_fin: null,
   titulo: `Tarea ${n}`,
   notas: "",
   estado: "pendiente",
@@ -67,6 +69,18 @@ describe("agruparPorFecha", () => {
 
   it("no muestra grupos vacíos", () => {
     expect(agruparPorFecha([t({ fecha: HOY })], HOY).map((g) => g.clave)).toEqual(["hoy"]);
+  });
+});
+
+describe("tareas de varios días", () => {
+  it("una que empezó antes y sigue en curso va en Hoy, no en Vencidas", () => {
+    const grupos = agruparPorFecha([t({ titulo: "Congreso", fecha: "2026-10-25", fecha_fin: "2026-10-29" })], HOY);
+    expect(grupos.map((g) => g.clave)).toEqual(["hoy"]);
+  });
+  it("vencida solo cuando pasó su último día", () => {
+    expect(estaVencida(t({ fecha: "2026-10-20", fecha_fin: "2026-10-27" }), HOY)).toBe(false);
+    expect(estaVencida(t({ fecha: "2026-10-20", fecha_fin: "2026-10-26" }), HOY)).toBe(true);
+    expect(estaVencida(t({ fecha: "2026-10-26", estado: "hecha" }), HOY)).toBe(false);
   });
 });
 

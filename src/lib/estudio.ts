@@ -111,5 +111,5 @@ export type CursoResumen = {
   icono: string;
   temas: number;
   tarjetas: number;
-  examen: { titulo: string; fecha: string } | null;
+  examen: { titulo: string; fecha: string; hora: string | null; fecha_fin: string | null; hora_fin: string | null } | null;
 };

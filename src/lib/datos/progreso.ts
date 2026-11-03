@@ -27,15 +27,16 @@ export async function misMetas(supabase: Cliente, anio: number): Promise<Meta[]>
   }));
 }
 
-/** Fechas importantes desde hace 30 días en adelante (las muy viejas ya no interesan). */
+/** Fechas importantes que terminan desde hace 30 días en adelante (las muy viejas ya no interesan). */
 export async function misFechas(supabase: Cliente, desde: string): Promise<FechaImportante[]> {
   const { data } = await supabase
     .from("fechas_importantes")
-    .select("id,titulo,fecha,icono,color")
-    .gte("fecha", desde)
+    .select("id,titulo,fecha,hora,fecha_fin,hora_fin,icono,color")
+    .or(`fecha.gte.${desde},fecha_fin.gte.${desde}`)
     .order("fecha")
     .limit(100);
-  return (data ?? []).map((f) => ({ ...f, color: f.color as ColorLista }));
+  // La base guarda la hora como "09:00:00"; la app trabaja con "09:00".
+  return (data ?? []).map((f) => ({ ...f, hora: f.hora?.slice(0, 5) ?? null, hora_fin: f.hora_fin?.slice(0, 5) ?? null, color: f.color as ColorLista }));
 }
 
 export async function misEstadisticas(supabase: Cliente, semanas = 8): Promise<SemanaEstadistica[]> {

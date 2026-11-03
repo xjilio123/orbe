@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import type { AccionesOrganizacion } from "@/app/acciones/tipos";
 import { enlace } from "@/components/ui";
-import { etiquetaFecha } from "@/lib/fechas";
+import { etiquetaDias } from "@/lib/plazo";
 import { CUADRANTES, matriz } from "@/lib/organizacion";
-import type { Tarea } from "@/lib/tareas";
+import { estaVencida, type Tarea } from "@/lib/tareas";
 
 type Props = { tareas: Tarea[]; hoy: string; base: string; mover: AccionesOrganizacion["moverCuadrante"] };
 
@@ -67,8 +67,8 @@ export function MatrizTareas({ tareas, hoy, base, mover }: Props) {
                         {t.titulo}
                       </span>
                       {t.fecha && (
-                        <span className={`block text-[11px] ${t.fecha < hoy ? "text-rojo" : "text-texto-2"}`}>
-                          {etiquetaFecha(t.fecha, hoy)}
+                        <span className={`block text-[11px] ${estaVencida(t, hoy) ? "text-rojo" : "text-texto-2"}`}>
+                          {etiquetaDias(t, hoy)}
                           {t.cuadrante ? " · a mano" : ""}
                         </span>
                       )}

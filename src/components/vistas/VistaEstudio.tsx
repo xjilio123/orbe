@@ -4,7 +4,7 @@ import { FormularioExamen } from "@/components/estudio/FormularioExamen";
 import { Icono } from "@/components/Icono";
 import { Pantalla, TituloSeccion, enlace } from "@/components/ui";
 import type { CursoResumen } from "@/lib/estudio";
-import { etiquetaFecha } from "@/lib/fechas";
+import { etiquetaPlazo } from "@/lib/plazo";
 import { textoFaltan } from "@/lib/progreso";
 
 type Props = { cursos: CursoResumen[]; hoy: string; base: string; acciones: Pick<AccionesEstudio, "crearExamen"> };
@@ -36,10 +36,10 @@ export function VistaEstudio({ cursos, hoy, base, acciones }: Props) {
                 <div className="flex min-w-0 flex-1 flex-col">
                   <p className="truncate text-[17px] font-semibold">{e.titulo}</p>
                   <p className="truncate text-[13px] text-texto-2">
-                    {e.curso.titulo} · {etiquetaFecha(e.fecha, hoy)}
+                    {e.curso.titulo} · {etiquetaPlazo(e, hoy)}
                   </p>
                 </div>
-                <span className="shrink-0 text-[15px] font-semibold text-rojo">{textoFaltan(e.fecha, hoy)}</span>
+                <span className="shrink-0 text-[15px] font-semibold text-rojo">{textoFaltan(e.fecha, hoy, e.fecha_fin)}</span>
               </li>
             ))}
           </ul>
@@ -72,7 +72,7 @@ export function VistaEstudio({ cursos, hoy, base, acciones }: Props) {
                 <p className="text-[15px]">
                   {c.examen ? (
                     <>
-                      📝 {c.examen.titulo} · <span className="font-semibold text-rojo">{textoFaltan(c.examen.fecha, hoy)}</span>
+                      📝 {c.examen.titulo} · <span className="font-semibold text-rojo">{textoFaltan(c.examen.fecha, hoy, c.examen.fecha_fin)}</span>
                     </>
                   ) : (
                     <span className="text-texto-2">Sin exámenes anotados</span>

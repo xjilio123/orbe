@@ -1,16 +1,20 @@
 import { diaSemana, sumarDias } from "./fechas";
+import { limpiarPlazo } from "./plazo";
 import type { Repetir } from "./repeticion";
 
 /**
  * Captura rápida SIN IA: entiende frases comunes en español y deja el resto como título.
  *   "Pagar luz el viernes 9am #casa !!" → título "Pagar luz", viernes 09:00, lista "casa", prioridad 2.
+ *   "Clase mañana de 3 a 5 pm" → mañana de 15:00 a 17:00. "Viaje del 10 al 15 de noviembre" → del 10 al 15.
  * Corre en el teléfono (vista previa) y en el servidor (al guardar), así que no puede depender de nada externo.
  */
 
 export type Captura = {
   titulo: string;
-  fecha: string | null; // AAAA-MM-DD
-  hora: string | null; // HH:MM
+  fecha: string | null; // AAAA-MM-DD (inicio)
+  hora: string | null; // HH:MM (inicio)
+  fecha_fin: string | null; // vacía = termina el mismo día
+  hora_fin: string | null;
   prioridad: 0 | 1 | 2 | 3;
   lista: string | null;
   repetir: Repetir | null;
@@ -51,6 +55,53 @@ function proximaFecha(dia: number, mes: number, hoy: string): string | null {
   return fechaValida(anio + 1, mes, dia);
 }
 
+/** "El 15": este mes si todavía no pasa, si no el mes que viene. */
+function proximoDia(dia: number, hoy: string): string | null {
+  const [anio, mes] = hoy.split("-").map(Number);
+  const este = fechaValida(anio, mes, dia);
+  if (este && este >= hoy) return este;
+  return mes === 12 ? fechaValida(anio + 1, 1, dia) : fechaValida(anio, mes + 1, dia);
+}
+
+const NOMBRES_DIAS = "domingo|lunes|martes|miercoles|jueves|viernes|sabado";
+const NOMBRES_MESES = Object.keys(MESES).join("|");
+/** Una fecha suelta dentro de un rango: "hoy", "el lunes", "15/11", "15 de noviembre" o "15". */
+const UNA_FECHA = `(?:hoy|pasado manana|manana|(?:el )?(?:${NOMBRES_DIAS})|\\d{1,2}[/-]\\d{1,2}(?:[/-]\\d{2,4})?|\\d{1,2}(?: de)? (?:${NOMBRES_MESES})|(?:el )?\\d{1,2})`;
+
+/**
+ * Lee una fecha suelta. `desde` es el día de referencia: para el fin de un rango es el inicio
+ * (y ese mismo día cuenta); para el inicio es hoy (y "el lunes" siendo lunes es el de la otra semana).
+ */
+function leerFecha(texto: string, hoy: string, desde: string, mismoDiaCuenta: boolean): string | null {
+  const t = texto.replace(/^el /, "");
+  if (t === "hoy") return hoy;
+  if (t === "manana") return sumarDias(hoy, 1);
+  if (t === "pasado manana") return sumarDias(hoy, 2);
+  if (t in DIAS) {
+    const dif = (DIAS[t] - diaSemana(desde) + 7) % 7;
+    return sumarDias(desde, mismoDiaCuenta ? dif : dif || 7);
+  }
+  let m = /^(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?$/.exec(t);
+  if (m) {
+    const [dia, mes] = [Number(m[1]), Number(m[2])];
+    return m[3] ? fechaValida(m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]), mes, dia) : proximaFecha(dia, mes, desde);
+  }
+  m = /^(\d{1,2})(?: de)? (\p{L}+)$/u.exec(t);
+  if (m && m[2] in MESES) return proximaFecha(Number(m[1]), MESES[m[2]], desde);
+  m = /^(\d{1,2})$/.exec(t);
+  return m ? proximoDia(Number(m[1]), desde) : null;
+}
+
+/** "del 10 al 15 de noviembre": el 10 también es de noviembre (o del mes anterior si es mayor que 15). */
+function inicioConMesDelFin(dia: number, fin: string): string | null {
+  const [anio, mes] = fin.split("-").map(Number);
+  if (dia <= Number(fin.slice(8))) return fechaValida(anio, mes, dia);
+  return mes === 1 ? fechaValida(anio - 1, 12, dia) : fechaValida(anio, mes - 1, dia);
+}
+
+const SUFIJO = "(am|pm|a\\.\\s?m\\.|p\\.\\s?m\\.|h(?:rs)?)";
+const UNA_HORA = `(\\d{1,2})(?::(\\d{2}))?\\s*${SUFIJO}?(?: de la (manana|tarde|noche))?`;
+
 type Regla = { patron: RegExp; aplicar: (m: RegExpExecArray, r: Captura, hoy: string) => boolean };
 
 const B = "(?<![\\p{L}\\p{N}])"; // inicio de palabra (sirve con letras con tilde)
@@ -67,6 +118,45 @@ function hora24(h: number, min: number, sufijo: string | undefined, parte: strin
   else if (!pm && !am && hh >= 1 && hh <= 7) hh += 12;
   if (hh > 23) return null;
   return `${dos(hh)}:${dos(min)}`;
+}
+
+const dosDigitos = (h: number, min: number) => `${dos(h)}:${dos(min)}`;
+
+/** Una hora de un rango: si dice am/pm, "h" o "de la tarde" es una sola; si no, puede ser de mañana o de tarde. */
+function opcionesHora(h: number, min: number, sufijoCrudo: string | undefined, parte: string | undefined): string[] {
+  if (min > 59 || h > 23) return [];
+  const sufijo = sufijoCrudo?.replace(/[.\s]/g, "");
+  if (sufijo === "h" || sufijo === "hrs" || h === 0 || h >= 13) return [dosDigitos(h, min)];
+  if (sufijo || parte) {
+    const una = hora24(h, min, sufijo, parte);
+    return una ? [una] : [];
+  }
+  return h === 12 ? [dosDigitos(12, min)] : [dosDigitos(h, min), dosDigitos(h + 12, min)];
+}
+
+/**
+ * "de 3 a 5" → 15:00–17:00; "de 9 a 11" → 9:00–11:00; "de 11 a 1 pm" → 11:00–13:00; "de 8 a 10 pm" → 20:00–22:00.
+ * El lado que no dice am/pm se elige para que el rango sea corto y vaya en orden.
+ */
+function aplicarRangoHoras(m: RegExpExecArray, r: Captura): boolean {
+  const a = opcionesHora(Number(m[1]), Number(m[2] ?? 0), m[3], m[4]);
+  const b = opcionesHora(Number(m[5]), Number(m[6] ?? 0), m[7], m[8]);
+  if (!a.length || !b.length) return false;
+  let inicio: string;
+  let fin: string;
+  if (a.length === 1) {
+    inicio = a[0];
+    fin = b.find((x) => x > inicio) ?? b[0];
+  } else if (b.length === 1) {
+    fin = b[0];
+    inicio = [...a].reverse().find((x) => x < fin) ?? a[0];
+  } else {
+    inicio = hora24(Number(m[1]), Number(m[2] ?? 0), undefined, undefined) ?? a[0];
+    fin = b.find((x) => x > inicio) ?? b[0];
+  }
+  r.hora = inicio;
+  r.hora_fin = fin;
+  return true;
 }
 
 const REGLAS: Regla[] = [
@@ -112,6 +202,43 @@ const REGLAS: Regla[] = [
   {
     patron: new RegExp(`${B}(?:todos los anos|cada ano|anualmente)${E}`, "u"),
     aplicar: (_m, r) => ((r.repetir = "anual"), true),
+  },
+  // Rango de horas: "de 3 a 5 pm", "desde las 9 hasta las 11", "entre las 3 y las 5", "de 15:00 a 17:00"
+  {
+    patron: new RegExp(`${B}(?:de|desde|entre) (?:las? )?${UNA_HORA}(?:\\s*[-–]\\s*|\\s+(?:a|hasta|y)\\s+)(?:las? )?${UNA_HORA}${E}`, "u"),
+    aplicar: (m, r) => aplicarRangoHoras(m, r),
+  },
+  {
+    patron: new RegExp(`${B}${UNA_HORA}\\s*[-–]\\s*${UNA_HORA}${E}`, "u"),
+    // Sin "de": solo si dice am/pm o lleva minutos ("3-5" a secas es una fecha: el 3 de mayo).
+    aplicar: (m, r) => Boolean(m[2] || m[3] || m[6] || m[7]) && aplicarRangoHoras(m, r),
+  },
+  // Rango de días: "del lunes al miércoles", "del 10 al 15 de noviembre", "desde hoy hasta el viernes"
+  {
+    patron: new RegExp(`${B}(?:del|desde(?: el)?) (${UNA_FECHA}) (?:al|hasta(?: el)?) (${UNA_FECHA})${E}`, "u"),
+    aplicar: (m, r, hoy) => {
+      const soloDia = /^(?:el )?(\d{1,2})$/.exec(m[1]);
+      const finConMes = soloDia && !/^(?:el )?\d{1,2}$/.test(m[2]) ? leerFecha(m[2], hoy, hoy, true) : null;
+      const inicio = soloDia && finConMes ? inicioConMesDelFin(Number(soloDia[1]), finConMes) : leerFecha(m[1], hoy, hoy, false);
+      if (!inicio) return false;
+      const fin = finConMes ?? leerFecha(m[2], hoy, inicio, true);
+      if (!fin || fin < inicio) return false;
+      r.fecha = inicio;
+      r.fecha_fin = fin;
+      return true;
+    },
+  },
+  // Solo el fin: "hasta el viernes", "hasta el 15 de noviembre" (empieza hoy o el día que se diga)
+  {
+    patron: new RegExp(`${B}hasta (?:el )?(${UNA_FECHA})${E}`, "u"),
+    aplicar: (m, r, hoy) => {
+      // "hasta 5" a secas no es una fecha (puede ser una hora o una cantidad).
+      if (/^\d{1,2}$/.test(m[1]) && !m[0].includes(" el ")) return false;
+      const fin = leerFecha(m[1], hoy, hoy, true);
+      if (!fin) return false;
+      r.fecha_fin = fin;
+      return true;
+    },
   },
   // Hora: "a las 5 de la tarde", "a las 17:30", "9am", "9:15 pm", "17h"
   {
@@ -180,10 +307,7 @@ const REGLAS: Regla[] = [
   {
     patron: new RegExp(`${B}el (\\d{1,2})${E}`, "u"),
     aplicar: (m, r, hoy) => {
-      const [anio, mes] = hoy.split("-").map(Number);
-      const dia = Number(m[1]);
-      const fecha = proximaFecha(dia, mes, hoy) === null ? null : (fechaValida(anio, mes, dia) ?? null);
-      const elegida = fecha && fecha >= hoy ? fecha : mes === 12 ? fechaValida(anio + 1, 1, dia) : fechaValida(anio, mes + 1, dia);
+      const elegida = proximoDia(Number(m[1]), hoy);
       if (!elegida) return false;
       r.fecha = elegida;
       return true;
@@ -196,7 +320,7 @@ const CONECTORES_FINALES = /(?:\s+(?:el|la|a|para|de|del|en|por|las|este|al))+$/
 
 /** `porDefecto`: fecha para lo que se escribe sin fecha (en la Agenda, el día que estás mirando). */
 export function interpretarCaptura(texto: string, hoy: string, porDefecto?: string): Captura {
-  const r: Captura = { titulo: "", fecha: null, hora: null, prioridad: 0, lista: null, repetir: null };
+  const r: Captura = { titulo: "", fecha: null, hora: null, fecha_fin: null, hora_fin: null, prioridad: 0, lista: null, repetir: null };
   let original = texto.replace(/\s+/g, " ").trim().slice(0, 300);
 
   for (const regla of REGLAS) {
@@ -210,10 +334,13 @@ export function interpretarCaptura(texto: string, hoy: string, porDefecto?: stri
   const titulo = original.replace(CONECTORES_FINALES, "").replace(/^[\s,;:-]+|[\s,;:-]+$/g, "").trim();
   r.titulo = titulo.charAt(0).toUpperCase() + titulo.slice(1);
   if (!r.fecha && porDefecto) r.fecha = porDefecto;
-  if ((r.hora || r.repetir) && !r.fecha) {
+  if ((r.hora || r.repetir || r.fecha_fin) && !r.fecha) {
     // "llamar a las 5" → hoy a las 5. "cada día" → empieza hoy (o el lunes, si es de lunes a viernes y hoy es fin de semana).
+    // "hasta el viernes" → de hoy al viernes.
     const dia = diaSemana(hoy);
     r.fecha = r.repetir === "laborables" && (dia === 0 || dia === 6) ? sumarDias(hoy, dia === 6 ? 2 : 1) : hoy;
   }
-  return r;
+  // "de 10 pm a 2 am" pasa la medianoche: termina al día siguiente.
+  if (r.fecha && r.hora && r.hora_fin && !r.fecha_fin && r.hora_fin <= r.hora) r.fecha_fin = sumarDias(r.fecha, 1);
+  return limpiarPlazo(r);
 }

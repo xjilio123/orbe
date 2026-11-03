@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esquemaCaptura, esquemaLista, esquemaTarea, erroresDe } from "./validacion";
+import { esquemaCaptura, esquemaFechaImportante, esquemaLista, esquemaTarea, erroresDe } from "./validacion";
 
 const base = { titulo: "Pagar luz", notas: "", estado: "pendiente", prioridad: "2", fecha: "", hora: "", lista_id: "" };
 
@@ -25,6 +25,25 @@ describe("esquemaTarea", () => {
     const r = esquemaTarea.safeParse({ ...base, hora: "10:00" });
     expect(r.success).toBe(false);
     if (!r.success) expect(erroresDe(r.error).hora).toContain("fecha");
+  });
+
+  it("guarda inicio y fin; el fin igual al inicio queda vacío", () => {
+    const r = esquemaTarea.parse({ ...base, fecha: "2026-11-02", hora: "15:00", fecha_fin: "2026-11-04", hora_fin: "10:00" });
+    expect(r).toMatchObject({ fecha: "2026-11-02", hora: "15:00", fecha_fin: "2026-11-04", hora_fin: "10:00" });
+    expect(esquemaTarea.parse({ ...base, fecha: "2026-11-02", hora: "15:00", fecha_fin: "2026-11-02", hora_fin: "17:00" })).toMatchObject({ fecha_fin: null, hora_fin: "17:00" });
+    // Sin los campos nuevos (formularios viejos en caché) sigue funcionando.
+    expect(esquemaTarea.parse({ ...base, fecha: "2026-11-02" })).toMatchObject({ fecha_fin: null, hora_fin: null });
+  });
+
+  it("explica cuando el fin no tiene sentido", () => {
+    const antes = esquemaTarea.safeParse({ ...base, fecha: "2026-11-04", fecha_fin: "2026-11-02" });
+    expect(antes.success).toBe(false);
+    if (!antes.success) expect(erroresDe(antes.error).fecha_fin).toBe("La fecha de fin no puede ser antes del inicio");
+    const hora = esquemaTarea.safeParse({ ...base, fecha: "2026-11-02", hora: "15:00", hora_fin: "14:00" });
+    if (!hora.success) expect(erroresDe(hora.error).hora_fin).toBe("La hora de fin debe ser después de la de inicio");
+    expect(hora.success).toBe(false);
+    const sinInicio = esquemaTarea.safeParse({ ...base, fecha: "2026-11-02", hora_fin: "14:00" });
+    expect(sinInicio.success).toBe(false);
   });
 
   it("rechaza valores manipulados", () => {
@@ -69,5 +88,18 @@ describe("esquemaTarea: repetición y aviso", () => {
     const r = esquemaTarea.safeParse({ ...base, fecha: "", hora: "", repetir: "diaria" });
     expect(r.success).toBe(false);
     if (!r.success) expect(erroresDe(r.error).repetir).toContain("primera vez");
+  });
+});
+
+describe("esquemaFechaImportante", () => {
+  const fecha = { titulo: "Viaje a Cusco", fecha: "2026-12-10", icono: "", color: "naranja" };
+  it("acepta un solo día o un rango con horas", () => {
+    expect(esquemaFechaImportante.parse(fecha)).toMatchObject({ fecha: "2026-12-10", hora: null, fecha_fin: null, hora_fin: null, icono: "📅" });
+    expect(esquemaFechaImportante.parse({ ...fecha, hora: "06:00", fecha_fin: "2026-12-15", hora_fin: "20:00" })).toMatchObject({ fecha_fin: "2026-12-15", hora_fin: "20:00" });
+  });
+  it("rechaza un fin antes del inicio", () => {
+    const r = esquemaFechaImportante.safeParse({ ...fecha, fecha_fin: "2026-12-01" });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(erroresDe(r.error).fecha_fin).toBeDefined();
   });
 });

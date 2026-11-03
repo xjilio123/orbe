@@ -19,6 +19,7 @@ import {
   type VistaAgenda as Vista,
 } from "@/lib/agenda";
 import { sumarDias } from "@/lib/fechas";
+import { etiquetaDias, rangoHoras } from "@/lib/plazo";
 
 type Props = {
   vista: Vista;
@@ -118,7 +119,7 @@ function Semana({ dia, hoy, porDia, base, acciones, ia }: Pick<Props, "dia" | "h
 
 function Dia({ dia, hoy, ahora, porDia, base, acciones, ia }: Pick<Props, "dia" | "hoy" | "ahora" | "porDia" | "base" | "acciones" | "ia">) {
   const items = porDia[dia] ?? [];
-  const sinHora = items.filter((i) => (i.tipo === "evento" ? !i.evento.inicio : !i.tarea.hora));
+  const sinHora = items.filter((i) => (i.tipo === "evento" ? !i.evento.inicio : !i.horario));
   const bloques = bloquesDelDia(items);
   const desde = Math.min(7, ...bloques.map((b) => Math.floor(b.inicio / 60)));
   const horas = Array.from({ length: 24 - desde }, (_, i) => desde + i);
@@ -176,6 +177,7 @@ function Dia({ dia, hoy, ahora, porDia, base, acciones, ia }: Pick<Props, "dia" 
                   {t.repetir ? "↻ " : ""}
                   {t.titulo}
                 </p>
+                <p className="truncate text-[12px] text-texto-2">{t.fecha_fin ? etiquetaDias(t, hoy) : rangoHoras(t.hora!, t.hora_fin)}</p>
               </Link>
             );
           })}

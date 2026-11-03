@@ -109,7 +109,7 @@ export function VistaHoy({ fecha, saludo, nombre, hoy, base, resumen, inbox, lis
                   {f.icono}
                 </span>
                 <p className="min-w-0 flex-1 truncate text-[17px] font-semibold">{f.titulo}</p>
-                <span className={`shrink-0 text-[15px] font-semibold ${TEXTO_COLOR[f.color]}`}>{textoFaltan(f.fecha, hoy)}</span>
+                <span className={`shrink-0 text-[15px] font-semibold ${TEXTO_COLOR[f.color]}`}>{textoFaltan(f.fecha, hoy, f.fecha_fin)}</span>
               </li>
             ))}
           </ul>

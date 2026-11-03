@@ -5,7 +5,8 @@ import { CAPTURA_INICIAL, type AccionesIa, type EstadoCaptura } from "@/app/acci
 import { Destello } from "@/components/ia/BotonIa";
 import { Icono } from "@/components/Icono";
 import { interpretarCaptura } from "@/lib/captura";
-import { etiquetaFecha, etiquetaHora, hoyLima } from "@/lib/fechas";
+import { hoyLima } from "@/lib/fechas";
+import { etiquetaDias, rangoHoras } from "@/lib/plazo";
 import { agregarPendiente } from "@/lib/pendientes";
 import { etiquetaRepetir } from "@/lib/repeticion";
 
@@ -94,8 +95,8 @@ export function CapturaRapida({ accion, listaId, placeholder = "Agregar tarea…
   const pistas = c
     ? [
         c.repetir && `↻ ${etiquetaRepetir(c.repetir, c.fecha)}`,
-        c.fecha && !c.repetir && etiquetaFecha(c.fecha, hoy),
-        c.hora && etiquetaHora(c.hora),
+        c.fecha && !c.repetir && etiquetaDias(c, hoy),
+        c.hora && rangoHoras(c.hora, c.hora_fin),
         c.lista && `#${c.lista}`,
         c.prioridad > 0 && `Prioridad ${PRIORIDAD[c.prioridad]}`,
       ].filter(Boolean)

@@ -5,6 +5,7 @@ import type { Bloque } from "@/lib/bloques";
 import { esInbox } from "@/lib/tareas";
 import { listas as leerListas, tareaConSubtareas, tareasActivas } from "@/lib/datos/tareas";
 import { hoyLima } from "@/lib/fechas";
+import { limpiarPlazo } from "@/lib/plazo";
 import { ErrorIa, generarJson } from "@/lib/ia/gemini";
 import { bloquesParaIa, captura, datos, dividir, esquemaBloquesIa, etiquetas, mejorar, resumir, type ModoTexto } from "@/lib/ia/funciones";
 import { conTope } from "@/lib/ia/tope";
@@ -33,13 +34,14 @@ export async function capturaIa(texto: string, extra: { lista_id?: string; fecha
     const idDeLista = new Map(misListas.map((l) => [l.nombre, l.id]));
     const { error } = await supabase.from("tareas").insert(
       tareas.map((t) => {
-        const fecha = t.fecha ?? porDefecto;
+        // Sin fecha propia, va al día que se mira en la Agenda (con su fin, si lo tiene y tiene sentido).
+        const plazo = limpiarPlazo({ fecha: t.fecha ?? porDefecto, hora: t.hora, fecha_fin: t.fecha_fin, hora_fin: t.hora_fin });
+        const fecha = plazo.fecha;
         return {
           user_id: usuario,
           titulo: t.titulo,
           notas: t.notas,
-          fecha,
-          hora: fecha ? t.hora : null,
+          ...plazo,
           prioridad: t.prioridad,
           lista_id: listaFija ?? (t.lista ? (idDeLista.get(t.lista) ?? null) : null),
           repetir: fecha ? t.repetir : null,

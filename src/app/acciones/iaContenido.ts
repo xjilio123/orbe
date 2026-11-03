@@ -32,7 +32,7 @@ export async function planIa(): Promise<ResultadoIa<Plan>> {
     const { eventos } = await eventosDeGoogle(usuario, perfil?.calendario_ics ?? null, hoy, hoy);
     if (pendientes.length === 0 && eventos.length === 0) throw new ErrorIa("RESPUESTA", "No tienes tareas ni eventos para hoy.");
     const contexto = {
-      tareas: pendientes.map((t) => ({ id: t.id, titulo: t.titulo, prioridad: t.prioridad, vence: t.fecha, hora: t.hora })),
+      tareas: pendientes.map((t) => ({ id: t.id, titulo: t.titulo, prioridad: t.prioridad, vence: t.fecha_fin ?? t.fecha, hora: t.hora, hora_fin: t.hora_fin })),
       eventos: eventos.map((e) => ({ titulo: e.titulo, inicio: e.inicio ?? "todo el día", fin: e.fin })),
     };
     const r = await generarJson({

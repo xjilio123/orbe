@@ -4,7 +4,7 @@ import Link from "next/link";
 import { startTransition, useOptimistic } from "react";
 import { Icono } from "@/components/Icono";
 import { enlace } from "@/components/ui";
-import { etiquetaFecha, etiquetaHora } from "@/lib/fechas";
+import { etiquetaPlazo, finDe } from "@/lib/plazo";
 import type { Tarea } from "@/lib/tareas";
 
 type Props = {
@@ -33,10 +33,11 @@ export function FilaTarea({ tarea, hoy, base, alternar, lista, subtareas }: Prop
     });
   }
 
-  const vencida = !hecha && tarea.fecha !== null && tarea.fecha < hoy;
+  // Vencida = ya pasó su último día (una tarea de varios días en curso no está vencida).
+  const vencida = !hecha && tarea.fecha !== null && (finDe(tarea) as string) < hoy;
   const meta = [
     tarea.fecha && {
-      texto: etiquetaFecha(tarea.fecha, hoy) + (tarea.hora ? ` · ${etiquetaHora(tarea.hora)}` : "") + (tarea.repetir ? " ↻" : ""),
+      texto: etiquetaPlazo(tarea, hoy) + (tarea.repetir ? " ↻" : ""),
       clase: vencida ? "text-rojo" : "",
     },
     lista && { texto: lista.nombre, clase: lista.texto },

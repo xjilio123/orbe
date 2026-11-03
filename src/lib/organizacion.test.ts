@@ -6,6 +6,8 @@ const HOY = "2026-10-28";
 let n = 0;
 const t = (datos: Partial<Tarea> & { cuadrante?: number | null }): Tarea => ({
   id: `id-${String(++n).padStart(3, "0")}`,
+  fecha_fin: null,
+  hora_fin: null,
   titulo: `Tarea ${n}`,
   notas: "",
   estado: "pendiente",
@@ -42,6 +44,13 @@ describe("matriz urgente / importante", () => {
       HOY,
     );
     expect([m[1].length, m[2].length, m[3].length, m[4].length]).toEqual([1, 0, 0, 1]);
+  });
+});
+
+describe("matriz con fecha de fin", () => {
+  it("lo urgente se mide con el último día (el plazo real)", () => {
+    expect(cuadranteDe(t({ prioridad: 2, fecha: HOY, fecha_fin: "2026-11-20" }), HOY)).toBe(2);
+    expect(cuadranteDe(t({ prioridad: 2, fecha: "2026-10-20", fecha_fin: "2026-10-29" }), HOY)).toBe(1);
   });
 });
 

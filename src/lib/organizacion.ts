@@ -1,6 +1,7 @@
 import { lunesDe } from "./agenda";
 import { diasEntre, sumarDias } from "./fechas";
-import { compararTareas, ESTADOS, type Tarea } from "./tareas";
+import { finDe } from "./plazo";
+import { compararTareas, ESTADOS, estaVencida, type Tarea } from "./tareas";
 
 // Matriz urgente/importante, revisión semanal y vista de tabla: cálculos puros.
 
@@ -13,14 +14,15 @@ export const CUADRANTES: { n: Cuadrante; nombre: string; accion: string; clase: 
   { n: 4, nombre: "Soltar", accion: "Ni urgente ni importante", clase: "bg-control", texto: "text-texto-2" },
 ];
 
-/** Días hasta la fecha para considerar una tarea urgente (incluye las atrasadas). */
+/** Días hasta el plazo para considerar una tarea urgente (incluye las atrasadas). El plazo es el último día. */
 export const DIAS_URGENTE = 2;
 
-export const esUrgente = (t: Pick<Tarea, "fecha">, hoy: string) => t.fecha !== null && diasEntre(hoy, t.fecha) <= DIAS_URGENTE;
+export const esUrgente = (t: Pick<Tarea, "fecha"> & { fecha_fin?: string | null }, hoy: string) =>
+  t.fecha !== null && diasEntre(hoy, finDe({ fecha: t.fecha, fecha_fin: t.fecha_fin ?? null }) as string) <= DIAS_URGENTE;
 export const esImportante = (t: Pick<Tarea, "prioridad">) => t.prioridad >= 2;
 
 /** El cuadrante elegido a mano, o el que corresponde por prioridad (!! o más) y fecha (hasta 2 días). */
-export function cuadranteDe(t: Pick<Tarea, "fecha" | "prioridad"> & { cuadrante?: number | null }, hoy: string): Cuadrante {
+export function cuadranteDe(t: Pick<Tarea, "fecha" | "prioridad"> & { fecha_fin?: string | null; cuadrante?: number | null }, hoy: string): Cuadrante {
   if (t.cuadrante && t.cuadrante >= 1 && t.cuadrante <= 4) return t.cuadrante as Cuadrante;
   const urgente = esUrgente(t, hoy);
   const importante = esImportante(t);
@@ -46,10 +48,11 @@ export function revisionSemanal(pendientes: Tarea[], hechasSemana: Tarea[], hoy:
   return {
     lunes: lunesDe(hoy),
     hechas: [...hechasSemana].filter((t) => !t.padre_id).sort((a, b) => (b.hecha_en ?? "").localeCompare(a.hecha_en ?? "")),
-    atrasadas: abiertas.filter((t) => t.fecha !== null && t.fecha < hoy).sort(compararTareas),
+    atrasadas: abiertas.filter((t) => estaVencida(t, hoy)).sort(compararTareas),
     // Sin fecha y creadas hace 14 días o más: probablemente se quedaron olvidadas.
     estancadas: abiertas.filter((t) => t.fecha === null && diasEntre(t.creado.slice(0, 10), hoy) >= 14).sort((a, b) => a.creado.localeCompare(b.creado)),
-    proximas: abiertas.filter((t) => t.fecha !== null && t.fecha >= hoy && t.fecha <= hasta).sort(compararTareas),
+    // Lo que ocurre esta semana, incluido lo de varios días que ya empezó y sigue en curso.
+    proximas: abiertas.filter((t) => t.fecha !== null && t.fecha <= hasta && (finDe(t) as string) >= hoy).sort(compararTareas),
     inbox: abiertas.filter((t) => !t.lista_id && !t.fecha).length,
   };
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { limpiarPlazo, revisarPlazo, type Plazo } from "./plazo";
 import { REPETICIONES, VALORES_AVISO } from "./repeticion";
 import { COLORES_LISTA, ESTADOS } from "./tareas";
 
@@ -11,17 +12,24 @@ const textoLimpio = (max: number) =>
     .transform((s) => s.replace(/\s+/g, " ").trim())
     .pipe(z.string().max(max));
 
+// Vacío o ausente = sin fecha / sin hora.
 const fechaOpcional = z
   .string()
-  .trim()
-  .transform((s) => (s === "" ? null : s))
-  .pipe(z.iso.date().nullable());
+  .optional()
+  .transform((s) => (s?.trim() ? s.trim() : null))
+  .pipe(z.iso.date("Fecha no válida").nullable());
 
 const horaOpcional = z
   .string()
-  .trim()
-  .transform((s) => (s === "" ? null : s.slice(0, 5)))
-  .pipe(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable());
+  .optional()
+  .transform((s) => (s?.trim() ? s.trim().slice(0, 5) : null))
+  .pipe(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora no válida").nullable());
+
+/** El inicio y el fin tienen que tener sentido; el error sale junto al campo que hay que corregir. */
+const plazoConSentido = (p: Plazo, ctx: z.RefinementCtx) => {
+  const error = revisarPlazo(p);
+  if (error) ctx.addIssue({ code: "custom", message: error.mensaje, path: [error.campo] });
+};
 
 const idOpcional = z
   .string()
@@ -56,12 +64,15 @@ export const esquemaTarea = z
     prioridad: z.coerce.number().int().min(0).max(3),
     fecha: fechaOpcional,
     hora: horaOpcional,
+    fecha_fin: fechaOpcional,
+    hora_fin: horaOpcional,
     lista_id: idOpcional,
     repetir: repetirOpcional,
     aviso: avisoOpcional,
   })
-  .refine((t) => t.hora === null || t.fecha !== null, { message: "Para poner hora, elige también una fecha", path: ["hora"] })
-  .refine((t) => t.repetir === null || t.fecha !== null, { message: "Para repetirla, elige la fecha de la primera vez", path: ["repetir"] });
+  .superRefine(plazoConSentido)
+  .refine((t) => t.repetir === null || t.fecha !== null, { message: "Para repetirla, elige la fecha de la primera vez", path: ["repetir"] })
+  .transform((t) => limpiarPlazo(t));
 
 export const esquemaSubtarea = z.object({ titulo: textoLimpio(200).pipe(z.string().min(1, "Escribe la subtarea")) });
 
@@ -109,12 +120,18 @@ export const esquemaMeta = z.discriminatedUnion("tipo", [
   }),
 ]);
 
-export const esquemaFechaImportante = z.object({
-  titulo: textoLimpio(80).pipe(z.string().min(1, "Escribe qué pasa ese día")),
-  fecha: z.iso.date("Elige la fecha"),
-  icono: icono("📅"),
-  color: z.enum(COLORES_LISTA),
-});
+export const esquemaFechaImportante = z
+  .object({
+    titulo: textoLimpio(80).pipe(z.string().min(1, "Escribe qué pasa ese día")),
+    fecha: z.iso.date("Elige la fecha"),
+    hora: horaOpcional,
+    fecha_fin: fechaOpcional,
+    hora_fin: horaOpcional,
+    icono: icono("📅"),
+    color: z.enum(COLORES_LISTA),
+  })
+  .superRefine(plazoConSentido)
+  .transform((f) => limpiarPlazo(f));
 
 export const esquemaSesionFoco = z.object({
   tarea_id: z.uuid().nullable(),

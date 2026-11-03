@@ -29,7 +29,17 @@ export type Meta = {
   color: ColorLista;
 };
 
-export type FechaImportante = { id: string; titulo: string; fecha: string; icono: string; color: ColorLista };
+/** Fecha de inicio obligatoria; hora y fin opcionales (fin vacío = el mismo día). */
+export type FechaImportante = {
+  id: string;
+  titulo: string;
+  fecha: string;
+  hora: string | null;
+  fecha_fin: string | null;
+  hora_fin: string | null;
+  icono: string;
+  color: ColorLista;
+};
 
 export type SemanaEstadistica = { semana: string; tareas: number; minutos: number };
 
@@ -97,21 +107,23 @@ export function textoMeta(m: Meta): string {
   return `${numero(m.actual)} de ${numero(m.objetivo ?? 0)}${unidad}`;
 }
 
-/** "Hoy", "Mañana", "Faltan 12 días", "Pasó hace 3 días". */
-export function textoFaltan(fecha: string, hoy: string): string {
+/** "Es hoy", "Mañana", "Faltan 12 días", "En curso", "Termina hoy", "Fue hace 3 días". `fin`: último día, si dura varios. */
+export function textoFaltan(fecha: string, hoy: string, fin: string | null = null): string {
+  if (fin && fin > fecha && fecha < hoy && hoy <= fin) return hoy === fin ? "Termina hoy" : "En curso";
   const dif = diasEntre(hoy, fecha);
   if (dif === 0) return "Es hoy";
   if (dif === 1) return "Mañana";
   if (dif > 1) return `Faltan ${dif} días`;
-  return dif === -1 ? "Fue ayer" : `Fue hace ${-dif} días`;
+  const paso = diasEntre(hoy, fin && fin > fecha ? fin : fecha);
+  return paso === -1 ? "Fue ayer" : `Fue hace ${-paso} días`;
 }
 
 export const diasQueFaltan = (fecha: string, hoy: string) => diasEntre(hoy, fecha);
 
-/** Próximas fechas (de hoy en adelante), de la más cercana a la más lejana. */
+/** Próximas fechas (las que no terminaron: de hoy en adelante o en curso), de la más cercana a la más lejana. */
 export function proximasFechas(fechas: FechaImportante[], hoy: string, cuantas = 3): FechaImportante[] {
   return fechas
-    .filter((f) => f.fecha >= hoy)
+    .filter((f) => (f.fecha_fin ?? f.fecha) >= hoy)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
     .slice(0, cuantas);
 }
