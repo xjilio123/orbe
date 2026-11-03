@@ -19,9 +19,13 @@ grant update (fecha_fin, hora_fin) on public.tareas to authenticated;
 -- La regla de siempre (subtareas, repetición, aviso, papelera) más el plazo:
 -- sin fecha no hay fin, sin hora no hay hora de fin y el fin igual al inicio se guarda vacío.
 -- La siguiente vez de una tarea que se repite conserva su duración.
+-- SECURITY DEFINER: corre con permisos propios porque usa private.siguiente_fecha, que la persona no
+-- puede llamar (sin esto, marcar una tarea que se repite fallaba para todos). Solo toca la fila que se
+-- guarda, la siguiente vez de esa misma tarea y sus subtareas, siempre de la misma persona.
 create or replace function private.antes_de_guardar_tarea()
 returns trigger
 language plpgsql
+security definer
 set search_path = ''
 as $$
 declare

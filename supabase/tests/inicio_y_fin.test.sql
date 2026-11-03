@@ -51,7 +51,7 @@ select ok((select hora_fin is null from public.tareas where id = '00000000-0000-
 update public.tareas set fecha = null, hora = null where id = '00000000-0000-0000-0000-0000000005a1';
 select ok((select fecha_fin is null from public.tareas where id = '00000000-0000-0000-0000-0000000005a1'), 'Quitar la fecha quita el fin');
 
--- 10-11. Una tarea que se repite conserva su duración
+-- 10-11. Una tarea que se repite conserva su duración (marcada como la marca la app: como usuario normal)
 insert into public.tareas (id, user_id, titulo, fecha, hora, fecha_fin, hora_fin, repetir) values
   ('00000000-0000-0000-0000-0000000005a3', '00000000-0000-0000-0000-00000000000a', 'Turno', current_date + 1, '20:00', current_date + 2, '06:00', 'semanal');
 update public.tareas set estado = 'hecha' where id = '00000000-0000-0000-0000-0000000005a3';
